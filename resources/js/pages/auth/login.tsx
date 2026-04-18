@@ -109,8 +109,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         {processing ? 'Logging in...' : 'Login'}
                     </button>
 
-                    <button
-                        type="button"
+                    <a
+                        href="/auth/google"
                         className="flex h-12 w-full items-center justify-center gap-2 rounded-[8px] border border-[#7B19F8] bg-transparent text-sm font-semibold text-[#7B19F8] transition hover:bg-[#f6f0ff]"
                     >
                         <svg
@@ -137,7 +137,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             />
                         </svg>
                         Continue with Google
-                    </button>
+                    </a>
                 </form>
             </AuthSplitLayout>
         </>

@@ -5,7 +5,7 @@ import register from '@/routes/register';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
-        name: 'User InCollab',
+        name: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -30,6 +30,29 @@ export default function Register() {
                 bottomLinkHref={loginRoute.url()}
             >
                 <form onSubmit={submit} className="space-y-6">
+                    <div>
+                        <label
+                            htmlFor="name"
+                            className="mb-2 block text-sm font-semibold text-[#2b2b2b]"
+                        >
+                            Nama
+                        </label>
+                        <input
+                            id="nama"
+                            name="name"
+                            type="text"
+                            autoComplete="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            placeholder="Masukkan nama"
+                            className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
+                        />
+                        {errors.name && (
+                            <p className="mt-2 text-sm text-red-500">
+                                {errors.name}
+                            </p>
+                        )}
+                    </div>
                     <div>
                         <label
                             htmlFor="email"
@@ -100,8 +123,8 @@ export default function Register() {
                         {processing ? 'Creating...' : 'Create new account'}
                     </button>
 
-                    <button
-                        type="button"
+                    <a
+                        href="/auth/google"
                         className="flex h-12 w-full items-center justify-center gap-2 rounded-[8px] border border-[#7B19F8] bg-transparent text-sm font-semibold text-[#7B19F8] transition hover:bg-[#f6f0ff]"
                     >
                         <svg
@@ -128,7 +151,7 @@ export default function Register() {
                             />
                         </svg>
                         Continue with Google
-                    </button>
+                    </a>
                 </form>
             </AuthSplitLayout>
         </>
