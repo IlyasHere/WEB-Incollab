@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class KlaimPoin extends Model
+{
+    use HasFactory;
+
+    protected $table = 'klaim_poin';
+    protected $primaryKey = 'klaim_id';
+
+    protected $fillable = [
+        'mhs_id',
+        'event_id',
+        'admin_id',
+        'tanggal_klaim',
+        'file_bukti',
+        'status_klaim',
+        'catatan_admin',
+    ];
+
+    // Relasi
+    public function mahasiswa()
+    {
+        return $this->belongsTo(Mahasiswa::class, 'mhs_id', 'mhs_id');
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id', 'event_id');
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id', 'user_id');
+    }
+
+    // Method dari class diagram
+    public function submitKlaim() {}
+    public function tampilkanKlaim() {}
+    public function approvalKlaim() {}
+}
