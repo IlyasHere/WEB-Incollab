@@ -13,7 +13,10 @@ class GoogleController extends Controller
 {
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        // return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+        ->redirectUrl(config('services.google.redirect'))
+        ->redirect(); 
     }
 
     public function callback()
