@@ -30,6 +30,11 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::inertia('eksplorasi', 'eksplorasi')->name('eksplorasi');
+    Route::inertia('event', 'event')->name('event');
+    Route::inertia('tukar-poin', 'tukar-poin')->name('tukar-poin');
+    Route::inertia('tersimpan', 'tersimpan')->name('tersimpan');
+    Route::inertia('pengaturan', 'pengaturan')->name('pengaturan');
 });
 
 Route::get('/auth/google', [GoogleController::class, 'redirect']);
