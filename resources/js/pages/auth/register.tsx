@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AuthSplitLayout from '@/components/auth-split-layout';
+import PasswordInput from '@/components/password-input';
 import { login as loginRoute } from '@/routes';
 import register from '@/routes/register';
 
@@ -10,6 +11,16 @@ export default function Register() {
         password: '',
         password_confirmation: '',
     });
+    const confirmationMismatchError = 'Konfirmasi password tidak cocok.';
+    const passwordError =
+        errors.password === confirmationMismatchError
+            ? undefined
+            : errors.password;
+    const passwordConfirmationError =
+        errors.password_confirmation ??
+        (errors.password === confirmationMismatchError
+            ? errors.password
+            : undefined);
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +40,7 @@ export default function Register() {
                 bottomLinkText="Login"
                 bottomLinkHref={loginRoute.url()}
             >
-                <form onSubmit={submit} className="space-y-6">
+                <form onSubmit={submit} className="space-y-6" noValidate>
                     <div>
                         <label
                             htmlFor="email"
@@ -43,6 +54,7 @@ export default function Register() {
                             type="email"
                             autoComplete="email"
                             autoFocus
+                            required
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             placeholder="user@gmail.com"
@@ -62,35 +74,53 @@ export default function Register() {
                         >
                             Create password
                         </label>
-                        <input
+                        <PasswordInput
                             id="password"
                             name="password"
-                            type="password"
                             autoComplete="new-password"
+                            required
                             value={data.password}
-                            onChange={(e) => {
-                                setData('password', e.target.value);
-                                setData(
-                                    'password_confirmation',
-                                    e.target.value,
-                                );
-                            }}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                             placeholder="********"
-                            className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
+                            className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 pr-12 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
                         />
-                        {errors.password && (
+                        {passwordError && (
                             <p className="mt-2 text-sm text-red-500">
-                                {errors.password}
+                                {passwordError}
                             </p>
                         )}
                     </div>
 
-                    <input
-                        type="hidden"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        readOnly
-                    />
+                    <div>
+                        <label
+                            htmlFor="password_confirmation"
+                            className="mb-2 block text-sm font-semibold text-[#2b2b2b]"
+                        >
+                            Confirm password
+                        </label>
+                        <PasswordInput
+                            id="password_confirmation"
+                            name="password_confirmation"
+                            autoComplete="new-password"
+                            required
+                            value={data.password_confirmation}
+                            onChange={(e) =>
+                                setData(
+                                    'password_confirmation',
+                                    e.target.value,
+                                )
+                            }
+                            placeholder="********"
+                            className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 pr-12 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
+                        />
+                        {passwordConfirmationError && (
+                            <p className="mt-2 text-sm text-red-500">
+                                {passwordConfirmationError}
+                            </p>
+                        )}
+                    </div>
 
                     <button
                         type="submit"

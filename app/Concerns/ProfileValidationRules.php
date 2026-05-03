@@ -42,10 +42,25 @@ trait ProfileValidationRules
             'required',
             'string',
             'email',
+            'regex:/^[^@\s]+@[^@\s]+\.[^@\s]+$/',
             'max:255',
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),
+        ];
+    }
+
+    /**
+     * Get the validation messages used to validate user profiles.
+     *
+     * @return array<string, string>
+     */
+    protected function profileValidationMessages(): array
+    {
+        return [
+            'email.email' => 'Format email tidak valid.',
+            'email.regex' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar.',
         ];
     }
 }
