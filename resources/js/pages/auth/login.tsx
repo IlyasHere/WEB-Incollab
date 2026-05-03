@@ -1,4 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import AuthSplitLayout from '@/components/auth-split-layout';
 import { register as registerRoute } from '@/routes';
 import login from '@/routes/login';
@@ -10,6 +12,7 @@ type LoginProps = {
 };
 
 export default function Login({ status, canResetPassword }: LoginProps) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -71,18 +74,38 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         >
                             Password
                         </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) =>
-                                setData('password', e.target.value)
-                            }
-                            placeholder="********"
-                            className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="current-password"
+                                value={data.password}
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
+                                placeholder="********"
+                                className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 pr-12 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowPassword((current) => !current)
+                                }
+                                className="absolute inset-y-0 right-0 flex items-center px-4 text-[#4b4b4b] transition hover:text-[#1f1f1f] focus:outline-none"
+                                aria-label={
+                                    showPassword
+                                        ? 'Sembunyikan password'
+                                        : 'Tampilkan password'
+                                }
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-5 w-5" />
+                                ) : (
+                                    <Eye className="h-5 w-5" />
+                                )}
+                            </button>
+                        </div>
                         {errors.password && (
                             <p className="mt-2 text-sm text-red-500">
                                 {errors.password}
@@ -109,8 +132,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         {processing ? 'Logging in...' : 'Login'}
                     </button>
 
-                    <button
-                        type="button"
+                    <a
+                        href="/auth/google"
                         className="flex h-12 w-full items-center justify-center gap-2 rounded-[8px] border border-[#7B19F8] bg-transparent text-sm font-semibold text-[#7B19F8] transition hover:bg-[#f6f0ff]"
                     >
                         <svg
@@ -137,7 +160,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             />
                         </svg>
                         Continue with Google
-                    </button>
+                    </a>
                 </form>
             </AuthSplitLayout>
         </>
