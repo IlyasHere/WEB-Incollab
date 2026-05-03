@@ -1,9 +1,12 @@
 import { Head, useForm } from '@inertiajs/react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import AuthSplitLayout from '@/components/auth-split-layout';
 import { login as loginRoute } from '@/routes';
 import register from '@/routes/register';
 
 export default function Register() {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -85,25 +88,50 @@ export default function Register() {
                         >
                             Create password
                         </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            autoComplete="new-password"
-                            value={data.password}
-                            onChange={(e) => {
-                                setData('password', e.target.value);
-                                setData(
-                                    'password_confirmation',
-                                    e.target.value,
-                                );
-                            }}
-                            placeholder="********"
-                            className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                value={data.password}
+                                onChange={(e) => {
+                                    setData('password', e.target.value);
+                                    setData(
+                                        'password_confirmation',
+                                        e.target.value,
+                                    );
+                                }}
+                                placeholder="********"
+                                className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 pr-12 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setShowPassword((current) => !current)
+                                }
+                                className="absolute inset-y-0 right-0 flex items-center px-4 text-[#4b4b4b] transition hover:text-[#1f1f1f] focus:outline-none"
+                                aria-label={
+                                    showPassword
+                                        ? 'Sembunyikan password'
+                                        : 'Tampilkan password'
+                                }
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-5 w-5" />
+                                ) : (
+                                    <Eye className="h-5 w-5" />
+                                )}
+                            </button>
+                        </div>
                         {errors.password && (
                             <p className="mt-2 text-sm text-red-500">
                                 {errors.password}
+                            </p>
+                        )}
+                        {errors.password_confirmation && (
+                            <p className="mt-2 text-sm text-red-500">
+                                {errors.password_confirmation}
                             </p>
                         )}
                     </div>
