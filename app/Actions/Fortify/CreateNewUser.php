@@ -32,7 +32,7 @@ class CreateNewUser implements CreatesNewUsers
             'email.email' => 'Format email tidak valid.',
             'email.regex' => 'Format email tidak valid.',
             'email.unique' => 'Email ini sudah terdaftar.',
-            'password.required' => 'Password wajib diisi.',
+            'password.required' => 'password wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.letters' => 'Password harus mengandung huruf dan angka.',
             'password.numbers' => 'Password harus mengandung huruf dan angka.',

@@ -9,15 +9,37 @@ class Mahasiswa extends Model
 {
     use HasFactory;
 
+    protected $table = 'mahasiswa';
+
     protected $primaryKey = 'mhs_id';
 
     protected $fillable = [
         'user_id',
-        'nim',
         'bio',
         'foto',
+        'universitas',
+        'jurusan',
+        'angkatan',
+        'semester',
+        'skill',
+        'minat',
+        'instagram',
+        'linkedin',
+        'github',
+        'behance',
+        'portfolio',
+        'tersedia_kolaborasi',
         'total_poin',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'skill' => 'array',
+            'minat' => 'array',
+            'tersedia_kolaborasi' => 'boolean',
+        ];
+    }
 
     // Relasi ke User (parent)
     public function user()
@@ -48,12 +70,20 @@ class Mahasiswa extends Model
 
     // Method dari class diagram
     public function register() {}
+
     public function lihatFeed() {}
+
     public function lihatDetailEvent() {}
+
     public function lihatProfil() {}
+
     public function ajukanKlaimPoin() {}
+
     public function ubahProfil() {}
+
     public function addKomentar() {}
+
     public function tukarPoin() {}
+
     public function buatLaporan() {}
 }

@@ -14,8 +14,15 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
                 return null;
+            case name === 'pengaturan':
+            case name === 'pengaturan/notifikasi':
+            case name === 'pengaturan/riwayat-poin':
+            case name === 'pengaturan/bantuan':
+                return null;
             case name === 'auth/login':
             case name === 'auth/register':
+                return null;
+            case name.startsWith('admin/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
