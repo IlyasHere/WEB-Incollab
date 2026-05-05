@@ -1,15 +1,17 @@
-import { Bell, Menu, Search, X } from 'lucide-react';
+import { Bell, Menu, Search, X, LogOut } from 'lucide-react';
 
 type TopNavbarProps = {
     userName: string;
     mobileMenuOpen: boolean;
     onToggleMenu: () => void;
+    onLogout?: () => void;
 };
 
 export default function TopNavbar({
     userName,
     mobileMenuOpen,
     onToggleMenu,
+    onLogout,
 }: TopNavbarProps) {
     const initials = userName
         .split(' ')
@@ -54,8 +56,29 @@ export default function TopNavbar({
                     <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[#D11149]" />
                 </button>
 
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]">
-                    {initials}
+                {/* Avatar + Logout Dropdown */}
+                <div className="relative group">
+                    <div className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]">
+                        {initials}
+                    </div>
+
+                    <div className="invisible absolute right-0 top-14 w-44 translate-y-2 rounded-2xl border border-[#EEE4F9] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.12)] transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                        <div className="px-3 py-2">
+                            <p className="text-xs text-[#8A7FA2]">Masuk sebagai</p>
+                            <p className="truncate text-sm font-semibold text-[#382A49]">
+                                {userName}
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={onLogout}
+                            className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#D11149] transition hover:bg-[#FFF0F4]"
+                        >
+                            <LogOut className="h-4 w-4" />
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>

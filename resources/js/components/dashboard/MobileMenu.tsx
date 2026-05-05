@@ -45,13 +45,13 @@ export default function MobileMenu({
                 })}
             </nav>
 
-            <button
+            {/* <button
                 type="button"
                 className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#6610F2] text-sm font-semibold text-white"
             >
                 <Plus className="h-4 w-4" />
                 Buat Postingan
-            </button>
+            </button> */}
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     Bookmark,
@@ -61,6 +62,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         userName={auth.user.name}
                         mobileMenuOpen={mobileMenuOpen}
                         onToggleMenu={() => setMobileMenuOpen((open) => !open)}
+                        onLogout={() => router.post('/logout')}
                     />
 
                     <MobileMenu
@@ -75,7 +77,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
             </div>
 
-            <MobileBottomNav items={primaryNavItems} currentPath={currentUrl} />
+            {/* <MobileBottomNav items={primaryNavItems} currentPath={currentUrl} /> */}
         </div>
     );
 }

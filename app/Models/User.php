@@ -11,8 +11,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $table = 'users';
+
     protected $primaryKey = 'user_id';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
 
     protected $fillable = [
@@ -20,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'google_id',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -53,5 +58,6 @@ class User extends Authenticatable
 
     // Method dari class diagram
     public function login() {}
+
     public function logout() {}
 }

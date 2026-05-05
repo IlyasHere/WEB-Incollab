@@ -56,7 +56,7 @@ export default function RightSidebar({
                 <section className="rounded-[28px] border border-[#F0E5FB] bg-white p-0 shadow-[0_16px_38px_rgba(177,145,221,0.14)]">
                     <div className="border-b border-[#F4EAFD] px-5 py-5">
                         <h2 className="text-[24px] font-bold text-[#261C39]">
-                            Partner Kolaborasi
+                            Pengguna lain
                         </h2>
                     </div>
 
@@ -83,7 +83,7 @@ export default function RightSidebar({
                                     type="button"
                                     className="inline-flex h-9 items-center justify-center rounded-full bg-[#F3E8FF] px-4 text-xs font-semibold text-[#6610F2] transition hover:bg-[#EBDDFF]"
                                 >
-                                    Ikuti
+                                    Lihat
                                 </button>
                             </div>
                         ))}

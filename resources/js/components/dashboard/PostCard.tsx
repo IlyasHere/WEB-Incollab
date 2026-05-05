@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Heart, MessageSquare, Share2 } from 'lucide-react';
 
 export type FeedPost = {
@@ -50,13 +51,13 @@ export default function PostCard({ post }: PostCardProps) {
                 </button>
             </div>
 
-            <div className="mt-5">
+            {/* <div className="mt-5">
                 <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-bold tracking-[0.04em] ${post.badgeColor}`}
                 >
                     {post.badge}
                 </span>
-            </div>
+            </div> */}
 
             <div className="mt-4 space-y-4">
                 <h3 className="max-w-3xl text-[28px] leading-[1.2] font-bold text-[#221A32] sm:text-[34px]">
@@ -99,21 +100,21 @@ export default function PostCard({ post }: PostCardProps) {
                         <MessageSquare className="h-5 w-5" />
                         {post.comments}
                     </button>
-                    <button
-                        type="button"
-                        className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#6610F2]"
-                    >
-                        <Share2 className="h-5 w-5" />
-                        Share
-                    </button>
-                </div>
 
+                </div>
+                {/* 
                 <button
                     type="button"
                     className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#6610F2] px-6 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(102,16,242,0.24)] transition hover:brightness-105 sm:min-w-[150px]"
                 >
                     Lihat detail
-                </button>
+                </button> */}
+                <Link
+                    href={`/post/${post.id}`}
+                    className="inline-flex items-center justify-center rounded-full bg-[#6610F2] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(102,16,242,0.22)] transition hover:-translate-y-0.5 hover:bg-[#570DD1] hover:shadow-[0_14px_30px_rgba(102,16,242,0.28)]"
+                >
+                    Lihat detail
+                </Link>
             </div>
         </article>
     );
