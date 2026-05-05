@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
 import type { DashboardNavItem } from '@/components/dashboard/AppSidebar';
 
 type MobileMenuProps = {

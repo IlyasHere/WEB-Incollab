@@ -1,7 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import {
-    Bell,
     CalendarDays,
     Coins,
     Gift,
@@ -80,10 +79,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                             key={href}
                             href={href}
                             onClick={onNavigate}
-                            className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition-all duration-300 ${active
+                            className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition-all duration-300 ${
+                                active
                                     ? 'bg-[#6610F2] text-white shadow-[0_14px_26px_rgba(102,16,242,0.24)]'
                                     : 'text-[#46566E] hover:bg-[#F7F1FF] hover:text-[#6610F2]'
-                                }`}
+                            }`}
                         >
                             <Icon className="h-5 w-5" strokeWidth={2.1} />
                             {label}

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Heart, MessageSquare, Share2 } from 'lucide-react';
+import { Heart, MessageSquare } from 'lucide-react';
 
 export type FeedPost = {
     id: number;
@@ -100,7 +100,6 @@ export default function PostCard({ post }: PostCardProps) {
                         <MessageSquare className="h-5 w-5" />
                         {post.comments}
                     </button>
-
                 </div>
                 {/* 
                 <button

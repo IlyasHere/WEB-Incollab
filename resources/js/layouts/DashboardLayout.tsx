@@ -1,19 +1,10 @@
-import type { ReactNode } from 'react';
 import { router } from '@inertiajs/react';
-import { useState } from 'react';
-import {
-    Bookmark,
-    Compass,
-    Coins,
-    Home,
-    Settings,
-    Trophy,
-} from 'lucide-react';
 import { usePage } from '@inertiajs/react';
-import AppSidebar, {
-    type DashboardNavItem,
-} from '@/components/dashboard/AppSidebar';
-import MobileBottomNav from '@/components/dashboard/MobileBottomNav';
+import { Bookmark, Compass, Coins, Home, Settings, Trophy } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
+import AppSidebar from '@/components/dashboard/AppSidebar';
+import type { DashboardNavItem } from '@/components/dashboard/AppSidebar';
 import MobileMenu from '@/components/dashboard/MobileMenu';
 import TopNavbar from '@/components/dashboard/TopNavbar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
