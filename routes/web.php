@@ -18,6 +18,7 @@
 // require __DIR__.'/settings.php';
 
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\PointHistoryController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileSettingController;
 use Illuminate\Support\Facades\Route;
