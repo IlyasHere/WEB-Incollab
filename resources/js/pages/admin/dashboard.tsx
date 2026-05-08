@@ -48,7 +48,7 @@ const quickActions = [
         icon: Plus,
         variant: 'primary',
     },
-    { label: 'Kirim Reminder', href: '/admin/reminder', icon: Send },
+    // { label: 'Kirim Reminder', href: '/admin/reminder', icon: Send },
     { label: 'Tambah Reward', href: '/admin/reward', icon: Plus },
     { label: 'Kelola Poin', href: '/admin/poin', icon: Coins },
 ];
