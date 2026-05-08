@@ -51,6 +51,7 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::inertia('dashboard', 'admin/dashboard')->name('dashboard');
         Route::inertia('event', 'admin/event/index')->name('event');
+        Route::inertia('event/create', 'admin/event/create')->name('event.create');
         Route::inertia('reward', 'admin/reward/index')->name('reward');
         Route::inertia('pengaduan', 'admin/pengaduan/index')->name('pengaduan');
         Route::inertia('poin', 'admin/poin/index')->name('poin');
