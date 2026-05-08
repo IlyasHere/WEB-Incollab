@@ -33,6 +33,9 @@ export default function AppSidebar({
                         alt="InCollab"
                         className="h-10 w-auto md:mx-auto lg:mx-0"
                     />
+                    <span className="hidden text-xl font-extrabold tracking-tight text-[#241A35] lg:inline">
+                        InCollab
+                    </span>
                 </div>
             </div>
 

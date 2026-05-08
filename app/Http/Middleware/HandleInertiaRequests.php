@@ -35,13 +35,33 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
+        if ($user) {
+            $user->loadMissing('mahasiswa');
+
+            $user->avatar = $this->resolveUserAvatar(
+                $user->mahasiswa?->foto,
+                $user->avatar,
+            );
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    private function resolveUserAvatar(?string $foto, ?string $avatar): ?string
+    {
+        if ($foto) {
+            return str_starts_with($foto, 'http') ? $foto : asset('storage/'.$foto);
+        }
+
+        return $avatar;
     }
 }

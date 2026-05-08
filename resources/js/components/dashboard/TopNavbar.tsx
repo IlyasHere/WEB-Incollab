@@ -2,6 +2,7 @@ import { Bell, Menu, Search, X, LogOut } from 'lucide-react';
 
 type TopNavbarProps = {
     userName: string;
+    userAvatar?: string | null;
     mobileMenuOpen: boolean;
     onToggleMenu: () => void;
     onLogout?: () => void;
@@ -9,6 +10,7 @@ type TopNavbarProps = {
 
 export default function TopNavbar({
     userName,
+    userAvatar,
     mobileMenuOpen,
     onToggleMenu,
     onLogout,
@@ -61,7 +63,15 @@ export default function TopNavbar({
                 {/* Avatar + Logout Dropdown */}
                 <div className="group relative">
                     <div className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]">
-                        {initials}
+                        {userAvatar ? (
+                            <img
+                                src={userAvatar}
+                                alt={userName}
+                                className="h-full w-full rounded-full object-cover"
+                            />
+                        ) : (
+                            initials
+                        )}
                     </div>
 
                     <div className="invisible absolute top-14 right-0 w-44 translate-y-2 rounded-2xl border border-[#EEE4F9] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.12)] transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">

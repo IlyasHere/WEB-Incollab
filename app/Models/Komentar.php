@@ -18,6 +18,7 @@ class Komentar extends Model
     protected $fillable = [
         'mhs_id',
         'post_id',
+        'parent_id',
         'isi_komentar',
         'tanggal_komentar',
     ];
@@ -38,6 +39,17 @@ class Komentar extends Model
     public function post()
     {
         return $this->belongsTo(FeedPost::class, 'post_id', 'post_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Komentar::class, 'parent_id', 'komentar_id');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(Komentar::class, 'parent_id', 'komentar_id')
+            ->orderBy('tanggal_komentar');
     }
 
     // Method dari class diagram

@@ -20,7 +20,9 @@
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\FeedPostController;
 use App\Http\Controllers\ProfileSettingController;
+use App\Http\Controllers\UserProfileController;
 use App\Models\FeedPost;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -42,10 +44,12 @@ Route::middleware(['auth'])->group(function () {
             ->map(function (FeedPost $post) {
                 $user = $post->user;
                 $mahasiswa = $user?->mahasiswa;
-                $firstImage = $post->images->first();
                 $avatar = $mahasiswa?->foto
                     ? asset('storage/'.$mahasiswa->foto)
                     : ($user?->avatar ?: null);
+                $images = $post->images
+                    ->map(fn ($image) => asset('storage/'.$image->image_path))
+                    ->values();
 
                 return [
                     'id' => $post->post_id,
@@ -64,12 +68,37 @@ Route::middleware(['auth'])->group(function () {
                     'hashtags' => $post->tags ?? [],
                     'likes' => 0,
                     'comments' => $post->komentar_count,
-                    'image' => $firstImage ? asset('storage/'.$firstImage->image_path) : null,
+                    'image' => $images->first(),
+                    'images' => $images,
+                    'canDelete' => $post->user_id === auth()->id(),
+                ];
+            });
+        $partners = User::query()
+            ->with('mahasiswa')
+            ->where('role', 'mahasiswa')
+            ->where('user_id', '!=', auth()->id())
+            ->latest('user_id')
+            ->limit(5)
+            ->get()
+            ->map(function (User $user) {
+                $mahasiswa = $user->mahasiswa;
+                $avatar = $mahasiswa?->foto
+                    ? asset('storage/'.$mahasiswa->foto)
+                    : ($user->avatar ?: null);
+
+                return [
+                    'id' => $user->user_id,
+                    'name' => $user->name,
+                    'role' => $mahasiswa?->jurusan ?: 'Mahasiswa',
+                    'campus' => $mahasiswa?->universitas ?: 'Kampus belum diisi',
+                    'avatar' => $avatar,
+                    'profileUrl' => route('profile.show', $user),
                 ];
             });
 
         return inertia('dashboard', [
             'posts' => $posts,
+            'partners' => $partners,
         ]);
     })->name('dashboard');
     Route::get('/add-feed', [FeedPostController::class, 'create'])->name('feed.create');
@@ -78,6 +107,7 @@ Route::middleware(['auth'])->group(function () {
     Route::inertia('event', 'event')->name('event');
     Route::inertia('tukar-poin', 'tukar-poin')->name('tukar-poin');
     Route::inertia('tersimpan', 'tersimpan')->name('tersimpan');
+    Route::get('profile/{user}', [UserProfileController::class, 'show'])->name('profile.show');
     Route::get('pengaturan', [ProfileSettingController::class, 'edit'])->name('pengaturan');
     Route::put('pengaturan', [ProfileSettingController::class, 'update'])->name('pengaturan.update');
     Route::inertia('pengaturan/notifikasi', 'pengaturan/notifikasi')->name('pengaturan.notifikasi');
@@ -85,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
     Route::inertia('pengaturan/bantuan', 'pengaturan/bantuan')->name('pengaturan.bantuan');
     Route::get('post/{post}', [FeedPostController::class, 'show'])->name('post.detail');
     Route::post('post/{post}/comments', [FeedPostController::class, 'storeComment'])->name('post.comments.store');
+    Route::delete('post/{post}', [FeedPostController::class, 'destroy'])->name('post.destroy');
 });
 
 Route::middleware(['auth', 'admin'])

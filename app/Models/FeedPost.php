@@ -38,4 +38,11 @@ class FeedPost extends Model
         return $this->hasMany(Komentar::class, 'post_id', 'post_id')
             ->orderByDesc('tanggal_komentar');
     }
+
+    public function rootKomentar()
+    {
+        return $this->hasMany(Komentar::class, 'post_id', 'post_id')
+            ->whereNull('parent_id')
+            ->orderByDesc('tanggal_komentar');
+    }
 }

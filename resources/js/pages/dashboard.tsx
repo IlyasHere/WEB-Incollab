@@ -19,23 +19,9 @@ const topics: TrendingTopic[] = [
     { tag: '#LombaEsai', posts: '210 postingan baru' },
 ];
 
-const partners: CollaborationPartner[] = [
-    {
-        name: 'Ani Wijaya',
-        role: 'UI/UX',
-        campus: 'Binus',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
-    },
-    {
-        name: 'Rizky Putra',
-        role: 'Backend',
-        campus: 'ITS',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80',
-    },
-];
-
 type DashboardProps = {
     posts: FeedPost[];
+    partners: CollaborationPartner[];
 };
 
 function EmptyFeedState() {
@@ -57,7 +43,7 @@ function EmptyFeedState() {
     );
 }
 
-export default function Dashboard({ posts }: DashboardProps) {
+export default function Dashboard({ posts, partners }: DashboardProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
@@ -68,7 +54,10 @@ export default function Dashboard({ posts }: DashboardProps) {
                 <div className="mx-auto flex max-w-[1320px] gap-6 xl:gap-8">
                     <section className="min-w-0 flex-1">
                         <div className="space-y-5 sm:space-y-6">
-                            <ComposerCard userName={auth.user.name} />
+                            <ComposerCard
+                                userName={auth.user.name}
+                                userAvatar={auth.user.avatar}
+                            />
 
                             {posts.length > 0 ? (
                                 posts.map((post) => (

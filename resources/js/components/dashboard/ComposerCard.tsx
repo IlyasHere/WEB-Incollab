@@ -3,9 +3,13 @@ import { Plus } from 'lucide-react';
 
 type ComposerCardProps = {
     userName: string;
+    userAvatar?: string | null;
 };
 
-export default function ComposerCard({ userName }: ComposerCardProps) {
+export default function ComposerCard({
+    userName,
+    userAvatar,
+}: ComposerCardProps) {
     const initials = userName
         .split(' ')
         .map((part) => part[0])
@@ -18,7 +22,15 @@ export default function ComposerCard({ userName }: ComposerCardProps) {
             <div className="flex flex-col gap-4 border-l-4 border-[#6610F2] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex min-w-0 items-center gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1A8FE3,#6610F2)] text-sm font-bold text-white">
-                        {initials}
+                        {userAvatar ? (
+                            <img
+                                src={userAvatar}
+                                alt={userName}
+                                className="h-full w-full rounded-full object-cover"
+                            />
+                        ) : (
+                            initials
+                        )}
                     </div>
                     <div className="min-w-0">
                         <h1 className="truncate text-lg font-extrabold text-[#1F1730]">

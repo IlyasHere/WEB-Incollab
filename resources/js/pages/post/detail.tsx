@@ -6,6 +6,7 @@ import {
     Heart,
     LoaderCircle,
     MessageSquare,
+    Reply,
     Send,
 } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
@@ -37,6 +38,7 @@ type Comment = {
     content: string;
     time: string;
     likes: number;
+    replies: Comment[];
 };
 
 type DetailPostProps = {
@@ -47,6 +49,7 @@ type DetailPostProps = {
 
 type CommentForm = {
     content: string;
+    parent_id?: number | null;
 };
 
 function initials(name: string) {
@@ -92,6 +95,10 @@ export default function DetailPost({
     currentUser,
 }: DetailPostProps) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+    const [replyRecipientName, setReplyRecipientName] = useState<string | null>(
+        null,
+    );
     const {
         data,
         setData,
@@ -101,6 +108,18 @@ export default function DetailPost({
         reset,
     } = useForm<CommentForm>({
         content: '',
+        parent_id: null,
+    });
+    const {
+        data: replyData,
+        setData: setReplyData,
+        post: submitReplyPost,
+        processing: replyProcessing,
+        errors: replyErrors,
+        reset: resetReply,
+    } = useForm<CommentForm>({
+        content: '',
+        parent_id: null,
     });
 
     const submitComment = (event: FormEvent<HTMLFormElement>) => {
@@ -108,7 +127,33 @@ export default function DetailPost({
 
         submitPost(`/post/${post.id}/comments`, {
             preserveScroll: true,
-            onSuccess: () => reset('content'),
+            onSuccess: () => reset('content', 'parent_id'),
+        });
+    };
+
+    const totalComments = comments.reduce(
+        (total, comment) => total + 1 + comment.replies.length,
+        0,
+    );
+
+    const startReply = (comment: Comment, recipient = comment) => {
+        setReplyingTo(comment);
+        setReplyRecipientName(recipient.user.name);
+        setReplyData('parent_id', comment.id);
+    };
+
+    const cancelReply = () => {
+        setReplyingTo(null);
+        setReplyRecipientName(null);
+        resetReply('content', 'parent_id');
+    };
+
+    const submitReply = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        submitReplyPost(`/post/${post.id}/comments`, {
+            preserveScroll: true,
+            onSuccess: cancelReply,
         });
     };
 
@@ -259,14 +304,14 @@ export default function DetailPost({
                             </span>
                             <span className="inline-flex items-center gap-2">
                                 <MessageSquare className="h-5 w-5" />
-                                {comments.length} Comments
+                                {totalComments} Comments
                             </span>
                         </div>
                     </article>
 
                     <section className="rounded-[22px] border border-[#E9DDF5] bg-white p-5 shadow-[0_18px_45px_rgba(177,145,221,0.14)] sm:p-6">
                         <h2 className="text-[24px] font-semibold text-[#221A32]">
-                            Komentar ({comments.length})
+                            Komentar ({totalComments})
                         </h2>
 
                         <form
@@ -308,32 +353,160 @@ export default function DetailPost({
                         <div className="mt-7 space-y-6">
                             {comments.length > 0 ? (
                                 comments.map((comment) => (
-                                    <div
-                                        key={comment.id}
-                                        className="flex items-start gap-4"
-                                    >
-                                        <Avatar user={comment.user} />
+                                    <div key={comment.id} className="space-y-4">
+                                        <div className="flex items-start gap-4">
+                                            <Avatar user={comment.user} />
 
-                                        <div className="min-w-0 flex-1">
-                                            <div className="rounded-[18px] bg-[#F2ECF7] px-4 py-3">
-                                                <h3 className="text-sm font-bold text-[#221A32]">
-                                                    {comment.user.name}
-                                                </h3>
-                                                <p className="mt-1 text-[15px] leading-6 whitespace-pre-line text-[#5A516C]">
-                                                    {comment.content}
-                                                </p>
-                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="rounded-[18px] bg-[#F2ECF7] px-4 py-3">
+                                                    <h3 className="text-sm font-bold text-[#221A32]">
+                                                        {comment.user.name}
+                                                    </h3>
+                                                    <p className="mt-1 text-[15px] leading-6 whitespace-pre-line text-[#5A516C]">
+                                                        {comment.content}
+                                                    </p>
+                                                </div>
 
-                                            <div className="mt-2 flex flex-wrap items-center gap-5 px-2 text-sm font-semibold text-[#7A6D8F]">
-                                                <span>{comment.time}</span>
-                                                <span>
-                                                    {comment.likes}{' '}
-                                                    {comment.likes === 1
-                                                        ? 'Like'
-                                                        : 'Likes'}
-                                                </span>
+                                                <div className="mt-2 flex flex-wrap items-center gap-5 px-2 text-sm font-semibold text-[#7A6D8F]">
+                                                    <span>{comment.time}</span>
+                                                    <span>
+                                                        {comment.likes}{' '}
+                                                        {comment.likes === 1
+                                                            ? 'Like'
+                                                            : 'Likes'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            startReply(comment)
+                                                        }
+                                                        className="inline-flex items-center gap-1.5 transition hover:text-[#6610F2]"
+                                                    >
+                                                        <Reply className="h-4 w-4" />
+                                                        Balas
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
+
+                                        {comment.replies.length > 0 && (
+                                            <div className="space-y-4 border-l-2 border-[#E9DDF5] pl-5 sm:ml-[62px]">
+                                                {comment.replies.map(
+                                                    (reply) => (
+                                                        <div
+                                                            key={reply.id}
+                                                            className="flex items-start gap-3"
+                                                        >
+                                                            <Avatar
+                                                                user={
+                                                                    reply.user
+                                                                }
+                                                                size="sm"
+                                                            />
+
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="rounded-[16px] bg-[#F8F3FF] px-4 py-3">
+                                                                    <h4 className="text-sm font-bold text-[#221A32]">
+                                                                        {
+                                                                            reply
+                                                                                .user
+                                                                                .name
+                                                                        }
+                                                                    </h4>
+                                                                    <p className="mt-1 text-[15px] leading-6 whitespace-pre-line text-[#5A516C]">
+                                                                        {
+                                                                            reply.content
+                                                                        }
+                                                                    </p>
+                                                                </div>
+
+                                                                <div className="mt-2 flex flex-wrap items-center gap-5 px-2 text-sm font-semibold text-[#7A6D8F]">
+                                                                    <span>
+                                                                        {
+                                                                            reply.time
+                                                                        }
+                                                                    </span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            startReply(
+                                                                                comment,
+                                                                                reply,
+                                                                            )
+                                                                        }
+                                                                        className="inline-flex items-center gap-1.5 transition hover:text-[#6610F2]"
+                                                                    >
+                                                                        <Reply className="h-4 w-4" />
+                                                                        Balas
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {replyingTo?.id === comment.id && (
+                                            <form
+                                                onSubmit={submitReply}
+                                                className="flex items-center gap-3 sm:ml-[62px]"
+                                            >
+                                                <Avatar
+                                                    user={currentUser}
+                                                    size="sm"
+                                                />
+                                                <div className="relative min-w-0 flex-1">
+                                                    <input
+                                                        type="text"
+                                                        value={
+                                                            replyData.content
+                                                        }
+                                                        onChange={(event) =>
+                                                            setReplyData(
+                                                                'content',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                        placeholder={`Balas ${replyRecipientName ?? comment.user.name}...`}
+                                                        className="h-11 w-full rounded-full border-0 bg-[#E9E0F1] px-4 pr-24 text-sm text-[#382A49] outline-none placeholder:text-[#8A7FA2] focus:ring-4 focus:ring-[#6610F2]/15"
+                                                    />
+                                                    <div className="absolute top-1/2 right-1.5 flex -translate-y-1/2 items-center gap-1">
+                                                        <button
+                                                            type="button"
+                                                            onClick={
+                                                                cancelReply
+                                                            }
+                                                            className="rounded-full px-3 py-1.5 text-xs font-bold text-[#7A6D8F] transition hover:bg-white"
+                                                        >
+                                                            Batal
+                                                        </button>
+                                                        <button
+                                                            type="submit"
+                                                            disabled={
+                                                                replyProcessing
+                                                            }
+                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6610F2] text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+                                                            aria-label="Kirim balasan"
+                                                        >
+                                                            {replyProcessing ? (
+                                                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <Send className="h-4 w-4" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        )}
+
+                                        {replyingTo?.id === comment.id &&
+                                            replyErrors.content && (
+                                                <p className="text-sm font-semibold text-[#D11149] sm:ml-[110px]">
+                                                    {replyErrors.content}
+                                                </p>
+                                            )}
                                     </div>
                                 ))
                             ) : (

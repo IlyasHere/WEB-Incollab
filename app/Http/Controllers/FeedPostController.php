@@ -67,9 +67,9 @@ class FeedPostController extends Controller
             ]);
         }
 
-        return redirect()
-            ->route('dashboard')
-            ->with('success', 'Postingan berhasil dibuat.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Postingan berhasil dibuat.']);
+
+        return redirect()->route('dashboard');
     }
 
     public function show(FeedPost $post)
@@ -77,12 +77,13 @@ class FeedPostController extends Controller
         $post->load([
             'user.mahasiswa',
             'images',
-            'komentar.mahasiswa.user',
+            'rootKomentar.mahasiswa.user',
+            'rootKomentar.replies.mahasiswa.user',
         ]);
 
         return Inertia::render('post/detail', [
             'post' => $this->formatPostDetail($post),
-            'comments' => $post->komentar->map(fn (Komentar $comment) => $this->formatComment($comment)),
+            'comments' => $post->rootKomentar->map(fn (Komentar $comment) => $this->formatComment($comment)),
             'currentUser' => $this->formatCurrentUser(),
         ]);
     }
@@ -91,7 +92,19 @@ class FeedPostController extends Controller
     {
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:1000'],
+            'parent_id' => ['nullable', 'integer', 'exists:komentar,komentar_id'],
         ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+
+        if ($parentId) {
+            $parentComment = Komentar::query()
+                ->where('komentar_id', $parentId)
+                ->where('post_id', $post->post_id)
+                ->firstOrFail();
+
+            $parentId = $parentComment->parent_id ?: $parentComment->komentar_id;
+        }
 
         $mahasiswa = $request->user()
             ->mahasiswa()
@@ -100,11 +113,29 @@ class FeedPostController extends Controller
         Komentar::create([
             'mhs_id' => $mahasiswa->mhs_id,
             'post_id' => $post->post_id,
+            'parent_id' => $parentId,
             'isi_komentar' => $validated['content'],
             'tanggal_komentar' => now('Asia/Jakarta'),
         ]);
 
         return back()->with('success', 'Komentar berhasil dikirim.');
+    }
+
+    public function destroy(Request $request, FeedPost $post)
+    {
+        abort_unless($post->user_id === $request->user()->user_id, 403);
+
+        $post->loadMissing('images');
+
+        foreach ($post->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+
+        $post->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Postingan berhasil dihapus.']);
+
+        return redirect()->route('dashboard');
     }
 
     private function formatPostDetail(FeedPost $post): array
@@ -150,6 +181,9 @@ class FeedPostController extends Controller
                 ? $this->formatKomentarTime($comment)
                 : 'Baru saja',
             'likes' => 0,
+            'replies' => $comment->replies
+                ->map(fn (Komentar $reply) => $this->formatComment($reply))
+                ->values(),
         ];
     }
 
