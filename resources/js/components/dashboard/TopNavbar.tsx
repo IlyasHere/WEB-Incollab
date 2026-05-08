@@ -51,7 +51,7 @@ export default function TopNavbar({
                         className="h-12 w-full rounded-full border border-[#EADCF8] bg-[#F7F1FF] pr-4 pl-11 text-sm text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                     />
                 </div>
-
+                
                 <Link
                     href="/pengaturan/notifikasi"
                     className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#EEE4F9] text-[#6610F2] transition hover:bg-[#F7F1FF]"
@@ -59,7 +59,7 @@ export default function TopNavbar({
                 >
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-[#D11149]" />
-                </button>
+                </Link>
 
                 {/* Avatar + Logout Dropdown */}
                 <div className="group relative">
