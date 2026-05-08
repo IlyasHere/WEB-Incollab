@@ -22,7 +22,7 @@ export default function TopNavbar({
 
     return (
         <header className="sticky top-0 z-30 border-b border-[#EFE4F8] bg-white/95 backdrop-blur">
-            <div className="flex h-[72px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex h-[80px] items-center gap-3 px-4 sm:px-6 lg:px-8">
                 <button
                     type="button"
                     onClick={onToggleMenu}
