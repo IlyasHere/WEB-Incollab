@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\PointHistoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -21,5 +22,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
-    Route::inertia('settings/riwayat-poin', 'settings/riwayat-poin')->name('riwayat-poin');
+    Route::get('settings/riwayat-poin', [PointHistoryController::class, 'settings'])->name('riwayat-poin');
 });

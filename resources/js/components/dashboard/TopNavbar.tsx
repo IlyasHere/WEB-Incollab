@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Bell, Menu, Search, X, LogOut } from 'lucide-react';
 
 type TopNavbarProps = {
@@ -47,20 +48,24 @@ export default function TopNavbar({
                     />
                 </div>
 
-                <button
-                    type="button"
+                <Link
+                    href="/pengaturan/notifikasi"
                     className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#EEE4F9] text-[#6610F2] transition hover:bg-[#F7F1FF]"
                     aria-label="Notifikasi"
                 >
                     <Bell className="h-5 w-5" />
                     <span className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-[#D11149]" />
-                </button>
+                </Link>
 
                 {/* Avatar + Logout Dropdown */}
                 <div className="relative group">
-                    <div className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]">
+                    <Link
+                        href="/pengaturan"
+                        className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]"
+                        aria-label="Edit profil"
+                    >
                         {initials}
-                    </div>
+                    </Link>
 
                     <div className="invisible absolute right-0 top-14 w-44 translate-y-2 rounded-2xl border border-[#EEE4F9] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.12)] transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                         <div className="px-3 py-2">
