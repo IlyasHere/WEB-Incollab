@@ -10,15 +10,24 @@ class Komentar extends Model
     use HasFactory;
 
     protected $table = 'komentar';
+
     protected $primaryKey = 'komentar_id';
+
     public $timestamps = false;
 
     protected $fillable = [
         'mhs_id',
-        'event_id',
+        'post_id',
         'isi_komentar',
         'tanggal_komentar',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'tanggal_komentar' => 'datetime',
+        ];
+    }
 
     // Relasi
     public function mahasiswa()
@@ -26,14 +35,17 @@ class Komentar extends Model
         return $this->belongsTo(Mahasiswa::class, 'mhs_id', 'mhs_id');
     }
 
-    public function event()
+    public function post()
     {
-        return $this->belongsTo(Event::class, 'event_id', 'event_id');
+        return $this->belongsTo(FeedPost::class, 'post_id', 'post_id');
     }
 
     // Method dari class diagram
     public function tambahKomentar() {}
+
     public function editKomentar() {}
+
     public function hapusKomentar() {}
+
     public function tampilkanKomentar() {}
 }

@@ -6,7 +6,6 @@ import {
     Gift,
     Handshake,
     Plus,
-    Send,
     Trophy,
 } from 'lucide-react';
 import type { ReactNode } from 'react';

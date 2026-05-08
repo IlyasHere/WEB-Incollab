@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { FileText } from 'lucide-react';
 import type { ReactNode } from 'react';
 import ComposerCard from '@/components/dashboard/ComposerCard';
 import PostCard from '@/components/dashboard/PostCard';
@@ -10,44 +11,6 @@ import type {
 } from '@/components/dashboard/RightSidebar';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import type { Auth } from '@/types/auth';
-
-const posts: FeedPost[] = [
-    {
-        id: 1,
-        user: {
-            name: 'Amanda Rizky',
-            major: 'Sistem Informasi',
-            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
-        },
-        postedAt: '2 jam yang lalu',
-        badge: 'OPEN RECRUITING',
-        badgeColor: 'bg-[#F0E7FF] text-[#6610F2]',
-        title: 'Mencari UI/UX Designer untuk Proyek Aplikasi Kesehatan Mental',
-        description:
-            'Halo teman-teman! Saya dan tim sedang mengembangkan purwarupa aplikasi "MindEase" untuk PKM-KC tahun ini. Kami butuh partner yang nyaman dengan Figma, alur onboarding, dan eksplorasi visual yang ramah pengguna.',
-        hashtags: ['#PKMKC', '#UIUXDesign', '#MentalHealthApp'],
-        likes: 24,
-        comments: 5,
-    },
-    {
-        id: 2,
-        user: {
-            name: 'Bima Satria',
-            major: 'Teknik Informatika',
-            avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-        },
-        postedAt: '5 jam yang lalu',
-        badge: 'INFO LOMBA',
-        badgeColor: 'bg-[#DDEEFF] text-[#1A8FE3]',
-        title: 'Hackathon Nasional 2024 - Buka Tim Baru!',
-        description:
-            'Pendaftaran dibuka minggu depan. Saya butuh 1 backend developer, 1 data analyst, dan 1 UI designer untuk target MVP dalam tiga minggu. Fokus kita produk edukasi dengan dashboard yang siap dipresentasikan.',
-        hashtags: ['#HackathonNasional', '#BackEndDev', '#DataAnalyst'],
-        likes: 89,
-        comments: 12,
-        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
-    },
-];
 
 const topics: TrendingTopic[] = [
     { tag: '#HackathonNasional', posts: '1.2k postingan baru' },
@@ -71,7 +34,30 @@ const partners: CollaborationPartner[] = [
     },
 ];
 
-export default function Dashboard() {
+type DashboardProps = {
+    posts: FeedPost[];
+};
+
+function EmptyFeedState() {
+    return (
+        <section className="flex min-h-[320px] items-center justify-center rounded-[28px] border border-[#EFE4F8] bg-white p-8 text-center shadow-[0_18px_45px_rgba(177,145,221,0.13)]">
+            <div className="max-w-sm">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F0E7FF] text-[#6610F2]">
+                    <FileText className="h-7 w-7" />
+                </div>
+                <h2 className="mt-5 text-xl font-extrabold text-[#1F1730]">
+                    Belum ada postingan
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-[#766B8A]">
+                    Mulai percakapan dengan membagikan ide, proyek, lomba, atau
+                    riset terbarumu. Feed akan menampilkan aktivitas di sini.
+                </p>
+            </div>
+        </section>
+    );
+}
+
+export default function Dashboard({ posts }: DashboardProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
@@ -84,9 +70,13 @@ export default function Dashboard() {
                         <div className="space-y-5 sm:space-y-6">
                             <ComposerCard userName={auth.user.name} />
 
-                            {posts.map((post) => (
-                                <PostCard key={post.id} post={post} />
-                            ))}
+                            {posts.length > 0 ? (
+                                posts.map((post) => (
+                                    <PostCard key={post.id} post={post} />
+                                ))
+                            ) : (
+                                <EmptyFeedState />
+                            )}
                         </div>
                     </section>
 
