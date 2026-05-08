@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { History } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,11 @@ const sidebarNavItems: NavItem[] = [
         title: 'Appearance',
         href: editAppearance(),
         icon: null,
+    },
+    {
+        title: 'Riwayat Poin',
+        href: '/settings/riwayat-poin',
+        icon: History,
     },
 ];
 

@@ -1,7 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
-    Briefcase,
+    CircleDollarSign,
     HelpCircle,
     Home,
     LogOut,
@@ -26,12 +26,12 @@ type SettingsNavItem = {
 };
 
 const settingsItems: SettingsNavItem[] = [
-    { label: 'Edit Profile', href: '/pengaturan', icon: UserRound },
+    { label: 'Edit Profil', href: '/pengaturan', icon: UserRound },
     { label: 'Notifikasi', href: '/pengaturan/notifikasi', icon: Bell },
     {
         label: 'Riwayat Poin',
         href: '/pengaturan/riwayat-poin',
-        icon: Briefcase,
+        icon: CircleDollarSign,
     },
     { label: 'Bantuan', href: '/pengaturan/bantuan', icon: HelpCircle },
 ];
@@ -79,18 +79,22 @@ export default function SettingsPageLayout({
                         />
                     </div>
 
-                    <button
-                        type="button"
+                    <Link
+                        href="/pengaturan/notifikasi"
                         className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#EEE4F9] text-[#6610F2] transition hover:bg-[#F7F1FF]"
                         aria-label="Notifikasi"
                     >
                         <Bell className="h-5 w-5" />
                         <span className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-[#D11149]" />
-                    </button>
+                    </Link>
 
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]">
+                    <Link
+                        href="/pengaturan"
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]"
+                        aria-label="Edit profil"
+                    >
                         {initials}
-                    </div>
+                    </Link>
                 </div>
             </header>
 

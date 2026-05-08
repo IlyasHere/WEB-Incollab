@@ -213,11 +213,11 @@ export default function DetailPost() {
                             </button>
                         </div>
 
-                        <div className="mt-4">
+                        {/* <div className="mt-4">
                             <span className="inline-flex rounded-full bg-[#F0E7FF] px-3 py-1 text-xs font-bold tracking-[0.04em] text-[#6610F2]">
                                 {post.badge}
                             </span>
-                        </div>
+                        </div> */}
 
                         <div className="mt-4 space-y-4">
                             <h3 className="text-[24px] leading-[1.25] font-semibold text-[#221A32] sm:text-[28px]">

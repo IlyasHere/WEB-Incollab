@@ -42,7 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pengaturan', [ProfileSettingController::class, 'edit'])->name('pengaturan');
     Route::put('pengaturan', [ProfileSettingController::class, 'update'])->name('pengaturan.update');
     Route::inertia('pengaturan/notifikasi', 'pengaturan/notifikasi')->name('pengaturan.notifikasi');
-    Route::inertia('pengaturan/riwayat-poin', 'pengaturan/riwayat-poin')->name('pengaturan.riwayat-poin');
+    Route::get('pengaturan/riwayat-poin', [PointHistoryController::class, 'pengaturan'])->name('pengaturan.riwayat-poin');
     Route::inertia('pengaturan/bantuan', 'pengaturan/bantuan')->name('pengaturan.bantuan');
     Route::inertia('post/{post}', 'post/detail')->name('post.detail');
 });
