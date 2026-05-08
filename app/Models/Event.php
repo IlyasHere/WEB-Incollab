@@ -43,11 +43,6 @@ class Event extends Model
         return $this->belongsTo(User::class, 'admin_id', 'user_id');
     }
 
-    public function komentar()
-    {
-        return $this->hasMany(Komentar::class, 'event_id', 'event_id');
-    }
-
     public function klaimPoin()
     {
         return $this->hasMany(KlaimPoin::class, 'event_id', 'event_id');

@@ -350,7 +350,7 @@ export default function Pengaturan({
                             </div>
                         </div>
 
-                        <label className="flex items-center gap-3 rounded-xl border border-[#EFE4F8] p-4 text-sm font-semibold text-[#382A49]">
+                        {/* <label className="flex items-center gap-3 rounded-xl border border-[#EFE4F8] p-4 text-sm font-semibold text-[#382A49]">
                             <input
                                 type="checkbox"
                                 checked={data.tersedia_kolaborasi}
@@ -363,7 +363,7 @@ export default function Pengaturan({
                                 className="h-4 w-4 rounded border-[#D8CDE8] text-[#6610F2]"
                             />
                             Tersedia untuk kolaborasi
-                        </label>
+                        </label> */}
                     </FormSection>
 
                     <FormSection title="Kontak & Tautan">

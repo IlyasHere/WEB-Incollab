@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Sparkles } from 'lucide-react';
 
 export type TrendingTopic = {
@@ -6,10 +7,12 @@ export type TrendingTopic = {
 };
 
 export type CollaborationPartner = {
+    id: number;
     name: string;
     role: string;
     campus: string;
-    avatar: string;
+    avatar?: string | null;
+    profileUrl: string;
 };
 
 type RightSidebarProps = {
@@ -21,6 +24,14 @@ export default function RightSidebar({
     topics,
     partners,
 }: RightSidebarProps) {
+    const getInitials = (name: string) =>
+        name
+            .split(' ')
+            .map((part) => part[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
+
     return (
         <aside className="hidden lg:block lg:w-[300px] lg:shrink-0 xl:w-[320px]">
             <div className="sticky top-[98px] space-y-5">
@@ -63,14 +74,20 @@ export default function RightSidebar({
                     <div className="space-y-4 px-5 py-5">
                         {partners.map((partner) => (
                             <div
-                                key={partner.name}
+                                key={partner.id}
                                 className="flex items-center gap-3"
                             >
-                                <img
-                                    src={partner.avatar}
-                                    alt={partner.name}
-                                    className="h-12 w-12 rounded-full object-cover"
-                                />
+                                {partner.avatar ? (
+                                    <img
+                                        src={partner.avatar}
+                                        alt={partner.name}
+                                        className="h-12 w-12 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1A8FE3,#6610F2)] text-sm font-bold text-white">
+                                        {getInitials(partner.name)}
+                                    </div>
+                                )}
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-bold text-[#241A35]">
                                         {partner.name}
@@ -79,12 +96,12 @@ export default function RightSidebar({
                                         {partner.role} • {partner.campus}
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
+                                <Link
+                                    href={partner.profileUrl}
                                     className="inline-flex h-9 items-center justify-center rounded-full bg-[#F3E8FF] px-4 text-xs font-semibold text-[#6610F2] transition hover:bg-[#EBDDFF]"
                                 >
                                     Lihat
-                                </button>
+                                </Link>
                             </div>
                         ))}
                     </div>

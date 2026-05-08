@@ -51,6 +51,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div className="min-w-0 flex-1">
                     <TopNavbar
                         userName={auth.user.name}
+                        userAvatar={auth.user.avatar}
                         mobileMenuOpen={mobileMenuOpen}
                         onToggleMenu={() => setMobileMenuOpen((open) => !open)}
                         onLogout={() => router.post('/logout')}
