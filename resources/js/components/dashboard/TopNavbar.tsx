@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { Bell, Menu, Search, X, LogOut } from 'lucide-react';
 
 type TopNavbarProps = {
@@ -51,8 +52,8 @@ export default function TopNavbar({
                     />
                 </div>
 
-                <button
-                    type="button"
+                <Link
+                    href="/pengaturan/notifikasi"
                     className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#EEE4F9] text-[#6610F2] transition hover:bg-[#F7F1FF]"
                     aria-label="Notifikasi"
                 >

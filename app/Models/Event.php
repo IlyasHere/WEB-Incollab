@@ -18,12 +18,24 @@ class Event extends Model
         'judul_event',
         'deskripsi_event',
         'tanggal_event',
+        'tanggal_selesai',
         'lokasi',
         'kategori_event',
         'poin_event',
         'link_pendaftaran',
         'status_event',
+        'poster_event',
+        'detail_poster_event',
+        'penyelenggara',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'tanggal_event' => 'date',
+            'tanggal_selesai' => 'date',
+        ];
+    }
 
     // Relasi
     public function admin()

@@ -1,11 +1,18 @@
 import SettingsPageLayout from '@/layouts/SettingsPageLayout';
+import PointHistoryPanel, {
+    type PointHistoryItem,
+} from '@/components/point-history-panel';
 
-export default function PengaturanRiwayatPoin() {
+type PengaturanRiwayatPoinProps = {
+    history?: PointHistoryItem[];
+};
+
+export default function PengaturanRiwayatPoin({
+    history = [],
+}: PengaturanRiwayatPoinProps) {
     return (
-        <SettingsPageLayout title="Riwayat Poin">
-            <p className="text-base font-medium text-[#382A49]">
-                Selamat datang di menu Riwayat Poin
-            </p>
+        <SettingsPageLayout title="Pengaturan">
+            <PointHistoryPanel history={history} />
         </SettingsPageLayout>
     );
 }
