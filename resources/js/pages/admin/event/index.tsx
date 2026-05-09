@@ -1,308 +1,803 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
-    CalendarCheck,
     CalendarDays,
-    ChevronDown,
-    CircleDollarSign,
-    Clock,
-    Eye,
-    GraduationCap,
-    HandHeart,
-    Leaf,
-    MapPin,
     Pencil,
-    Plus,
-    Recycle,
-    Search,
-    Soup,
+    Trash2,
+    ImagePlus,
+    MapPin,
+    Sparkles,
+    Ticket,
+    Trophy,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import {
+    useEffect,
+    useState,
+    type ChangeEvent,
+    type FormEvent,
+    type ReactNode,
+} from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 
-const summaryCards = [
-    {
-        label: 'Total Event',
-        value: '128',
-        icon: CalendarDays,
-        accent: 'bg-[#F0E7FF] text-[#6610F2]',
-    },
-    {
-        label: 'Event Aktif',
-        value: '24',
-        icon: CalendarCheck,
-        accent: 'bg-[#E8F4FF] text-[#1A8FE3]',
-    },
-    {
-        label: 'Event Selesai',
-        value: '92',
-        icon: Clock,
-        accent: 'bg-[#FFF8CC] text-[#E6C229]',
-    },
+type EventItem = {
+    id: number;
+    title: string;
+    description: string | null;
+    date: string | null;
+    end_date: string | null;
+    location: string | null;
+    category: string | null;
+    points: number;
+    registration_url: string | null;
+    status: string | null;
+    poster_url: string | null;
+    detail_poster_url?: string | null;
+    organizer: string | null;
+    admin_name: string | null;
+};
+
+type AdminEventPageProps = {
+    categories: string[];
+    events: EventItem[];
+    stats: {
+        total: number;
+        upcoming: number;
+        published: number;
+    };
+};
+
+type EventFormData = {
+    judul_event: string;
+    deskripsi_event: string;
+    tanggal_event: string;
+    tanggal_selesai: string;
+    lokasi: string;
+    kategori_event: string;
+    poin_event: string;
+    link_pendaftaran: string;
+    status_event: string;
+    poster_event: File | null;
+    detail_poster_event: File | null;
+    penyelenggara: string;
+};
+
+const statusOptions = [
+    'Published',
+    'Coming Soon',
+    'Registration Open',
+    'Registration Closing',
 ];
 
-const events = [
-    {
-        title: 'Pembersihan Pantai Kuta',
-        description: 'Aksi bersih pantai bersama komunitas...',
-        category: 'Lingkungan',
-        date: '24 Okt 2026',
-        location: 'Bali',
-        points: 50,
-        status: 'Aktif',
-        icon: Leaf,
-    },
-    {
-        title: 'Penghijauan Kota Jakarta',
-        description: 'Penanaman 1000 pohon di ruang publik...',
-        category: 'Lingkungan',
-        date: '15 Nov 2026',
-        location: 'Jakarta Pusat',
-        points: 75,
-        status: 'Draft',
-        icon: Leaf,
-    },
-    {
-        title: 'Kelas Mengajar Sukarela',
-        description: 'Mengajar anak-anak panti asuhan...',
-        category: 'Pendidikan',
-        date: '02 Des 2026',
-        location: 'Bandung',
-        points: 100,
-        status: 'Selesai',
-        icon: GraduationCap,
-    },
-    {
-        title: 'Donor Darah Bersama',
-        description: 'Kegiatan sosial donor darah kampus...',
-        category: 'Sosial',
-        date: '10 Des 2026',
-        location: 'Surabaya',
-        points: 60,
-        status: 'Nonaktif',
-        icon: HandHeart,
-    },
-    {
-        title: 'Workshop Daur Ulang',
-        description: 'Pelatihan membuat barang kreatif...',
-        category: 'Lingkungan',
-        date: '20 Des 2026',
-        location: 'Yogyakarta',
-        points: 40,
-        status: 'Aktif',
-        icon: Recycle,
-    },
-    {
-        title: 'Dapur Umum Bencana',
-        description: 'Membantu memasak untuk relawan...',
-        category: 'Sosial',
-        date: '25 Des 2026',
-        location: 'Semarang',
-        points: 80,
-        status: 'Draft',
-        icon: Soup,
-    },
-];
-
-function statusClass(status: string) {
-    switch (status) {
-        case 'Aktif':
-            return 'bg-[#DDEEFF] text-[#1A8FE3]';
-        case 'Draft':
-            return 'bg-[#EEE9F5] text-[#766B8A]';
-        case 'Selesai':
-            return 'bg-[#FFE2E2] text-[#D11149]';
-        case 'Nonaktif':
-            return 'bg-[#E9E4F0] text-[#8B8496]';
-        default:
-            return 'bg-[#F0E7FF] text-[#6610F2]';
+function formatDateRange(startDate: string | null, endDate: string | null) {
+    if (!startDate) {
+        return 'Tanggal menyusul';
     }
+
+    const formatter = new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+
+    if (!endDate || endDate === startDate) {
+        return formatter.format(new Date(startDate));
+    }
+
+    return `${formatter.format(new Date(startDate))} - ${formatter.format(new Date(endDate))}`;
 }
 
-export default function AdminEventIndex() {
+function FieldError({ message }: { message?: string }) {
+    if (!message) {
+        return null;
+    }
+
+    return <p className="mt-2 text-sm font-medium text-[#D11149]">{message}</p>;
+}
+
+function emptyEventForm(firstCategory: string): EventFormData {
+    return {
+        judul_event: '',
+        deskripsi_event: '',
+        tanggal_event: '',
+        tanggal_selesai: '',
+        lokasi: '',
+        kategori_event: firstCategory,
+        poin_event: '0',
+        link_pendaftaran: '',
+        status_event: 'Published',
+        poster_event: null,
+        detail_poster_event: null,
+        penyelenggara: '',
+    };
+}
+
+function UploadPreview({
+    title,
+    description,
+    preview,
+    onChange,
+    error,
+}: {
+    title: string;
+    description: string;
+    preview: string | null;
+    onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    error?: string;
+}) {
+    return (
+        <label className="block">
+            <span className="text-sm font-semibold text-[#433552]">
+                {title}
+            </span>
+            <span className="mt-1 block text-xs leading-6 text-[#7B6F92]">
+                {description}
+            </span>
+
+            <div className="mt-3 overflow-hidden rounded-[24px] border border-dashed border-[#D7C5F4] bg-[#FCFAFF]">
+                <div className="relative h-52 bg-[linear-gradient(135deg,_#EFE7F8_0%,_#F8F3FF_100%)]">
+                    {preview ? (
+                        <img
+                            src={preview}
+                            alt={title}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-[#7A6F8D]">
+                            <ImagePlus className="h-8 w-8 text-[#6610F2]" />
+                            <p className="text-sm font-semibold">
+                                Belum ada gambar dipilih
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="border-t border-[#ECE1F8] p-4">
+                    <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/jpg,image/webp"
+                        onChange={onChange}
+                        className="block w-full text-sm text-[#5E556E] file:mr-4 file:rounded-xl file:border-0 file:bg-[#6610F2] file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-[#5A0BDA]"
+                    />
+                </div>
+            </div>
+
+            <FieldError message={error} />
+        </label>
+    );
+}
+
+export default function AdminEventIndex({
+    categories,
+    events,
+    stats,
+}: AdminEventPageProps) {
+    const defaultCategory = categories[0] ?? 'Kompetisi';
+    const { data, setData, post, processing, errors, reset } =
+        useForm<EventFormData>(emptyEventForm(defaultCategory));
+
+    const [cardPreview, setCardPreview] = useState<string | null>(null);
+    const [detailPreview, setDetailPreview] = useState<string | null>(null);
+    const [editingEventId, setEditingEventId] = useState<number | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (cardPreview) {
+                URL.revokeObjectURL(cardPreview);
+            }
+
+            if (detailPreview) {
+                URL.revokeObjectURL(detailPreview);
+            }
+        };
+    }, [cardPreview, detailPreview]);
+
+    function updatePreview(
+        field: 'poster_event' | 'detail_poster_event',
+        event: ChangeEvent<HTMLInputElement>,
+    ) {
+        const file = event.target.files?.[0] ?? null;
+
+        setData(field, file);
+
+        const nextPreview = file ? URL.createObjectURL(file) : null;
+
+        if (field === 'poster_event') {
+            if (cardPreview) {
+                URL.revokeObjectURL(cardPreview);
+            }
+
+            setCardPreview(nextPreview);
+            return;
+        }
+
+        if (detailPreview) {
+            URL.revokeObjectURL(detailPreview);
+        }
+
+        setDetailPreview(nextPreview);
+    }
+
+    function resetFormState() {
+        reset();
+        setData(emptyEventForm(defaultCategory));
+        setEditingEventId(null);
+
+        if (cardPreview) {
+            URL.revokeObjectURL(cardPreview);
+        }
+
+        if (detailPreview) {
+            URL.revokeObjectURL(detailPreview);
+        }
+
+        setCardPreview(null);
+        setDetailPreview(null);
+    }
+
+    function startEditing(event: EventItem) {
+        setEditingEventId(event.id);
+        setData({
+            judul_event: event.title,
+            deskripsi_event: event.description ?? '',
+            tanggal_event: event.date ?? '',
+            tanggal_selesai: event.end_date ?? '',
+            lokasi: event.location ?? '',
+            kategori_event: event.category ?? defaultCategory,
+            poin_event: String(event.points ?? 0),
+            link_pendaftaran: event.registration_url ?? '',
+            status_event: event.status ?? 'Published',
+            poster_event: null,
+            detail_poster_event: null,
+            penyelenggara: event.organizer ?? '',
+        });
+
+        if (cardPreview && cardPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(cardPreview);
+        }
+
+        if (detailPreview && detailPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(detailPreview);
+        }
+
+        setCardPreview(event.poster_url ?? null);
+        setDetailPreview(event.detail_poster_url ?? null);
+    }
+
+    function submit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        post(
+            editingEventId
+                ? `/admin/event/${editingEventId}/update`
+                : '/admin/event',
+            {
+                preserveScroll: true,
+                forceFormData: true,
+                onSuccess: () => {
+                    resetFormState();
+                },
+            },
+        );
+    }
+
+    function deleteEvent(eventId: number) {
+        if (!window.confirm('Hapus card event ini?')) {
+            return;
+        }
+
+        router.delete(`/admin/event/${eventId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (editingEventId === eventId) {
+                    resetFormState();
+                }
+            },
+        });
+    }
+
     return (
         <>
             <Head title="Kelola Event" />
 
-            <div className="space-y-6">
-                <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                        <h1 className="text-3xl font-extrabold tracking-[-0.01em] text-[#1F1730]">
-                            Kelola Event
-                        </h1>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5F5573] sm:text-base">
-                            Buat, kelola, dan publikasikan event untuk komunitas
-                            InCollab.
-                        </p>
-                    </div>
+            <div className="space-y-8">
+                <section className="rounded-[30px] bg-[linear-gradient(135deg,_#FFFFFF_0%,_#F7F1FF_100%)] p-6 shadow-[0_22px_50px_rgba(56,42,73,0.08)] ring-1 ring-[#EFE4F8] sm:p-8">
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-3xl">
+                            <p className="text-sm font-bold tracking-[0.18em] text-[#6610F2] uppercase">
+                                Admin Event Panel
+                            </p>
+                            <h1 className="mt-3 text-3xl font-bold text-[#1F1730] sm:text-4xl">
+                                Kelola kartu event dari sini
+                            </h1>
+                            <p className="mt-3 text-base leading-8 text-[#766B8A]">
+                                Sekarang admin mengunggah 2 gambar manual: satu
+                                untuk card event dan satu lagi untuk halaman
+                                detail event.
+                            </p>
+                        </div>
 
-                    <Link
-                        href="/admin/event/create"
-                        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_16px_30px_rgba(102,16,242,0.24)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#550DCC] hover:shadow-[0_20px_36px_rgba(102,16,242,0.30)]"
-                    >
-                        <Plus className="h-5 w-5" />
-                        Tambah Event
-                    </Link>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl border border-[#EFE4F8] bg-white px-5 py-4">
+                                <p className="text-sm text-[#7B6F92]">
+                                    Total event
+                                </p>
+                                <p className="mt-2 text-3xl font-bold text-[#1F1730]">
+                                    {stats.total}
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-[#EFE4F8] bg-white px-5 py-4">
+                                <p className="text-sm text-[#7B6F92]">
+                                    Upcoming
+                                </p>
+                                <p className="mt-2 text-3xl font-bold text-[#1F1730]">
+                                    {stats.upcoming}
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-[#EFE4F8] bg-white px-5 py-4">
+                                <p className="text-sm text-[#7B6F92]">
+                                    Published
+                                </p>
+                                <p className="mt-2 text-3xl font-bold text-[#1F1730]">
+                                    {stats.published}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
-                <section className="grid gap-5 md:grid-cols-3">
-                    {summaryCards.map(
-                        ({ label, value, icon: Icon, accent }) => (
-                            <div
-                                key={label}
-                                className="flex items-center gap-4 rounded-2xl border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)] transition-all duration-300 hover:-translate-y-1 hover:border-[#6610F2]/30 hover:shadow-lg"
-                            >
-                                <span
-                                    className={`flex h-12 w-12 items-center justify-center rounded-lg ${accent}`}
-                                >
-                                    <Icon className="h-6 w-6" />
-                                </span>
-                                <div>
-                                    <p className="text-sm font-semibold text-[#766B8A]">
-                                        {label}
-                                    </p>
-                                    <p className="mt-1 text-3xl font-extrabold text-[#1F1730]">
-                                        {value}
-                                    </p>
+                <div className="grid gap-8 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+                    <section className="rounded-[30px] border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)] sm:p-8">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F3EAFF] text-[#6610F2]">
+                                <Sparkles className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-[#1F1730]">
+                                    {editingEventId
+                                        ? 'Edit Event'
+                                        : 'Tambah Event Baru'}
+                                </h2>
+                                <p className="text-sm text-[#766B8A]">
+                                    {editingEventId
+                                        ? 'Perbarui data card yang dipilih, lalu simpan perubahan.'
+                                        : 'Isi data event dan unggah gambar card plus gambar detail.'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <form className="mt-8 space-y-6" onSubmit={submit}>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Judul Event
+                                    </span>
+                                    <input
+                                        type="text"
+                                        value={data.judul_event}
+                                        onChange={(event) =>
+                                            setData(
+                                                'judul_event',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                        placeholder="Contoh: National Data Science Olympiad 2026"
+                                    />
+                                    <FieldError message={errors.judul_event} />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Penyelenggara
+                                    </span>
+                                    <input
+                                        type="text"
+                                        value={data.penyelenggara}
+                                        onChange={(event) =>
+                                            setData(
+                                                'penyelenggara',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                        placeholder="Contoh: BEM FASILKOM UI"
+                                    />
+                                    <FieldError
+                                        message={errors.penyelenggara}
+                                    />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Kategori
+                                    </span>
+                                    <select
+                                        value={data.kategori_event}
+                                        onChange={(event) =>
+                                            setData(
+                                                'kategori_event',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                    >
+                                        {categories.map((category) => (
+                                            <option
+                                                key={category}
+                                                value={category}
+                                            >
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <FieldError
+                                        message={errors.kategori_event}
+                                    />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Status
+                                    </span>
+                                    <select
+                                        value={data.status_event}
+                                        onChange={(event) =>
+                                            setData(
+                                                'status_event',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                    >
+                                        {statusOptions.map((status) => (
+                                            <option key={status} value={status}>
+                                                {status}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <FieldError message={errors.status_event} />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Tanggal Mulai
+                                    </span>
+                                    <input
+                                        type="date"
+                                        value={data.tanggal_event}
+                                        onChange={(event) =>
+                                            setData(
+                                                'tanggal_event',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                    />
+                                    <FieldError
+                                        message={errors.tanggal_event}
+                                    />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Tanggal Selesai
+                                    </span>
+                                    <input
+                                        type="date"
+                                        value={data.tanggal_selesai}
+                                        onChange={(event) =>
+                                            setData(
+                                                'tanggal_selesai',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                    />
+                                    <FieldError
+                                        message={errors.tanggal_selesai}
+                                    />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Lokasi
+                                    </span>
+                                    <div className="relative mt-2">
+                                        <MapPin className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#8A77A8]" />
+                                        <input
+                                            type="text"
+                                            value={data.lokasi}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'lokasi',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] py-3 pr-4 pl-11 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                            placeholder="Contoh: Balairung UI, Depok"
+                                        />
+                                    </div>
+                                    <FieldError message={errors.lokasi} />
+                                </label>
+
+                                <label className="block">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Poin Event
+                                    </span>
+                                    <div className="relative mt-2">
+                                        <Trophy className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#8A77A8]" />
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={data.poin_event}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'poin_event',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] py-3 pr-4 pl-11 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                    <FieldError message={errors.poin_event} />
+                                </label>
+
+                                <label className="block md:col-span-2">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Link Pendaftaran
+                                    </span>
+                                    <div className="relative mt-2">
+                                        <Ticket className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#8A77A8]" />
+                                        <input
+                                            type="url"
+                                            value={data.link_pendaftaran}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'link_pendaftaran',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] py-3 pr-4 pl-11 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+                                    <FieldError
+                                        message={errors.link_pendaftaran}
+                                    />
+                                </label>
+
+                                <label className="block md:col-span-2">
+                                    <span className="text-sm font-semibold text-[#433552]">
+                                        Deskripsi Event
+                                    </span>
+                                    <textarea
+                                        value={data.deskripsi_event}
+                                        onChange={(event) =>
+                                            setData(
+                                                'deskripsi_event',
+                                                event.target.value,
+                                            )
+                                        }
+                                        rows={5}
+                                        className="mt-2 w-full rounded-2xl border border-[#E7DAF7] bg-[#FCFAFF] px-4 py-3 text-sm transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#EDE2FF]"
+                                        placeholder="Masukkan ringkasan event yang akan tampil pada card publik."
+                                    />
+                                    <FieldError
+                                        message={errors.deskripsi_event}
+                                    />
+                                </label>
+
+                                <div className="grid gap-6 md:col-span-2 xl:grid-cols-2">
+                                    <UploadPreview
+                                        title="Gambar Card Event"
+                                        description="Gambar ini dipakai di daftar event."
+                                        preview={cardPreview}
+                                        onChange={(event) =>
+                                            updatePreview('poster_event', event)
+                                        }
+                                        error={errors.poster_event}
+                                    />
+
+                                    <UploadPreview
+                                        title="Gambar Detail Event"
+                                        description="Gambar ini dipakai saat tombol Lihat Detail dibuka."
+                                        preview={detailPreview}
+                                        onChange={(event) =>
+                                            updatePreview(
+                                                'detail_poster_event',
+                                                event,
+                                            )
+                                        }
+                                        error={errors.detail_poster_event}
+                                    />
                                 </div>
                             </div>
-                        ),
-                    )}
-                </section>
 
-                <section className="flex flex-col gap-4 xl:flex-row xl:items-center">
-                    <label className="relative block min-w-0 flex-1">
-                        <Search className="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#64748B]" />
-                        <input
-                            type="text"
-                            placeholder="Cari event..."
-                            className="h-12 w-full rounded-full border border-[#EFE4F8] bg-white pr-4 pl-12 text-sm font-medium text-[#382A49] shadow-[0_14px_30px_rgba(56,42,73,0.05)] transition outline-none focus:border-[#6610F2]/40 focus:ring-4 focus:ring-[#6610F2]/10"
-                        />
-                    </label>
+                            <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-[#FBF8FF] p-5">
+                                <div className="flex items-center gap-3 text-sm text-[#6F6483]">
+                                    <CalendarDays className="h-5 w-5 text-[#6610F2]" />
+                                    <span>
+                                        Event yang disimpan di sini langsung
+                                        muncul di halaman publik `/event`.
+                                    </span>
+                                </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        {['Semua Kategori', 'Semua Status'].map((label) => (
-                            <button
-                                key={label}
-                                type="button"
-                                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#EFE4F8] bg-white px-5 text-sm font-semibold text-[#382A49] shadow-[0_14px_30px_rgba(56,42,73,0.05)] transition hover:border-[#6610F2]/30 hover:bg-[#F7F1FF]"
-                            >
-                                {label}
-                                <ChevronDown className="h-4 w-4 text-[#64748B]" />
-                            </button>
-                        ))}
-                        <button
-                            type="button"
-                            className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#EFE4F8] bg-white px-5 text-sm font-semibold text-[#382A49] shadow-[0_14px_30px_rgba(56,42,73,0.05)] transition hover:border-[#6610F2]/30 hover:bg-[#F7F1FF]"
-                        >
-                            <CalendarDays className="h-4 w-4 text-[#1F1730]" />
-                            Pilih Tanggal
-                        </button>
-                    </div>
-                </section>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="inline-flex items-center justify-center rounded-2xl bg-[#6610F2] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(102,16,242,0.22)] transition hover:bg-[#5A0BDA] disabled:cursor-not-allowed disabled:opacity-70"
+                                >
+                                    {processing
+                                        ? 'Menyimpan...'
+                                        : editingEventId
+                                          ? 'Update Event'
+                                          : 'Simpan Event'}
+                                </button>
 
-                <section className="overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white shadow-[0_18px_45px_rgba(56,42,73,0.06)]">
-                    <div className="overflow-x-auto">
-                        <div className="grid min-w-[1040px] grid-cols-[minmax(280px,1.6fr)_130px_130px_120px_90px_120px_100px] bg-[#F0E7FF] px-6 py-4 text-xs font-extrabold tracking-wide text-[#4F465F] uppercase">
-                            <span>Event</span>
-                            <span>Kategori</span>
-                            <span>Tanggal</span>
-                            <span>Lokasi</span>
-                            <span>Poin</span>
-                            <span>Status</span>
-                            <span className="text-right">Action</span>
+                                {editingEventId ? (
+                                    <button
+                                        type="button"
+                                        onClick={resetFormState}
+                                        className="inline-flex items-center justify-center rounded-2xl border border-[#D8C6F4] px-6 py-3 text-sm font-semibold text-[#6A5486] transition hover:bg-white"
+                                    >
+                                        Batal Edit
+                                    </button>
+                                ) : null}
+                            </div>
+                        </form>
+                    </section>
+
+                    <section className="rounded-[30px] border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)] sm:p-8">
+                        <div className="flex items-center justify-between gap-4">
+                            <div>
+                                <p className="text-sm font-bold tracking-[0.14em] text-[#6610F2] uppercase">
+                                    Preview
+                                </p>
+                                <h2 className="mt-2 text-2xl font-bold text-[#1F1730]">
+                                    Event yang sudah dibuat
+                                </h2>
+                            </div>
+                            <span className="rounded-full bg-[#F3EAFF] px-4 py-2 text-sm font-semibold text-[#6610F2]">
+                                {events.length} card
+                            </span>
                         </div>
 
-                        <div className="divide-y divide-[#EFE4F8]">
-                            {events.map((event) => {
-                                const Icon = event.icon;
-
-                                return (
-                                    <div
-                                        key={event.title}
-                                        className="grid min-w-[1040px] grid-cols-[minmax(280px,1.6fr)_130px_130px_120px_90px_120px_100px] items-center px-6 py-4 transition hover:bg-[#FBF7FF]"
+                        <div className="mt-6 space-y-4">
+                            {events.length > 0 ? (
+                                events.map((event) => (
+                                    <article
+                                        key={event.id}
+                                        className="overflow-hidden rounded-[24px] border border-[#EFE4F8] bg-[#FCFAFF]"
                                     >
-                                        <div className="flex min-w-0 items-center gap-4">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#F0E7FF] text-[#766B8A]">
-                                                <Icon className="h-5 w-5" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="truncate text-base font-extrabold text-[#1F1730]">
-                                                    {event.title}
-                                                </p>
-                                                <p className="mt-1 truncate text-xs font-semibold text-[#6F657F]">
-                                                    {event.description}
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <div className="relative h-40 overflow-hidden bg-[linear-gradient(135deg,_#221A32_0%,_#46366D_100%)]">
+                                            {event.poster_url ? (
+                                                <img
+                                                    src={event.poster_url}
+                                                    alt={event.title}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full items-end p-5 text-white">
+                                                    <h3 className="max-w-[220px] text-xl leading-tight font-bold">
+                                                        {event.title}
+                                                    </h3>
+                                                </div>
+                                            )}
 
-                                        <p className="text-sm font-medium text-[#5F5573]">
-                                            {event.category}
-                                        </p>
-                                        <p className="text-sm font-medium text-[#5F5573]">
-                                            {event.date}
-                                        </p>
-                                        <p className="inline-flex items-center gap-1.5 text-sm font-medium text-[#5F5573]">
-                                            <MapPin className="h-4 w-4 text-[#8B8496]" />
-                                            {event.location}
-                                        </p>
-                                        <p className="inline-flex items-center gap-1.5 text-sm font-bold text-[#E6A600]">
-                                            <CircleDollarSign className="h-4 w-4" />
-                                            {event.points}
-                                        </p>
-                                        <div>
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase ${statusClass(
-                                                    event.status,
-                                                )}`}
-                                            >
-                                                {event.status}
+                                            <span className="absolute top-4 right-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-[#6610F2]">
+                                                {event.category ?? 'Event'}
                                             </span>
                                         </div>
-                                        <div className="flex justify-end gap-4 text-[#4F465F]">
-                                            <button
-                                                type="button"
-                                                aria-label={`Lihat ${event.title}`}
-                                                className="transition hover:text-[#6610F2]"
-                                            >
-                                                <Eye className="h-5 w-5" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                aria-label={`Edit ${event.title}`}
-                                                className="transition hover:text-[#6610F2]"
-                                            >
-                                                <Pencil className="h-5 w-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
 
-                    <div className="flex flex-col gap-4 border-t border-[#EFE4F8] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-sm font-medium text-[#766B8A]">
-                            Menampilkan 1-6 dari 24 event
-                        </p>
-                        <div className="flex items-center gap-2">
-                            {['Prev', '1', '2', '3', '...', 'Next'].map(
-                                (item) => (
-                                    <button
-                                        key={item}
-                                        type="button"
-                                        className={`h-9 rounded-lg border px-3 text-sm font-semibold transition ${
-                                            item === '1'
-                                                ? 'border-[#6610F2] bg-[#6610F2] text-white'
-                                                : 'border-[#D8CDE8] bg-white text-[#766B8A] hover:border-[#6610F2]/40 hover:bg-[#F7F1FF]'
-                                        }`}
-                                    >
-                                        {item}
-                                    </button>
-                                ),
+                                        <div className="space-y-3 p-5">
+                                            <div>
+                                                <h3 className="text-xl font-bold text-[#1F1730]">
+                                                    {event.title}
+                                                </h3>
+                                                <p className="mt-1 text-sm text-[#6F6483]">
+                                                    {event.organizer ??
+                                                        'Penyelenggara'}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        startEditing(event)
+                                                    }
+                                                    className="inline-flex items-center gap-2 rounded-2xl border border-[#D9C7F5] px-4 py-2 text-xs font-semibold text-[#6610F2] transition hover:bg-white"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        deleteEvent(event.id)
+                                                    }
+                                                    className="inline-flex items-center gap-2 rounded-2xl border border-[#FFD1DA] px-4 py-2 text-xs font-semibold text-[#D11149] transition hover:bg-[#FFF4F7]"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    Hapus
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-2 text-sm text-[#635875]">
+                                                <div className="flex items-center gap-2">
+                                                    <CalendarDays className="h-4 w-4 text-[#6610F2]" />
+                                                    <span>
+                                                        {formatDateRange(
+                                                            event.date,
+                                                            event.end_date,
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <MapPin className="h-4 w-4 text-[#6610F2]" />
+                                                    <span>
+                                                        {event.location ??
+                                                            'Lokasi menyusul'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <div className="overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white">
+                                                    <div className="border-b border-[#EFE4F8] px-3 py-2 text-xs font-bold tracking-[0.14em] text-[#7A6F8D] uppercase">
+                                                        Gambar Card
+                                                    </div>
+                                                    <div className="h-24 bg-[#F5F0FF]">
+                                                        {event.poster_url ? (
+                                                            <img
+                                                                src={
+                                                                    event.poster_url
+                                                                }
+                                                                alt={`${event.title} card`}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+
+                                                <div className="overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white">
+                                                    <div className="border-b border-[#EFE4F8] px-3 py-2 text-xs font-bold tracking-[0.14em] text-[#7A6F8D] uppercase">
+                                                        Gambar Detail
+                                                    </div>
+                                                    <div className="h-24 bg-[#F5F0FF]">
+                                                        {event.detail_poster_url ? (
+                                                            <img
+                                                                src={
+                                                                    event.detail_poster_url
+                                                                }
+                                                                alt={`${event.title} detail`}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="rounded-full bg-[#EFE7FF] px-3 py-1 text-xs font-semibold text-[#6610F2]">
+                                                    {event.points} poin
+                                                </span>
+                                                <span className="rounded-full bg-[#F7F1FF] px-3 py-1 text-xs font-semibold text-[#6B547D]">
+                                                    {event.status ?? 'Draft'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </article>
+                                ))
+                            ) : (
+                                <div className="rounded-[24px] border border-dashed border-[#DCCBFA] bg-[#FCFAFF] p-6 text-center text-sm leading-7 text-[#726887]">
+                                    Belum ada card event. Tambahkan event
+                                    pertama dari form di sebelah kiri.
+                                </div>
                             )}
                         </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
             </div>
         </>
     );

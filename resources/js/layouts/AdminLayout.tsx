@@ -1,7 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import {
-    CalendarDays,
+    // CalendarDays,
     Coins,
     Gift,
     Grid2X2,
