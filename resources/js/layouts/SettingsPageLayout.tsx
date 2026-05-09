@@ -27,7 +27,6 @@ type SettingsNavItem = {
 
 const settingsItems: SettingsNavItem[] = [
     { label: 'Edit Profil', href: '/pengaturan', icon: UserRound },
-    { label: 'Notifikasi', href: '/pengaturan/notifikasi', icon: Bell },
     {
         label: 'Riwayat Poin',
         href: '/pengaturan/riwayat-poin',

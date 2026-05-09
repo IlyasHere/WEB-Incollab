@@ -1,6 +1,14 @@
 import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
-import { Bookmark, Compass, Coins, Home, Settings, Trophy } from 'lucide-react';
+import {
+    Bell,
+    Bookmark,
+    Compass,
+    Coins,
+    Home,
+    Settings,
+    Trophy,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import AppSidebar from '@/components/dashboard/AppSidebar';
@@ -20,6 +28,7 @@ const primaryNavItems: DashboardNavItem[] = [
     { label: 'Event', href: '/event', icon: Trophy },
     { label: 'Tukar Poin', href: '/tukar-poin', icon: Coins },
     { label: 'Tersimpan', href: '/tersimpan', icon: Bookmark },
+    { label: 'Notifikasi', href: '/pengaturan/notifikasi', icon: Bell },
 ];
 
 const settingsNavItem: DashboardNavItem = {
