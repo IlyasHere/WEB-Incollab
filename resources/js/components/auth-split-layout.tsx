@@ -20,13 +20,11 @@ export default function AuthSplitLayout({
             <div className="grid min-h-[96vh] w-full grid-cols-1 bg-[#f4f4f4] lg:grid-cols-[1fr_1fr]">
                 <section className="relative hidden overflow-hidden rounded-[10px] bg-gradient-to-br from-[#eeeaf0] via-[#ded8e1] to-[#d5cfd8] p-8 lg:flex lg:flex-col">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70 shadow-sm">
-                            <img
-                                src="/images/incollab-logo.png"
-                                alt=""
-                                className="h-6 w-7 object-contain"
-                            />
-                        </div>
+                        <img
+                            src="/images/logo.svg"
+                            alt=""
+                            className="h-8 w-9 object-contain"
+                        />
                         <span className="text-[15px] font-bold text-[#2f2f2f]">
                             InCollab
                         </span>
@@ -52,7 +50,7 @@ export default function AuthSplitLayout({
                     <div className="w-full max-w-[444px]">
                         <div className="mb-6">
                             <img
-                                src="/images/incollab-logo.png"
+                                src="/images/logo.svg"
                                 alt="InCollab"
                                 className="mb-4 h-12 w-14 object-contain"
                             />
