@@ -428,6 +428,7 @@ export default function Pengaturan({
                                 )}
                             </div>
                         </div>
+
                     </FormSection>
 
                     <FormSection title="Kontak & Tautan">
@@ -455,6 +456,7 @@ export default function Pengaturan({
                                 disabled={!isEditing || processing}
                                 onChange={(value) => setData('github', value)}
                             />
+                         
                         </div>
 
                         <InputField

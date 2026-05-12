@@ -6,6 +6,7 @@ import {
     Gift,
     Handshake,
     Plus,
+    Send,
     Trophy,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -46,7 +47,7 @@ const quickActions = [
         icon: Plus,
         variant: 'primary',
     },
-    // { label: 'Kirim Reminder', href: '/admin/reminder', icon: Send },
+    { label: 'Kirim Reminder', href: '/admin/reminder', icon: Send },
     { label: 'Tambah Reward', href: '/admin/reward', icon: Plus },
     // { label: 'Kelola Poin', href: '/admin/poin', icon: Coins },
     { label: 'Pengaduan', href: '/admin/pengaduan', icon: ClipboardList },

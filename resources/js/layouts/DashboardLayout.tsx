@@ -24,7 +24,7 @@ type DashboardLayoutProps = {
 
 const primaryNavItems: DashboardNavItem[] = [
     { label: 'Beranda', href: '/dashboard', icon: Home },
-    { label: 'Eksplorasi', href: '/eksplorasi', icon: Compass },
+    // { label: 'Eksplorasi', href: '/eksplorasi', icon: Compass },
     { label: 'Event', href: '/event', icon: Trophy },
     { label: 'Tukar Poin', href: '/tukar-poin', icon: Coins },
     { label: 'Tersimpan', href: '/tersimpan', icon: Bookmark },
