@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\KlaimPoin;
 use App\Models\PenukaranPoin;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -58,9 +60,10 @@ class PointHistoryController extends Controller
                     'title' => $event?->judul_event
                         ? "Klaim Poin {$event->judul_event}"
                         : 'Klaim Poin Event',
-                    'date' => $this->formatDate($date),
+                    'date' => $this->formatDateTime($date),
                     'points' => $points,
                     'category' => 'Dari Event',
+                    'status' => $claim->status_klaim,
                     'source' => $claim->status_klaim
                         ? "Status: {$claim->status_klaim}"
                         : null,
@@ -76,9 +79,10 @@ class PointHistoryController extends Controller
             ->where('mhs_id', $mahasiswaId)
             ->get()
             ->map(function (PenukaranPoin $redemption): array {
-                $date = $redemption->tanggal_penukaran ?? $redemption->created_at;
+                $date = $redemption->created_at ?? $redemption->tanggal_penukaran;
                 $reward = $redemption->reward;
                 $points = (int) ($redemption->jumlah_poin ?? $reward?->poin_dibutuhkan ?? 0);
+                $status = $redemption->status_penukaran ?? 'Berhasil';
 
                 return [
                     'id' => "redemption-{$redemption->penukaran_id}",
@@ -86,20 +90,37 @@ class PointHistoryController extends Controller
                     'title' => $reward?->nama_reward
                         ? "Redeem {$reward->nama_reward}"
                         : 'Redeem Reward',
-                    'date' => $this->formatDate($date),
+                    'date' => $this->formatDateTime($date),
                     'points' => -abs($points),
                     'category' => 'Penukaran Reward',
-                    'source' => $redemption->status_penukaran
-                        ? "Status: {$redemption->status_penukaran}"
-                        : null,
+                    'rewardCategory' => $reward?->kategori_reward ?? 'voucher',
+                    'status' => $status,
+                    'redemptionCode' => $redemption->kode_penukaran,
+                    'redemptionGuide' => $this->redemptionGuide($reward?->kategori_reward),
                     'sort_date' => $this->sortDate($date),
                 ];
             });
     }
 
-    private function formatDate(mixed $date): string
+    private function formatDateTime(mixed $date): string
     {
-        return $date ? date('Y-m-d', strtotime((string) $date)) : '';
+        if (! $date) {
+            return '';
+        }
+
+        $datetime = $date instanceof CarbonInterface
+            ? $date->copy()
+            : Carbon::parse((string) $date, config('app.timezone'));
+
+        return $datetime->timezone('Asia/Jakarta')->toIso8601String();
+    }
+
+    private function redemptionGuide(?string $category): string
+    {
+        return match ($category) {
+            'merch' => 'Tunjukkan kode ini ke admin/panitia untuk verifikasi pengambilan merchandise.',
+            default => 'Gunakan kode ini sesuai instruksi voucher. Jangan bagikan kode ke orang lain.',
+        };
     }
 
     private function sortDate(mixed $date): int

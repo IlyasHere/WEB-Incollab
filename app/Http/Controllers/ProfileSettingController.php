@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\University;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +20,6 @@ class ProfileSettingController extends Controller
         $user = $request->user();
 
         $mahasiswa = $user->mahasiswa()->firstOrCreate([], [
-            'tersedia_kolaborasi' => true,
             'total_poin' => 0,
         ]);
 
@@ -27,6 +28,9 @@ class ProfileSettingController extends Controller
         return Inertia::render('pengaturan', [
             'profileUser' => $user,
             'mahasiswa' => $mahasiswa,
+            'universities' => University::query()
+                ->orderBy('name')
+                ->get(['name', 'lldikti_region']),
         ]);
     }
 
@@ -37,8 +41,7 @@ class ProfileSettingController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['nullable', 'string', 'max:50'],
-            'universitas' => ['nullable', 'string', 'max:100'],
+            'universitas' => ['nullable', 'string', 'max:255', Rule::exists('universities', 'name')],
             'jurusan' => ['nullable', 'string', 'max:100'],
             'angkatan' => ['nullable', 'string', 'max:10'],
             'semester' => ['nullable', 'integer', 'min:1', 'max:14'],
@@ -50,9 +53,7 @@ class ProfileSettingController extends Controller
             'instagram' => ['nullable', 'string', 'max:255'],
             'linkedin' => ['nullable', 'string', 'max:255'],
             'github' => ['nullable', 'string', 'max:255'],
-            'behance' => ['nullable', 'string', 'max:255'],
             'portfolio' => ['nullable', 'string', 'max:255'],
-            'tersedia_kolaborasi' => ['boolean'],
             'foto' => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -63,7 +64,6 @@ class ProfileSettingController extends Controller
         ]);
 
         $mahasiswa = $user->mahasiswa()->firstOrCreate([], [
-            'tersedia_kolaborasi' => true,
             'total_poin' => 0,
         ]);
 
@@ -78,9 +78,7 @@ class ProfileSettingController extends Controller
             'instagram' => $validated['instagram'] ?? null,
             'linkedin' => $validated['linkedin'] ?? null,
             'github' => $validated['github'] ?? null,
-            'behance' => $validated['behance'] ?? null,
             'portfolio' => $validated['portfolio'] ?? null,
-            'tersedia_kolaborasi' => $request->boolean('tersedia_kolaborasi'),
         ];
 
         if ($request->hasFile('foto')) {

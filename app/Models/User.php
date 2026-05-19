@@ -25,6 +25,7 @@ class User extends Authenticatable
         'role',
         'google_id',
         'avatar',
+        'onboarding_completed_at',
     ];
 
     protected $hidden = [
@@ -36,6 +37,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'onboarding_completed_at' => 'datetime',
         ];
     }
 

@@ -1,7 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import {
-    // CalendarDays,
+    CalendarDays,
     Coins,
     Gift,
     Grid2X2,
@@ -29,23 +29,16 @@ type AdminNavItem = {
 const navItems: AdminNavItem[] = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: Grid2X2 },
     { label: 'Event', href: '/admin/event', icon: Trophy },
-    // { label: 'Reminder', href: '/admin/reminder', icon: CalendarDays },
+    { label: 'Reminder', href: '/admin/reminder', icon: CalendarDays },
     { label: 'Pengaduan', href: '/admin/pengaduan', icon: Megaphone },
     { label: 'Reward', href: '/admin/reward', icon: Gift },
     { label: 'Poin', href: '/admin/poin', icon: Coins },
     { label: 'Pengaturan', href: '/admin/pengaturan', icon: Settings },
 ];
 
-function getCurrentPath() {
-    if (typeof window === 'undefined') {
-        return '';
-    }
-
-    return window.location.pathname;
-}
-
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-    const currentPath = getCurrentPath();
+    const { url } = usePage();
+    const currentPath = url.split('?')[0];
 
     return (
         <>
@@ -72,7 +65,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
             <nav className="flex-1 space-y-2 px-3 py-7">
                 {navItems.map(({ label, href, icon: Icon }) => {
-                    const active = currentPath === href;
+                    const active =
+                        currentPath === href ||
+                        (href !== '/admin/dashboard' &&
+                            currentPath.startsWith(`${href}/`));
 
                     return (
                         <Link

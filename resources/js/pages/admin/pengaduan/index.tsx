@@ -1,22 +1,83 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
+import { PengaduanFilters } from './components/PengaduanFilters';
+import { PengaduanSummaryGrid } from './components/PengaduanSummaryGrid';
+import { PengaduanTable } from './components/PengaduanTable';
+import type { AdminPengaduanIndexProps, Filters } from './types';
+import { cleanFilters } from './utils';
 
-export default function AdminPengaduanIndex() {
+export default function AdminPengaduanIndex({
+    reports,
+    summary,
+    filters,
+    categories,
+    statuses,
+}: AdminPengaduanIndexProps) {
+    const [search, setSearch] = useState(filters.search);
+    const [isFiltering, setIsFiltering] = useState(false);
+
+    const visitWithFilters = useCallback((nextFilters: Filters) => {
+        router.get('/admin/pengaduan', cleanFilters(nextFilters), {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            only: ['reports', 'filters'],
+            onStart: () => setIsFiltering(true),
+            onFinish: () => setIsFiltering(false),
+        });
+    }, []);
+
+    useEffect(() => {
+        if (search === filters.search) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            visitWithFilters({
+                ...filters,
+                search,
+            });
+        }, 450);
+
+        return () => window.clearTimeout(timeout);
+    }, [search, filters, visitWithFilters]);
+
     return (
         <>
             <Head title="Pengaduan" />
-            <section className="rounded-2xl border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)]">
-                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6610F2]">
-                    Pengaduan
-                </p>
-                <h1 className="mt-3 text-2xl font-bold text-[#1F1730]">
-                    Pengaduan
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#766B8A]">
-                    Halaman awal untuk memantau laporan dan keluhan mahasiswa.
-                </p>
-            </section>
+
+            <div className="space-y-6">
+                <div>
+                    <header>
+                        <h1 className="text-3xl font-extrabold text-[#1F1730]">
+                            Pengaduan
+                        </h1>
+                        <p className="mt-3 max-w-3xl text-sm leading-6 text-[#766B8A] sm:text-base">
+                            Kelola laporan pengguna terkait event, postingan,
+                            komentar, atau aktivitas mencurigakan.
+                        </p>
+                    </header>
+                </div>
+
+                <PengaduanSummaryGrid summary={summary} />
+
+                <PengaduanFilters
+                    search={search}
+                    filters={filters}
+                    categories={categories}
+                    statuses={statuses}
+                    onSearchChange={setSearch}
+                    onFilterChange={visitWithFilters}
+                />
+
+                <PengaduanTable
+                    reports={reports}
+                    filters={filters}
+                    isFiltering={isFiltering}
+                />
+            </div>
         </>
     );
 }

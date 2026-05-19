@@ -139,7 +139,7 @@ export default function DetailPost({
     const startReply = (comment: Comment, recipient = comment) => {
         setReplyingTo(comment);
         setReplyRecipientName(recipient.user.name);
-        setReplyData('parent_id', comment.id);
+        setReplyData('parent_id', recipient.id);
     };
 
     const cancelReply = () => {

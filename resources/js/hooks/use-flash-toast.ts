@@ -17,14 +17,16 @@ export function useFlashToast(): void {
             return;
         }
 
-        const toastKey = `${data.type}:${data.message}`;
+        const toastKey = `${data.type}:${data.message}:${data.description ?? ''}`;
 
         if (lastToastRef.current === toastKey) {
             return;
         }
 
         lastToastRef.current = toastKey;
-        toast[data.type](data.message);
+        toast[data.type](data.message, {
+            description: data.description,
+        });
     }, []);
 
     useEffect(() => {

@@ -5,6 +5,7 @@ export type DashboardNavItem = {
     label: string;
     href: string;
     icon: LucideIcon;
+    badgeCount?: number;
 };
 
 type AppSidebarProps = {
@@ -41,14 +42,14 @@ export default function AppSidebar({
 
             <div className="flex flex-1 flex-col px-3 py-6 lg:px-4">
                 <nav className="space-y-2">
-                    {items.map(({ label, href, icon: Icon }) => {
+                    {items.map(({ label, href, icon: Icon, badgeCount }) => {
                         const active = isActive(href, currentPath);
 
                         return (
                             <Link
                                 key={label}
                                 href={href}
-                                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold transition md:justify-center lg:justify-start ${
+                                className={`relative flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[15px] font-semibold transition md:justify-center lg:justify-start ${
                                     active
                                         ? 'bg-[#6610F2] text-white shadow-[0_14px_30px_rgba(102,16,242,0.22)]'
                                         : 'text-[#64748B] hover:bg-[#F7F1FF] hover:text-[#3E2A59]'
@@ -58,6 +59,17 @@ export default function AppSidebar({
                                 <span className="hidden lg:inline">
                                     {label}
                                 </span>
+                                {(badgeCount ?? 0) > 0 && (
+                                    <span
+                                        className={`absolute top-2 right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold ${
+                                            active
+                                                ? 'bg-white text-[#D11149]'
+                                                : 'bg-[#D11149] text-white'
+                                        }`}
+                                    >
+                                        {formatBadgeCount(badgeCount ?? 0)}
+                                    </span>
+                                )}
                             </Link>
                         );
                     })}
@@ -79,4 +91,8 @@ export default function AppSidebar({
             </div>
         </aside>
     );
+}
+
+function formatBadgeCount(count: number) {
+    return count > 99 ? '99+' : String(count);
 }

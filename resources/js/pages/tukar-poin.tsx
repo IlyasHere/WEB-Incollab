@@ -1,472 +1,694 @@
-import { useMemo, useState } from "react";
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import {
+    AlertTriangle,
+    CheckCircle2,
+    ChevronRight,
+    CircleDollarSign,
+    HelpCircle,
+    Info,
+    Package,
+    Search,
+    ShoppingBag,
+    Sparkles,
+    Ticket,
+    Trophy,
+    X,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
-
-
-type RewardCategory = "Semua" | "Voucher" | "Merchandise" | "Sertifikat";
+type RewardCategory = 'voucher' | 'merch';
+type CategoryFilter = 'semua' | RewardCategory;
 
 type RewardItem = {
-  id: number;
-  category: Exclude<RewardCategory, "Semua">;
-  title: string;
-  description: string[];
-  points: string;
-  stockLabel: string;
-  stockTextColorClass: string;
-  stockBadgeWidthClass: string;
-  cardTitleColorClass: string;
-  cardDescriptionColorClass: string;
-  pointsWrapperClass: string;
-  pointsTextColorClass: string;
-  buttonLabel: string;
-  buttonClassName: string;
-  iconSrc: string;
-  imageSrc: string;
-  priceWidthClass: string;
+    id: number;
+    code: string;
+    name: string;
+    category: RewardCategory;
+    categoryLabel: string;
+    points: number;
+    stock: number;
+    status: 'Aktif' | 'Stok Habis';
+    redeemedCount: number;
+    description: string;
+    images: string[];
 };
 
-type EventItem = {
-  id: number;
-  title: string[];
-  subtitle: string;
-  reward: string;
-  iconSrc: string;
-  iconWidthClass: string;
-  iconHeightClass: string;
-  rewardWidthClass: string;
+type PointEvent = {
+    id: number;
+    title: string;
+    date: string;
+    points: number;
+    category: string;
 };
 
-
-const categories: RewardCategory[] = [
-  "Semua",
-  "Voucher",
-  "Merchandise",
-  "Sertifikat",
-];
-
-const rewards: RewardItem[] = [
-  {
-    id: 1,
-    category: "Voucher",
-    title: "Voucher…",
-    description: ["Potongan harga untuk", "pembelian buku…"],
-    points: "500",
-    stockLabel: "Sisa 15",
-    stockTextColorClass: "text-[#6610f2]",
-    stockBadgeWidthClass: "w-[38.28px]",
-    cardTitleColorClass: "text-[#1d1a25]",
-    cardDescriptionColorClass: "text-[#494456]",
-    pointsWrapperClass: "",
-    pointsTextColorClass: "text-[#1d1a25]",
-    buttonLabel: "Tukar Sekarang",
-    buttonClassName: "bg-[#6610f2] text-white",
-    iconSrc: "/images/poinIcon.svg",
-    imageSrc: "/images/voucher.jpg",
-    priceWidthClass: "w-[32.5px]",
-  },
-  {
-    id: 2,
-    category: "Merchandise",
-    title: "T-Shirt InCollab…",
-    description: ["Kaos premium edisi", "terbatas untuk…"],
-    points: "1.200",
-    stockLabel: "Sisa 5",
-    stockTextColorClass: "text-[#6610f2]",
-    stockBadgeWidthClass: "w-[33.44px]",
-    cardTitleColorClass: "text-[#1d1a25]",
-    cardDescriptionColorClass: "text-[#494456]",
-    pointsWrapperClass: "",
-    pointsTextColorClass: "text-[#1d1a25]",
-    buttonLabel: "Tukar Sekarang",
-    buttonClassName: "bg-[#6610f2] text-white",
-    iconSrc: "/images/poinIcon.svg",
-    imageSrc: "/images/voucher-kaos.jpg",
-    priceWidthClass: "w-[44.72px]",
-  },
-  {
-    id: 3,
-    category: "Sertifikat",
-    title: "Akses Kelas…",
-    description: ["Akses tak terbatas ke", "seluruh materi…"],
-    points: "800",
-    stockLabel: "Stok Habis",
-    stockTextColorClass: "text-[#7a7488]",
-    stockBadgeWidthClass: "w-[62.56px]",
-    cardTitleColorClass: "text-[#7a7488]",
-    cardDescriptionColorClass: "text-[#7a7488]",
-    pointsWrapperClass: "opacity-60",
-    pointsTextColorClass: "text-[#7a7488]",
-    buttonLabel: "Stok Habis",
-    buttonClassName: "bg-[#f2ebfb] text-[#7a7488]",
-    iconSrc: "/images/poinIcon.svg",
-    imageSrc: "/images/voucher-sertif.jpg",
-    priceWidthClass: "w-[32.78px]",
-  },
-];
-
-const events: EventItem[] = [
-  {
-    id: 1,
-    title: ["Review Jurnal", "AI"],
-    subtitle: "Selesaikan…",
-    reward: "+50",
-    iconSrc: "/images/review-icon.svg",
-    iconWidthClass: "w-[11.67px]",
-    iconHeightClass: "h-[9.33px]",
-    rewardWidthClass: "w-[23.45px]",
-  },
-  {
-    id: 2,
-    title: ["Diskusi", "Algoritma"],
-    subtitle: "Berikan jawaban…",
-    reward: "+25",
-    iconSrc: "/images/discussion-icon.svg",
-    iconWidthClass: "w-[11.67px]",
-    iconHeightClass: "h-[11.67px]",
-    rewardWidthClass: "w-[21.88px]",
-  },
-  {
-    id: 3,
-    title: ["Upload", "Catatan"],
-    subtitle: "Bagikan catatan",
-    reward: "+100",
-    iconSrc: "/images/upload-icon.svg",
-    iconWidthClass: "w-[9.33px]",
-    iconHeightClass: "h-[11.67px]",
-    rewardWidthClass: "w-[29.3px]",
-  },
-];
-
-export const RewardsDashboardMainSection = (): JSX.Element => {
-  const [activeCategory, setActiveCategory] = useState<RewardCategory>("Semua");
-
-  const filteredRewards = useMemo(() => {
-    if (activeCategory === "Semua") {
-      return rewards;
-    }
-    return rewards.filter((reward) => reward.category === activeCategory);
-  }, [activeCategory]);
-
-  return (
-    <section
-      aria-label="Reward catalog"
-      className="grid grid-cols-12 grid-rows-[724px] max-w-screen-xl w-[calc(100%_-_352px)] h-[724px] gap-8 absolute top-24 left-80"
-    >
-      <div className="relative row-[1_/_2] col-[1_/_9] w-[608px] h-[723.99px]">
-        <div className="flex w-full h-[190px] items-center justify-between p-8 absolute top-0 left-0 rounded-xl bg-[linear-gradient(90deg,rgba(102,16,242,1)_0%,rgba(26,143,227,1)_100%)]">
-          <div className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_20px_-4px_#6610f20a]" />
-          <div className="relative z-[1] flex w-full items-start justify-between gap-6">
-            <div className="inline-flex flex-col items-start gap-2 relative flex-[0_0_auto]">
-              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <h1 className="relative flex items-center w-[240.34px] h-[39px] mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-white text-[32px] tracking-[-0.64px] leading-[38.4px] whitespace-nowrap">
-                  Reward Catalog
-                </h1>
-              </div>
-              <div className="flex flex-col max-w-md items-start relative w-full flex-[0_0_auto]">
-                <p className="relative w-[327.03px] h-[72px] mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#ffffffcc] text-base tracking-[0] leading-6">
-                  Tukarkan poin kolaborasi kamu dengan
-                  <br />
-                  berbagai reward menarik untuk mendukung
-                  <br />
-                  aktivitas akademikmu.
-                </p>
-              </div>
-            </div>
-            <div className="inline-flex flex-col items-center justify-center p-6 relative flex-[0_0_auto] bg-[#ffffff33] rounded-xl border border-solid border-[#ffffff4c] backdrop-blur-[2px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(2px)_brightness(100%)]">
-              <div className="inline-flex pt-0 pb-1 px-0 flex-[0_0_auto] flex-col items-start relative">
-                <div className="relative flex items-center w-[95.61px] h-6 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#ffffffe6] text-base tracking-[0.80px] leading-6 whitespace-nowrap">
-                  POIN KAMU
-                </div>
-              </div>
-              <div className="inline-flex items-center gap-2 relative flex-[0_0_auto]">
-                <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                  <img
-                    className="relative w-[25px] h-[25px]"
-                    alt="Ikon poin"
-                    src="/images/poinIcon.svg"
-                  />
-                </div>
-                <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                  <div className="relative flex items-center w-[104.05px] h-12 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-white text-[40px] tracking-[-0.80px] leading-[48px] whitespace-nowrap">
-                    1.250
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          className="flex w-full h-10 items-center gap-3 pt-0 pb-2 px-0 absolute top-[222px] left-0"
-          role="tablist"
-          aria-label="Kategori reward"
-        >
-          {categories.map((category) => {
-            const isActive = activeCategory === category;
-
-            const widthClass =
-              category === "Semua"
-                ? "w-[46.81px]"
-                : category === "Voucher"
-                  ? "w-[56.55px]"
-                  : category === "Merchandise"
-                    ? "w-[87.44px]"
-                    : "w-[62.06px]";
-
-            return (
-              <button
-                key={category}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-pressed={isActive}
-                onClick={() => setActiveCategory(category)}
-                className={
-                  isActive
-                    ? "all-[unset] box-border inline-flex px-5 py-2 bg-[#6610f2] rounded-full shadow-[0px_1px_2px_#0000000d] flex-col items-center justify-center relative flex-[0_0_auto] cursor-pointer"
-                    : "all-[unset] box-border inline-flex flex-col items-center justify-center px-5 py-2 relative flex-[0_0_auto] bg-white rounded-full border border-solid border-[#cbc3d9] cursor-pointer"
-                }
-              >
-                <div
-                  className={`relative flex items-center justify-center ${widthClass} h-3.5 [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-sm text-center tracking-[0] leading-[14px] whitespace-nowrap ${
-                    isActive ? "mt-[-1.00px] text-white" : "text-[#494456]"
-                  }`}
-                >
-                  {category}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        <div className="grid grid-cols-3 grid-rows-[301.88px] w-full h-[302px] gap-6 absolute top-[294px] left-0">
-          {filteredRewards.map((reward, index) => (
-            <article
-              key={reward.id}
-              className={`col-[${index + 1}_/_${index + 2}] relative row-[1_/_2] w-full h-fit flex flex-col items-start gap-4 p-4 bg-white rounded-xl border border-solid border-[#e7e0f0]`}
-            >
-              <div className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_20px_-4px_#6610f20a]" />
-              <div className="flex flex-col items-start justify-center relative self-stretch w-full flex-[0_0_auto] bg-[#f2ebfb] rounded-lg overflow-hidden aspect-[1.78]">
-                <div
-                    className="relative self-stretch w-full h-[85px] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${reward.imageSrc})` }}
-                />
-                <div className="inline-flex flex-col items-start px-2 py-1 absolute top-2 right-2 bg-[#ffffffe6] rounded-md backdrop-blur-[2px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(2px)_brightness(100%)]">
-                  <div
-                    className={`relative flex items-center ${reward.stockBadgeWidthClass} h-4 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal ${reward.stockTextColorClass} text-xs tracking-[0] leading-4 whitespace-nowrap`}
-                  >
-                    {reward.stockLabel}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <div className="pt-0 pb-1 px-0 flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                  <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                    <h2
-                      className={`relative flex items-center self-stretch mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal ${reward.cardTitleColorClass} text-lg tracking-[0] leading-7`}
-                    >
-                      {reward.title}
-                    </h2>
-                  </div>
-                </div>
-                <div className="flex flex-col items-start pt-0 pb-4 px-0 relative self-stretch w-full flex-[0_0_auto]">
-                  <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                    <p
-                      className={`relative self-stretch mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal ${reward.cardDescriptionColorClass} text-sm tracking-[0] leading-5`}
-                    >
-                      {reward.description[0]}
-                      <br />
-                      {reward.description[1]}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex h-[44.02px] justify-end pt-[0.02px] pb-4 px-0 self-stretch w-full flex-col items-start relative">
-                  <div className="flex items-center relative self-stretch w-full flex-[0_0_auto]">
-                    <div
-                      className={`inline-flex items-center gap-1.5 relative flex-[0_0_auto] ${reward.pointsWrapperClass}`}
-                    >
-                      <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                        <img
-                          className="relative w-[16.67px] h-[16.67px]"
-                          alt="Ikon poin"
-                          src="/images/poinIcon.svg"
-                        />
-                      </div>
-                      <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                        <div
-                          className={`relative flex items-center ${reward.priceWidthClass} h-6 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal ${reward.pointsTextColorClass} text-base tracking-[0] leading-6 whitespace-nowrap`}
-                        >
-                          {reward.points}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={reward.buttonLabel === "Stok Habis"}
-                  className={`all-[unset] box-border flex px-0 py-2.5 self-stretch w-full rounded-lg flex-col items-center justify-center relative flex-[0_0_auto] ${reward.buttonClassName} ${
-                    reward.buttonLabel === "Stok Habis"
-                      ? "cursor-not-allowed"
-                      : "cursor-pointer"
-                  }`}
-                >
-                  <div
-                    className={`relative flex items-center justify-center ${
-                      reward.buttonLabel === "Stok Habis"
-                        ? "w-[72.47px]"
-                        : "w-[102.84px]"
-                    } h-3.5 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-sm text-center tracking-[0] leading-[14px] whitespace-nowrap ${
-                      reward.buttonLabel === "Stok Habis"
-                        ? "text-[#7a7488]"
-                        : "text-white"
-                    }`}
-                  >
-                    {reward.buttonLabel}
-                  </div>
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-      <aside
-        className="relative row-[1_/_2] col-[9_/_13] w-72 h-[682px]"
-        aria-label="Ringkasan reward dan event"
-      >
-        <div className="absolute w-full top-0 left-0 h-[214px] bg-white rounded-xl border border-solid border-[#e7e0f0]">
-          <div className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_20px_-4px_#6610f20a]" />
-          <div className="flex w-[calc(100%_-_50px)] h-7 items-center justify-between absolute top-[25px] left-[25px]">
-            <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-              <h2 className="relative flex items-center w-[131.5px] h-7 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#1d1a25] text-lg tracking-[0] leading-7 whitespace-nowrap">
-                Ringkasan Poin
-              </h2>
-            </div>
-            <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-              <img
-                className="relative w-5 h-5"
-                alt="Informasi ringkasan poin"
-                src="/images/info.svg"
-              />
-            </div>
-          </div>
-          <div className="flex w-[calc(100%_-_50px)] h-14 items-center gap-3 absolute top-[73px] left-[25px]">
-            <div className="flex w-12 h-12 justify-center items-center relative bg-[#e6c2291a] rounded-full">
-              <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                <img
-                  className="relative w-[25px] h-[25px]"
-                  alt="Ikon poin aktif"
-                  src="/images/poinIcon.svg"
-                />
-              </div>
-            </div>
-            <div className="inline-flex flex-col items-start gap-1 relative flex-[0_0_auto]">
-              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <div className="relative flex items-center w-[83.23px] h-8 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#1d1a25] text-[32px] tracking-[-0.64px] leading-8 whitespace-nowrap">
-                  1.250
-                </div>
-              </div>
-              <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                <div className="relative flex items-center w-[62.45px] h-5 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#494456] text-sm tracking-[0] leading-5 whitespace-nowrap">
-                  Poin Aktif
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="absolute w-full top-[238px] left-0 h-[444px] bg-white rounded-xl border border-solid border-[#e7e0f0]">
-          <div className="absolute w-full h-full top-0 left-0 bg-[#ffffff01] rounded-xl shadow-[0px_4px_20px_-4px_#6610f20a]" />
-          <div className="flex flex-col w-[calc(100%_-_50px)] items-start pt-0 pb-2 px-0 absolute top-[25px] left-[25px]">
-            <div className="flex self-stretch w-full flex-col items-start relative flex-[0_0_auto]">
-              <h2 className="relative self-stretch mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#1d1a25] text-lg tracking-[0] leading-7">
-                Event Aktif Menghasilkan
-                <br />
-                Poin
-              </h2>
-            </div>
-          </div>
-          <div className="flex flex-col w-[calc(100%_-_50px)] items-start gap-4 absolute top-[105px] left-[25px]">
-            {events.map((event) => (
-              <article
-                key={event.id}
-                className="flex items-start justify-between p-3 relative self-stretch w-full flex-[0_0_auto] rounded-lg border border-solid border-[#e7e0f0]"
-              >
-                <div className="inline-flex items-start gap-3 relative flex-[0_0_auto]">
-                  <div className="inline-flex pt-0.5 pb-0 px-0 flex-[0_0_auto] flex-col items-start relative">
-                    <div className="inline-flex flex-col items-start p-2 relative flex-[0_0_auto] bg-[#6610f21a] rounded-md">
-                      <img
-                        className={`relative ${event.iconWidthClass} ${event.iconHeightClass}`}
-                        alt=""
-                        aria-hidden="true"
-                        src={event.iconSrc}
-                      />
-                    </div>
-                  </div>
-                  <div className="inline-flex flex-col items-start gap-1 relative flex-[0_0_auto]">
-                    <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                      <div className="relative h-12 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#1d1a25] text-base tracking-[0] leading-6">
-                        {event.title[0]}
-                        <br />
-                        {event.title[1]}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-                      <div
-                        className={`relative flex items-center ${
-                          event.id === 1
-                            ? "w-[69.53px]"
-                            : event.id === 2
-                              ? "w-[100.64px]"
-                              : "w-[92.97px]"
-                        } h-4 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#494456] text-xs tracking-[0] leading-4 whitespace-nowrap overflow-hidden text-ellipsis`}
-                      >
-                        {event.subtitle}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className={`inline-flex ${
-                    event.id === 3 ? "gap-[3.99px]" : "gap-1"
-                  } px-2 py-1 flex-[0_0_auto] items-center relative bg-[#e6c2291a] rounded-full`}
-                >
-                  <div className="inline-flex flex-col items-start relative flex-[0_0_auto]">
-                    <img
-                      className="relative w-[11.67px] h-[11.67px]"
-                      alt=""
-                      aria-hidden="true"
-                      src={
-                        event.id === 1 ? "/images/poinIcon.svg" : event.id === 2 ? "/images/poinIcon.svg" : "/images/poinIcon.svg"
-                      }
-                    />
-                  </div>
-                  <div
-                    className={`relative flex items-center ${event.rewardWidthClass} h-4 mt-[-1.00px] [font-family:'Plus_Jakarta_Sans-Regular',Helvetica] font-normal text-[#746000] text-xs tracking-[0] leading-4 whitespace-nowrap`}
-                  >
-                    {event.reward}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </aside>
-    </section>
-  );
+type TukarPoinProps = {
+    rewards: RewardItem[];
+    currentPoints: number;
+    summary: {
+        availableRewards: number;
+        redeemedRewards: number;
+        spentPoints: number;
+    };
+    pointEvents: PointEvent[];
 };
 
-export default function TukarPoin() {
+const categoryOptions: Array<{ value: CategoryFilter; label: string }> = [
+    { value: 'semua', label: 'Semua' },
+    { value: 'voucher', label: 'Voucher' },
+    { value: 'merch', label: 'Merch' },
+];
+
+function formatNumber(value: number) {
+    return value.toLocaleString('id-ID');
+}
+
+function fallbackImage(category: RewardCategory) {
+    return category === 'merch'
+        ? '/images/voucher-kaos.jpg'
+        : '/images/voucher.jpg';
+}
+
+function canRedeem(reward: RewardItem, currentPoints: number) {
+    return reward.stock > 0 && currentPoints >= reward.points;
+}
+
+export default function TukarPoin({
+    rewards = [],
+    currentPoints = 0,
+    summary,
+    pointEvents = [],
+}: TukarPoinProps) {
+    const [activeCategory, setActiveCategory] =
+        useState<CategoryFilter>('semua');
+    const [search, setSearch] = useState('');
+    const [selectedReward, setSelectedReward] = useState<RewardItem | null>(
+        null,
+    );
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [processingRewardId, setProcessingRewardId] = useState<number | null>(
+        null,
+    );
+
+    const filteredRewards = useMemo(() => {
+        const normalizedSearch = search.trim().toLowerCase();
+
+        return rewards.filter((reward) => {
+            const matchesCategory =
+                activeCategory === 'semua' ||
+                reward.category === activeCategory;
+            const matchesSearch =
+                normalizedSearch === '' ||
+                reward.name.toLowerCase().includes(normalizedSearch) ||
+                reward.code.toLowerCase().includes(normalizedSearch) ||
+                reward.categoryLabel.toLowerCase().includes(normalizedSearch) ||
+                reward.description.toLowerCase().includes(normalizedSearch);
+
+            return matchesCategory && matchesSearch;
+        });
+    }, [activeCategory, rewards, search]);
+
+    const closeModal = () => {
+        if (processingRewardId !== null) {
+            return;
+        }
+
+        setSelectedReward(null);
+        setShowConfirm(false);
+    };
+
+    const redeemReward = () => {
+        if (!selectedReward || processingRewardId !== null) {
+            return;
+        }
+
+        setProcessingRewardId(selectedReward.id);
+        router.post(
+            `/tukar-poin/${selectedReward.id}`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: closeModal,
+                onFinish: () => setProcessingRewardId(null),
+            },
+        );
+    };
+
     return (
         <>
             <Head title="Tukar Poin" />
+
             <main className="px-4 py-5 pb-28 sm:px-6 sm:py-6 md:pb-8 lg:px-8 xl:px-10">
-                <div className="mx-auto max-w-[1320px]">
-                    <RewardsDashboardMainSection />
+                <div className="mx-auto max-w-[1320px] space-y-6">
+                    <section className="overflow-hidden rounded-2xl bg-[linear-gradient(110deg,#6610F2_0%,#1A8FE3_100%)] shadow-[0_18px_45px_rgba(102,16,242,0.18)]">
+                        <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
+                            <div>
+                                <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase">
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    Reward Catalog
+                                </div>
+                                <h1 className="mt-4 text-3xl font-extrabold tracking-[-0.01em] text-white sm:text-4xl">
+                                    Tukarkan poin kolaborasi kamu
+                                </h1>
+                                <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
+                                    Pilih reward dari katalog admin, cek stok
+                                    dan kebutuhan poin, lalu konfirmasi
+                                    penukaran dengan aman.
+                                </p>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/25 bg-white/20 p-5 text-white backdrop-blur">
+                                <p className="text-xs font-extrabold tracking-wide text-white/80 uppercase">
+                                    Poin Kamu
+                                </p>
+                                <div className="mt-3 flex items-center gap-3">
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                                        <CircleDollarSign className="h-7 w-7 text-[#FFE98A]" />
+                                    </span>
+                                    <p className="text-4xl font-extrabold">
+                                        {formatNumber(currentPoints)}
+                                    </p>
+                                </div>
+                                <p className="mt-3 text-sm font-medium text-white/75">
+                                    Poin akan otomatis berkurang setelah reward
+                                    berhasil ditukar.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                        <div className="space-y-5">
+                            <div className="flex flex-col gap-4 rounded-2xl border border-[#EFE4F8] bg-white p-4 shadow-[0_14px_34px_rgba(102,16,242,0.06)] lg:flex-row lg:items-center lg:justify-between">
+                                <div className="relative min-w-0 flex-1">
+                                    <Search className="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#8A7FA2]" />
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={(event) =>
+                                            setSearch(event.target.value)
+                                        }
+                                        placeholder="Cari reward, kode, atau kategori..."
+                                        className="h-12 w-full rounded-full border border-[#EFE4F8] bg-[#FBF7FF] pr-4 pl-12 text-sm font-medium text-[#382A49] transition outline-none focus:border-[#6610F2]/40 focus:ring-4 focus:ring-[#6610F2]/10"
+                                    />
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {categoryOptions.map((category) => {
+                                        const isActive =
+                                            activeCategory === category.value;
+
+                                        return (
+                                            <button
+                                                key={category.value}
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveCategory(
+                                                        category.value,
+                                                    )
+                                                }
+                                                className={`h-10 rounded-full px-5 text-sm font-bold transition ${
+                                                    isActive
+                                                        ? 'bg-[#6610F2] text-white shadow-[0_12px_24px_rgba(102,16,242,0.22)]'
+                                                        : 'border border-[#E4D8F2] bg-white text-[#5F5573] hover:border-[#6610F2]/30 hover:bg-[#F7F1FF]'
+                                                }`}
+                                            >
+                                                {category.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {filteredRewards.length > 0 ? (
+                                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                    {filteredRewards.map((reward) => (
+                                        <RewardCard
+                                            key={reward.id}
+                                            reward={reward}
+                                            currentPoints={currentPoints}
+                                            onSelect={() => {
+                                                setSelectedReward(reward);
+                                                setShowConfirm(false);
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-[#D8CDE8] bg-white p-8 text-center">
+                                    <div>
+                                        <Package className="mx-auto h-12 w-12 text-[#6610F2]" />
+                                        <h2 className="mt-4 text-lg font-extrabold text-[#1F1730]">
+                                            Reward tidak ditemukan
+                                        </h2>
+                                        <p className="mt-2 text-sm text-[#766B8A]">
+                                            Coba ubah kata kunci atau kategori
+                                            katalog.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <aside className="space-y-5">
+                            <PointSummaryCard
+                                currentPoints={currentPoints}
+                                summary={summary}
+                            />
+                            <GuideCard />
+                            <PointEventCard events={pointEvents} />
+                        </aside>
+                    </section>
                 </div>
             </main>
+
+            {selectedReward && (
+                <RewardDetailModal
+                    reward={selectedReward}
+                    currentPoints={currentPoints}
+                    showConfirm={showConfirm}
+                    isProcessing={processingRewardId === selectedReward.id}
+                    onClose={closeModal}
+                    onAskConfirm={() => setShowConfirm(true)}
+                    onCancelConfirm={() => setShowConfirm(false)}
+                    onRedeem={redeemReward}
+                />
+            )}
         </>
     );
-
 }
 
-TukarPoin.layout = (page: ReactNode) => <DashboardLayout>{page}</DashboardLayout>;
+function RewardCard({
+    reward,
+    currentPoints,
+    onSelect,
+}: {
+    reward: RewardItem;
+    currentPoints: number;
+    onSelect: () => void;
+}) {
+    const Icon = reward.category === 'merch' ? ShoppingBag : Ticket;
+    const isOutOfStock = reward.stock <= 0;
+    const isPointInsufficient = currentPoints < reward.points;
+    const image = reward.images[0] ?? fallbackImage(reward.category);
+
+    return (
+        <article className="group flex min-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white shadow-[0_14px_34px_rgba(102,16,242,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#6610F2]/35 hover:shadow-[0_22px_48px_rgba(102,16,242,0.14)]">
+            <div className="relative aspect-[1.65] overflow-hidden bg-[#F0E7FF]">
+                <img
+                    src={image}
+                    alt={reward.name}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                <span
+                    className={`absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-extrabold backdrop-blur ${
+                        isOutOfStock
+                            ? 'bg-white/90 text-[#D11149]'
+                            : 'bg-white/90 text-[#6610F2]'
+                    }`}
+                >
+                    {isOutOfStock
+                        ? 'Stok Habis'
+                        : `Sisa ${formatNumber(reward.stock)}`}
+                </span>
+            </div>
+
+            <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-xs font-bold text-[#8A7FA2]">
+                            {reward.code}
+                        </p>
+                        <h2 className="mt-1 line-clamp-2 text-lg font-extrabold text-[#1F1730]">
+                            {reward.name}
+                        </h2>
+                    </div>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0E7FF] text-[#6610F2]">
+                        <Icon className="h-5 w-5" />
+                    </span>
+                </div>
+
+                <p className="mt-3 line-clamp-3 min-h-[60px] text-sm leading-5 text-[#766B8A]">
+                    {reward.description ||
+                        'Reward dapat ditukar menggunakan poin aktif mahasiswa.'}
+                </p>
+
+                <div className="mt-auto space-y-4 pt-5">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-[#FFF6D8] px-3.5 py-2 text-sm font-extrabold text-[#746000]">
+                            <CircleDollarSign className="h-4 w-4" />
+                            {formatNumber(reward.points)}
+                        </div>
+                        <span className="rounded-full bg-[#F7F1FF] px-3.5 py-2 text-xs font-bold text-[#6610F2]">
+                            {reward.categoryLabel}
+                        </span>
+                    </div>
+
+                    {isPointInsufficient && !isOutOfStock && (
+                        <p className="inline-flex items-center gap-1 rounded-xl bg-[#FFF0F4] px-3 py-2 text-xs font-bold text-[#D11149]">
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                            Poin kamu belum cukup.
+                        </p>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={onSelect}
+                        disabled={isOutOfStock}
+                        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-extrabold transition ${
+                            isOutOfStock
+                                ? 'cursor-not-allowed bg-[#F2EBFB] text-[#8B8496]'
+                                : 'bg-[#6610F2] text-white shadow-[0_14px_28px_rgba(102,16,242,0.20)] hover:bg-[#550DCC]'
+                        }`}
+                    >
+                        {isOutOfStock ? 'Stok Habis' : 'Lihat & Tukar'}
+                        {!isOutOfStock && <ChevronRight className="h-4 w-4" />}
+                    </button>
+                </div>
+            </div>
+        </article>
+    );
+}
+
+function PointSummaryCard({
+    currentPoints,
+    summary,
+}: {
+    currentPoints: number;
+    summary: TukarPoinProps['summary'];
+}) {
+    return (
+        <section className="rounded-2xl border border-[#EFE4F8] bg-white p-5 shadow-[0_14px_34px_rgba(102,16,242,0.06)]">
+            <div className="flex items-center justify-between">
+                <h2 className="text-lg font-extrabold text-[#1F1730]">
+                    Ringkasan Poin
+                </h2>
+                <div className="group relative">
+                    <HelpCircle className="h-5 w-5 text-[#8A7FA2]" />
+                    <div className="pointer-events-none absolute right-0 z-20 mt-3 w-64 translate-y-2 rounded-2xl border border-[#EFE4F8] bg-white p-4 text-sm leading-6 text-[#5F5573] opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.14)] transition group-hover:translate-y-0 group-hover:opacity-100">
+                        Poin aktif berasal dari klaim event dan akan berkurang
+                        otomatis saat reward berhasil ditukar.
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-[#FBF7FF] p-4">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF6D8] text-[#A77800]">
+                    <CircleDollarSign className="h-6 w-6" />
+                </span>
+                <div>
+                    <p className="text-3xl font-extrabold text-[#1F1730]">
+                        {formatNumber(currentPoints)}
+                    </p>
+                    <p className="text-sm font-semibold text-[#766B8A]">
+                        Poin Aktif
+                    </p>
+                </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+                <SummaryMiniCard
+                    label="Reward Tersedia"
+                    value={summary.availableRewards}
+                />
+                <SummaryMiniCard
+                    label="Sudah Ditukar"
+                    value={summary.redeemedRewards}
+                />
+                <SummaryMiniCard
+                    label="Poin Terpakai"
+                    value={summary.spentPoints}
+                    className="col-span-2"
+                />
+            </div>
+        </section>
+    );
+}
+
+function SummaryMiniCard({
+    label,
+    value,
+    className = '',
+}: {
+    label: string;
+    value: number;
+    className?: string;
+}) {
+    return (
+        <div className={`rounded-xl border border-[#EFE4F8] p-3 ${className}`}>
+            <p className="text-xs font-bold text-[#8A7FA2]">{label}</p>
+            <p className="mt-2 text-xl font-extrabold text-[#1F1730]">
+                {formatNumber(value)}
+            </p>
+        </div>
+    );
+}
+
+function GuideCard() {
+    return (
+        <section className="rounded-2xl border border-[#EFE4F8] bg-white p-5 shadow-[0_14px_34px_rgba(102,16,242,0.06)]">
+            <div className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-[#6610F2]" />
+                <h2 className="text-lg font-extrabold text-[#1F1730]">
+                    Panduan Tukar
+                </h2>
+            </div>
+            <ol className="mt-4 space-y-3 text-sm leading-6 text-[#5F5573]">
+                <li className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#009B6A]" />
+                    Pilih reward dan baca detailnya dulu.
+                </li>
+                <li className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#009B6A]" />
+                    Pastikan poin dan stok masih mencukupi.
+                </li>
+                <li className="flex gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#009B6A]" />
+                    Konfirmasi penukaran. Poin akan otomatis dipotong.
+                </li>
+            </ol>
+        </section>
+    );
+}
+
+function PointEventCard({ events }: { events: PointEvent[] }) {
+    return (
+        <section className="rounded-2xl border border-[#EFE4F8] bg-white p-5 shadow-[0_14px_34px_rgba(102,16,242,0.06)]">
+            <div className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-[#A77800]" />
+                <h2 className="text-lg font-extrabold text-[#1F1730]">
+                    Event Penghasil Poin
+                </h2>
+            </div>
+
+            <div className="mt-4 space-y-3">
+                {events.length > 0 ? (
+                    events.map((event) => (
+                        <article
+                            key={event.id}
+                            className="flex items-start justify-between gap-3 rounded-xl border border-[#EFE4F8] p-3 transition hover:border-[#6610F2]/30 hover:bg-[#FBF7FF]"
+                        >
+                            <div className="min-w-0">
+                                <h3 className="line-clamp-2 text-sm font-extrabold text-[#1F1730]">
+                                    {event.title}
+                                </h3>
+                                <p className="mt-1 text-xs font-semibold text-[#8A7FA2]">
+                                    {event.category}{' '}
+                                    {event.date && `- ${event.date}`}
+                                </p>
+                            </div>
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FFF6D8] px-2.5 py-1 text-xs font-extrabold text-[#746000]">
+                                <CircleDollarSign className="h-3.5 w-3.5" />+
+                                {formatNumber(event.points)}
+                            </span>
+                        </article>
+                    ))
+                ) : (
+                    <p className="rounded-xl border border-dashed border-[#D8CDE8] p-4 text-sm leading-6 text-[#766B8A]">
+                        Belum ada event aktif yang menghasilkan poin.
+                    </p>
+                )}
+            </div>
+        </section>
+    );
+}
+
+function RewardDetailModal({
+    reward,
+    currentPoints,
+    showConfirm,
+    isProcessing,
+    onClose,
+    onAskConfirm,
+    onCancelConfirm,
+    onRedeem,
+}: {
+    reward: RewardItem;
+    currentPoints: number;
+    showConfirm: boolean;
+    isProcessing: boolean;
+    onClose: () => void;
+    onAskConfirm: () => void;
+    onCancelConfirm: () => void;
+    onRedeem: () => void;
+}) {
+    const image = reward.images[0] ?? fallbackImage(reward.category);
+    const redeemable = canRedeem(reward, currentPoints);
+    const remainingPoints = currentPoints - reward.points;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F1730]/45 px-4 py-8 backdrop-blur-sm">
+            <section className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-[0_30px_90px_rgba(31,23,48,0.24)]">
+                <div className="flex items-center justify-between border-b border-[#EFE4F8] px-5 py-4">
+                    <div>
+                        <p className="text-xs font-bold tracking-wide text-[#8A7FA2] uppercase">
+                            {reward.code}
+                        </p>
+                        <h2 className="text-xl font-extrabold text-[#1F1730]">
+                            Detail Reward
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isProcessing}
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-[#766B8A] transition hover:bg-[#F7F1FF] hover:text-[#6610F2] disabled:opacity-60"
+                        aria-label="Tutup detail reward"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <div className="max-h-[calc(92vh-74px)] overflow-y-auto">
+                    <div className="grid gap-5 p-5 md:grid-cols-[240px_minmax(0,1fr)]">
+                        <div className="overflow-hidden rounded-2xl bg-[#F0E7FF]">
+                            <img
+                                src={image}
+                                alt={reward.name}
+                                className="aspect-square h-full w-full object-cover"
+                            />
+                        </div>
+
+                        <div>
+                            <span className="inline-flex rounded-full bg-[#F7F1FF] px-3 py-1 text-xs font-extrabold text-[#6610F2]">
+                                {reward.categoryLabel}
+                            </span>
+                            <h3 className="mt-3 text-2xl font-extrabold text-[#1F1730]">
+                                {reward.name}
+                            </h3>
+                            <p className="mt-3 text-sm leading-6 text-[#5F5573]">
+                                {reward.description ||
+                                    'Reward dapat ditukar menggunakan poin aktif mahasiswa.'}
+                            </p>
+
+                            <div className="mt-5 grid grid-cols-2 gap-3">
+                                <DetailStat
+                                    label="Poin Dibutuhkan"
+                                    value={formatNumber(reward.points)}
+                                />
+                                <DetailStat
+                                    label="Stok"
+                                    value={formatNumber(reward.stock)}
+                                />
+                            </div>
+
+                            {!redeemable && (
+                                <div className="mt-4 rounded-xl border border-[#FFD1DC] bg-[#FFF5F7] p-3 text-sm leading-6 font-semibold text-[#D11149]">
+                                    {reward.stock <= 0
+                                        ? 'Reward ini sedang stok habis.'
+                                        : `Poin kamu kurang ${formatNumber(
+                                              Math.abs(remainingPoints),
+                                          )} untuk menukar reward ini.`}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {showConfirm && (
+                        <div className="mx-5 mb-5 rounded-2xl border border-[#FFE3A3] bg-[#FFF9E8] p-4">
+                            <div className="flex gap-3">
+                                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#A77800]" />
+                                <div>
+                                    <h3 className="font-extrabold text-[#1F1730]">
+                                        Yakin ingin menukar reward ini?
+                                    </h3>
+                                    <p className="mt-1 text-sm leading-6 text-[#5F5573]">
+                                        Poin kamu akan berkurang{' '}
+                                        <span className="font-extrabold text-[#D11149]">
+                                            {formatNumber(reward.points)}
+                                        </span>{' '}
+                                        dan sisa poin menjadi{' '}
+                                        <span className="font-extrabold text-[#1F1730]">
+                                            {formatNumber(remainingPoints)}
+                                        </span>
+                                        .
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-3 border-t border-[#EFE4F8] bg-[#FBF7FF] px-5 py-4 sm:flex-row sm:justify-end">
+                        {showConfirm ? (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={onCancelConfirm}
+                                    disabled={isProcessing}
+                                    className="h-11 rounded-full border border-[#D8CDE8] px-5 text-sm font-bold text-[#382A49] transition hover:bg-white disabled:opacity-60"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onRedeem}
+                                    disabled={!redeemable || isProcessing}
+                                    className="h-11 rounded-full bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.22)] transition hover:bg-[#550DCC] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {isProcessing
+                                        ? 'Memproses...'
+                                        : 'Ya, Tukar Reward'}
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    disabled={isProcessing}
+                                    className="h-11 rounded-full border border-[#D8CDE8] px-5 text-sm font-bold text-[#382A49] transition hover:bg-white disabled:opacity-60"
+                                >
+                                    Tutup
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onAskConfirm}
+                                    disabled={!redeemable || isProcessing}
+                                    className="h-11 rounded-full bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.22)] transition hover:bg-[#550DCC] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    Tukar Reward
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+}
+
+function DetailStat({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="rounded-xl border border-[#EFE4F8] bg-white p-3">
+            <p className="text-xs font-bold text-[#8A7FA2]">{label}</p>
+            <p className="mt-2 text-lg font-extrabold text-[#1F1730]">
+                {value}
+            </p>
+        </div>
+    );
+}
+
+TukarPoin.layout = (page: ReactNode) => (
+    <DashboardLayout>{page}</DashboardLayout>
+);
