@@ -4,54 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\FeedPost;
 use App\Models\User;
+use App\Support\FeedPostFormatter;
+use App\Support\TrendingTopicFinder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
-    {
+    public function index(
+        Request $request,
+        FeedPostFormatter $feedPostFormatter,
+        TrendingTopicFinder $trendingTopicFinder
+    ) {
         return Inertia::render('dashboard', [
-            'posts' => $this->feedPosts($request),
+            'posts' => $this->feedPosts($request, $feedPostFormatter),
             'partners' => $this->partners($request),
+            'topics' => $trendingTopicFinder->get(4),
         ]);
     }
 
-    private function feedPosts(Request $request)
+    private function feedPosts(Request $request, FeedPostFormatter $feedPostFormatter)
     {
-        return FeedPost::with(['user.mahasiswa', 'images'])
+        $posts = FeedPost::with(['user.mahasiswa', 'images'])
             ->withCount('komentar')
             ->latest()
-            ->get()
-            ->map(function (FeedPost $post) use ($request) {
-                $user = $post->user;
-                $mahasiswa = $user?->mahasiswa;
-                $images = $post->images
-                    ->map(fn ($image) => asset('storage/'.$image->image_path))
-                    ->values();
+            ->get();
 
-                return [
-                    'id' => $post->post_id,
-                    'user' => [
-                        'name' => $user?->name ?? 'Mahasiswa',
-                        'major' => collect([$mahasiswa?->jurusan, $mahasiswa?->universitas])
-                            ->filter()
-                            ->join(' • ') ?: 'Mahasiswa',
-                        'avatar' => $this->resolveAvatar($mahasiswa?->foto, $user?->avatar),
-                    ],
-                    'postedAt' => $post->created_at?->diffForHumans() ?? 'Baru saja',
-                    'badge' => 'POSTINGAN',
-                    'badgeColor' => 'bg-[#F0E7FF] text-[#6610F2]',
-                    'title' => $post->title,
-                    'description' => $post->content,
-                    'hashtags' => $post->tags ?? [],
-                    'likes' => 0,
-                    'comments' => $post->komentar_count,
-                    'image' => $images->first(),
-                    'images' => $images,
-                    'canDelete' => $post->user_id === $request->user()->user_id,
-                ];
-            });
+        return $feedPostFormatter->formatMany($posts, $request->user());
     }
 
     private function partners(Request $request)

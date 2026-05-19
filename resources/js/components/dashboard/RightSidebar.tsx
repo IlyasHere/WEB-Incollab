@@ -3,7 +3,11 @@ import { Sparkles } from 'lucide-react';
 
 export type TrendingTopic = {
     tag: string;
-    posts: string;
+    slug: string;
+    postsLabel: string;
+    postCount: number;
+    recentPostCount: number;
+    commentCount: number;
 };
 
 export type CollaborationPartner = {
@@ -43,25 +47,36 @@ export default function RightSidebar({
                         </h2>
                     </div>
 
-                    <div className="space-y-5">
-                        {topics.map((topic) => (
-                            <div key={topic.tag}>
-                                <p className="text-[15px] font-bold text-[#2A203C]">
-                                    {topic.tag}
-                                </p>
-                                <p className="mt-1 text-sm text-[#7C7292]">
-                                    {topic.posts}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
+                    {topics.length > 0 ? (
+                        <div className="space-y-5">
+                            {topics.map((topic) => (
+                                <Link
+                                    key={topic.slug}
+                                    href={`/trending/${topic.slug}`}
+                                    className="block rounded-2xl transition hover:bg-[#FBF7FF]"
+                                >
+                                    <p className="text-[15px] font-bold text-[#2A203C]">
+                                        {topic.tag}
+                                    </p>
+                                    <p className="mt-1 text-sm text-[#7C7292]">
+                                        {topic.postsLabel}
+                                    </p>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm leading-6 text-[#7C7292]">
+                            Belum ada topik ramai. Buat postingan dengan
+                            hashtag agar topik muncul di sini.
+                        </p>
+                    )}
 
-                    <button
-                        type="button"
+                    <Link
+                        href="/trending"
                         className="mt-6 text-sm font-semibold text-[#6610F2]"
                     >
                         Lihat semua topik
-                    </button>
+                    </Link>
                 </section>
 
                 <section className="rounded-[28px] border border-[#F0E5FB] bg-white p-0 shadow-[0_16px_38px_rgba(177,145,221,0.14)]">

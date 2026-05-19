@@ -18,6 +18,7 @@ class PenukaranPoin extends Model
         'tanggal_penukaran',
         'jumlah_poin',
         'status_penukaran',
+        'kode_penukaran',
     ];
 
     // Relasi

@@ -39,6 +39,24 @@ export default function MobileMenu({
                         >
                             <Icon className="h-5 w-5" />
                             {label}
+                            {(itemBadgeCount(label, items, settingsItem) ?? 0) >
+                                0 && (
+                                <span
+                                    className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold ${
+                                        active
+                                            ? 'bg-white text-[#D11149]'
+                                            : 'bg-[#D11149] text-white'
+                                    }`}
+                                >
+                                    {formatBadgeCount(
+                                        itemBadgeCount(
+                                            label,
+                                            items,
+                                            settingsItem,
+                                        ) ?? 0,
+                                    )}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}
@@ -53,4 +71,17 @@ export default function MobileMenu({
             </button> */}
         </div>
     );
+}
+
+function itemBadgeCount(
+    label: string,
+    items: DashboardNavItem[],
+    settingsItem: DashboardNavItem,
+) {
+    return [...items, settingsItem].find((item) => item.label === label)
+        ?.badgeCount;
+}
+
+function formatBadgeCount(count: number) {
+    return count > 99 ? '99+' : String(count);
 }

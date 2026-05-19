@@ -56,7 +56,7 @@ class GoogleController extends Controller
                 'message' => 'Login berhasil. Selamat datang kembali!',
             ]);
 
-            return redirect()->route('dashboard');
+            return redirect()->route($user->role === 'admin' ? 'admin.dashboard' : 'dashboard');
         } catch (InvalidStateException $e) {
             return redirect('/login')->with('error', 'Login Google dibatalkan atau sesi sudah tidak valid.');
         } catch (\Exception $e) {

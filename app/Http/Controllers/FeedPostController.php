@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FeedPost;
 use App\Models\Komentar;
+use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -97,8 +98,11 @@ class FeedPostController extends Controller
 
         $parentId = $validated['parent_id'] ?? null;
 
+        $parentComment = null;
+
         if ($parentId) {
             $parentComment = Komentar::query()
+                ->with('mahasiswa')
                 ->where('komentar_id', $parentId)
                 ->where('post_id', $post->post_id)
                 ->firstOrFail();
@@ -117,6 +121,8 @@ class FeedPostController extends Controller
             'isi_komentar' => $validated['content'],
             'tanggal_komentar' => now('Asia/Jakarta'),
         ]);
+
+        $this->notifyCommentActivity($request, $post, $parentComment);
 
         return back()->with('success', 'Komentar berhasil dikirim.');
     }
@@ -163,6 +169,58 @@ class FeedPostController extends Controller
                 ->map(fn ($image) => asset('storage/'.$image->image_path))
                 ->values(),
         ];
+    }
+
+    private function notifyCommentActivity(
+        Request $request,
+        FeedPost $post,
+        ?Komentar $parentComment
+    ): void {
+        $actor = $request->user();
+        $actorId = $actor->user_id;
+        $actorName = $actor->name ?? 'Seseorang';
+        $postTitle = str($post->title ?? 'postingan')->limit(80);
+        $postUrl = route('post.detail', $post, false);
+
+        $notifiedUserIds = collect();
+
+        if ($parentComment) {
+            $parentOwnerId = $parentComment->mahasiswa?->user_id;
+
+            if ($parentOwnerId && $parentOwnerId !== $actorId) {
+                Notification::create([
+                    'user_id' => $parentOwnerId,
+                    'type' => 'comment',
+                    'title' => 'Komentar kamu dibalas',
+                    'body' => "{$actorName} membalas komentarmu di postingan \"{$postTitle}\".",
+                    'url' => $postUrl,
+                ]);
+
+                $notifiedUserIds->push($parentOwnerId);
+            }
+
+            if ($post->user_id !== $actorId && ! $notifiedUserIds->contains($post->user_id)) {
+                Notification::create([
+                    'user_id' => $post->user_id,
+                    'type' => 'comment',
+                    'title' => 'Balasan baru di postingan kamu',
+                    'body' => "{$actorName} membalas komentar di postingan \"{$postTitle}\".",
+                    'url' => $postUrl,
+                ]);
+            }
+
+            return;
+        }
+
+        if ($post->user_id !== $actorId) {
+            Notification::create([
+                'user_id' => $post->user_id,
+                'type' => 'comment',
+                'title' => 'Komentar baru di postingan kamu',
+                'body' => "{$actorName} mengomentari postingan \"{$postTitle}\".",
+                'url' => $postUrl,
+            ]);
+        }
     }
 
     private function formatComment(Komentar $comment): array
