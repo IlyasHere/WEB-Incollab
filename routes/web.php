@@ -78,7 +78,9 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('event', [EventController::class, 'adminIndex'])->name('event');
+        Route::get('event/create', [EventController::class, 'create'])->name('event.create');
         Route::post('event', [EventController::class, 'store'])->name('event.store');
+        Route::get('event/{event}/edit', [EventController::class, 'edit'])->name('event.edit');
         Route::post('event/{event}/update', [EventController::class, 'update'])->name('event.update');
         Route::delete('event/{event}', [EventController::class, 'destroy'])->name('event.destroy');
         Route::get('reward', [RewardController::class, 'adminIndex'])->name('reward');
