@@ -24,6 +24,8 @@ class Event extends Model
         'poin_event',
         'link_pendaftaran',
         'status_event',
+        'visibility_status',
+        'registration_status',
         'poster_event',
         'detail_poster_event',
         'penyelenggara',

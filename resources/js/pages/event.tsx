@@ -21,6 +21,8 @@ type EventItem = {
     points: number;
     registration_url: string | null;
     status: string | null;
+    visibility_status?: string | null;
+    registration_status?: string | null;
     poster_url: string | null;
     detail_poster_url?: string | null;
     organizer: string | null;
@@ -170,8 +172,15 @@ function EventCard({ event }: { event: EventItem }) {
                 </p>
 
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="rounded-full bg-[#F6F0FF] px-4 py-2 text-sm font-semibold text-[#6610F2]">
-                        {event.points} poin
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="rounded-full bg-[#F6F0FF] px-4 py-2 text-sm font-semibold text-[#6610F2]">
+                            {event.points} poin
+                        </div>
+                        <div className="rounded-full bg-[#EEF4FF] px-4 py-2 text-sm font-semibold text-[#1D4ED8]">
+                            {event.registration_status ??
+                                event.status ??
+                                'Coming Soon'}
+                        </div>
                     </div>
 
                     {event.poster_url || event.detail_poster_url ? (
@@ -316,6 +325,11 @@ function SidebarPanel({
                                                 {formatDate(event.date)}
                                             </span>
                                         </div>
+                                        <p className="mt-2 text-xs font-semibold text-[#5E4E78]">
+                                            {event.registration_status ??
+                                                event.status ??
+                                                'Coming Soon'}
+                                        </p>
                                     </div>
                                 </div>
                             );

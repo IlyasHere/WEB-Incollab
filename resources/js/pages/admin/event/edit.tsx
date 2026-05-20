@@ -2,31 +2,33 @@ import { Head } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 import { EventForm } from './components/EventForm';
+import type { EventItem } from './types';
 
-type AdminEventCreateProps = {
+type AdminEventEditProps = {
     categories: string[];
     visibilities: string[];
     registrationStatuses: string[];
+    event: EventItem;
 };
 
-export default function AdminEventCreate({
+export default function AdminEventEdit({
     categories,
     visibilities,
     registrationStatuses,
-}: AdminEventCreateProps) {
+    event,
+}: AdminEventEditProps) {
     return (
         <>
-            <Head title="Tambah Event Baru" />
+            <Head title={`Edit ${event.title}`} />
             <EventForm
-                mode="create"
+                mode="edit"
                 categories={categories}
                 visibilities={visibilities}
                 registrationStatuses={registrationStatuses}
+                event={event}
             />
         </>
     );
 }
 
-AdminEventCreate.layout = (page: ReactNode) => (
-    <AdminLayout>{page}</AdminLayout>
-);
+AdminEventEdit.layout = (page: ReactNode) => <AdminLayout>{page}</AdminLayout>;

@@ -22,6 +22,8 @@ type EventItem = {
     points: number;
     registration_url: string | null;
     status: string | null;
+    visibility_status?: string | null;
+    registration_status?: string | null;
     poster_url: string | null;
     detail_poster_url: string | null;
     organizer: string | null;
@@ -87,6 +89,8 @@ function DetailImage({ event }: { event: EventItem }) {
 export default function EventDetailPage({ event }: EventDetailPageProps) {
     const badgeClass =
         categoryStyles[event.category ?? ''] ?? 'bg-[#EEF2FF] text-[#4338CA]';
+    const registrationStatus =
+        event.registration_status ?? event.status ?? 'Coming Soon';
 
     return (
         <>
@@ -130,7 +134,7 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                                             Status Event
                                         </p>
                                         <p className="mt-2 text-lg font-bold text-[#9A3412]">
-                                            {event.status ?? 'Segera hadir'}
+                                            {registrationStatus}
                                         </p>
                                     </div>
                                 </div>
@@ -226,12 +230,17 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                                             Pendaftaran
                                         </p>
                                         <p className="mt-2 text-base text-[#635875]">
-                                            Gunakan tombol di samping untuk
-                                            membuka laman pendaftaran event.
+                                            {registrationStatus === 'Open'
+                                                ? 'Gunakan tombol di samping untuk membuka laman pendaftaran event.'
+                                                : registrationStatus ===
+                                                    'Closed'
+                                                  ? 'Pendaftaran event ini sudah ditutup oleh admin.'
+                                                  : 'Link pendaftaran akan dibuka saat admin mengubah status registrasi ke Open.'}
                                         </p>
                                     </div>
 
-                                    {event.registration_url ? (
+                                    {registrationStatus === 'Open' &&
+                                    event.registration_url ? (
                                         <a
                                             href={event.registration_url}
                                             target="_blank"
@@ -243,7 +252,9 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                                         </a>
                                     ) : (
                                         <span className="inline-flex items-center rounded-2xl bg-[#F1E8FF] px-6 py-3 text-sm font-semibold text-[#7C3AED]">
-                                            Link pendaftaran menyusul
+                                            {registrationStatus === 'Closed'
+                                                ? 'Pendaftaran ditutup'
+                                                : 'Link pendaftaran menyusul'}
                                         </span>
                                     )}
                                 </div>
