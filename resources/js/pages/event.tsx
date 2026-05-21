@@ -3,6 +3,7 @@ import {
     ArrowRight,
     CalendarDays,
     Clock3,
+    FileUp,
     LayoutGrid,
     MapPin,
     ShieldCheck,
@@ -36,7 +37,6 @@ type EventPageProps = {
         view: 'list' | 'calendar';
     };
     events: EventItem[];
-    upcomingEvents: EventItem[];
     canManage: boolean;
 };
 
@@ -100,6 +100,7 @@ function buildQuery(category: string, view: 'list' | 'calendar') {
     }
 
     const query = params.toString();
+
     return query ? `/event?${query}` : '/event';
 }
 
@@ -276,69 +277,32 @@ function CalendarEventRow({ event }: { event: EventItem }) {
     );
 }
 
-function SidebarPanel({
-    canManage,
-    upcomingEvents,
-}: {
-    canManage: boolean;
-    upcomingEvents: EventItem[];
-}) {
+function SidebarPanel({ canManage }: { canManage: boolean }) {
     return (
         <aside className="space-y-6 xl:sticky xl:top-24">
             <section className="rounded-[28px] border border-[#ECE1F8] bg-white p-6 shadow-[0_22px_48px_rgba(96,66,145,0.08)]">
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-[28px] font-bold text-[#241B35]">
-                        Upcoming Events
+                        Klaim Poin
                     </h2>
-                    <CalendarDays className="h-6 w-6 text-[#7C3AED]" />
+                    <FileUp className="h-6 w-6 text-[#7C3AED]" />
                 </div>
+                <p className="mt-3 text-sm leading-6 text-[#6B617C]">
+                    Sudah ikut event? Upload sertifikat di sini. Poin hanya
+                    masuk setelah bukti disetujui admin.
+                </p>
 
-                <div className="mt-6 space-y-4">
-                    {upcomingEvents.length > 0 ? (
-                        upcomingEvents.map((event) => {
-                            const { month, day } = formatShortMonth(event.date);
-
-                            return (
-                                <div
-                                    key={`upcoming-${event.id}`}
-                                    className="flex gap-4 rounded-3xl bg-[#FCF9FF] p-4"
-                                >
-                                    <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#F1E8FF] text-[#6610F2]">
-                                        <span className="text-xs font-bold tracking-[0.16em]">
-                                            {month}
-                                        </span>
-                                        <span className="text-2xl leading-none font-extrabold">
-                                            {day}
-                                        </span>
-                                    </div>
-
-                                    <div className="min-w-0">
-                                        <p className="line-clamp-2 text-base font-bold text-[#241B35]">
-                                            {event.title}
-                                        </p>
-                                        <p className="mt-1 text-sm text-[#6A617D]">
-                                            {event.organizer ?? 'Penyelenggara'}
-                                        </p>
-                                        <div className="mt-2 flex items-center gap-2 text-sm text-[#7A708E]">
-                                            <Clock3 className="h-4 w-4 text-[#7C3AED]" />
-                                            <span>
-                                                {formatDate(event.date)}
-                                            </span>
-                                        </div>
-                                        <p className="mt-2 text-xs font-semibold text-[#5E4E78]">
-                                            {event.registration_status ??
-                                                event.status ??
-                                                'Coming Soon'}
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <div className="rounded-3xl bg-[#FCF9FF] p-5 text-sm leading-7 text-[#6B617C]">
-                            Belum ada event yang dipublikasikan admin.
-                        </div>
-                    )}
+                <div className="mt-6 rounded-3xl bg-[#FCF9FF] p-5 text-sm leading-7 text-[#6B617C]">
+                    <p>
+                        Masukkan nama event, tanggal mengikuti, dan upload bukti
+                        sertifikat melalui formulir klaim.
+                    </p>
+                    <Link
+                        href="/klaim-poin-event"
+                        className="mt-4 inline-flex items-center justify-center rounded-xl bg-[#6610F2] px-5 py-2.5 text-sm font-semibold text-white"
+                    >
+                        Isi Form Klaim
+                    </Link>
                 </div>
             </section>
 
@@ -380,7 +344,6 @@ export default function EventPage({
     categories,
     filters,
     events,
-    upcomingEvents,
     canManage,
 }: EventPageProps) {
     return (
@@ -460,7 +423,7 @@ export default function EventPage({
                                     ))}
                                 </div>
 
-                                <div className="mt-10">
+                                <div id="daftar-event" className="mt-10">
                                     {events.length > 0 ? (
                                         filters.view === 'list' ? (
                                             <div className="grid gap-6 md:grid-cols-2">
@@ -500,10 +463,7 @@ export default function EventPage({
                                 </div>
                             </div>
 
-                            <SidebarPanel
-                                canManage={canManage}
-                                upcomingEvents={upcomingEvents}
-                            />
+                            <SidebarPanel canManage={canManage} />
                         </div>
                     </section>
                 </div>
