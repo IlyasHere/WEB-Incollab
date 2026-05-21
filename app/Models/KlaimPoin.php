@@ -10,6 +10,7 @@ class KlaimPoin extends Model
     use HasFactory;
 
     protected $table = 'klaim_poin';
+
     protected $primaryKey = 'klaim_id';
 
     protected $fillable = [
@@ -17,10 +18,27 @@ class KlaimPoin extends Model
         'event_id',
         'admin_id',
         'tanggal_klaim',
+        'nama_lengkap',
+        'nim_user',
+        'nama_event',
+        'tanggal_mengikuti_event',
+        'nama_sertifikat',
         'file_bukti',
+        'catatan_user',
         'status_klaim',
         'catatan_admin',
+        'alasan_penolakan',
+        'poin_diberikan_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'tanggal_klaim' => 'date',
+            'tanggal_mengikuti_event' => 'date',
+            'poin_diberikan_at' => 'datetime',
+        ];
+    }
 
     // Relasi
     public function mahasiswa()
@@ -40,6 +58,8 @@ class KlaimPoin extends Model
 
     // Method dari class diagram
     public function submitKlaim() {}
+
     public function tampilkanKlaim() {}
+
     public function approvalKlaim() {}
 }

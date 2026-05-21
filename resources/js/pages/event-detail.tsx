@@ -4,6 +4,7 @@ import {
     CalendarDays,
     ExternalLink,
     Gift,
+    FileUp,
     MapPin,
     ShieldAlert,
     UserRound,
@@ -257,6 +258,27 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                                                 : 'Link pendaftaran menyusul'}
                                         </span>
                                     )}
+                                </div>
+
+                                <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-[#E7DBF8] bg-white p-6">
+                                    <div>
+                                        <p className="text-sm font-semibold tracking-[0.16em] text-[#6610F2] uppercase">
+                                            Klaim Poin
+                                        </p>
+                                        <p className="mt-2 text-base text-[#635875]">
+                                            Setelah mengikuti event, upload
+                                            sertifikat atau bukti keikutsertaan
+                                            untuk diverifikasi admin.
+                                        </p>
+                                    </div>
+
+                                    <Link
+                                        href="/klaim-poin-event"
+                                        className="inline-flex items-center gap-2 rounded-2xl bg-[#6610F2] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(102,16,242,0.20)]"
+                                    >
+                                        Ajukan Klaim
+                                        <FileUp className="h-4 w-4" />
+                                    </Link>
                                 </div>
                             </div>
                         </section>

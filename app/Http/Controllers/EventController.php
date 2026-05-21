@@ -41,10 +41,10 @@ class EventController extends Controller
         }
 
         $events = $eventsQuery->get();
-        $upcomingEvents = Event::query()
+        $claimableEvents = Event::query()
             ->where('visibility_status', 'Published')
-            ->whereDate('tanggal_event', '>=', now()->toDateString())
-            ->orderBy('tanggal_event')
+            ->where('poin_event', '>', 0)
+            ->latest('tanggal_event')
             ->take(4)
             ->get();
 
@@ -55,7 +55,7 @@ class EventController extends Controller
                 'view' => in_array($view, ['list', 'calendar'], true) ? $view : 'list',
             ],
             'events' => $events->map(fn (Event $event) => $this->transformEvent($event))->values(),
-            'upcomingEvents' => $upcomingEvents
+            'upcomingEvents' => $claimableEvents
                 ->map(fn (Event $event) => $this->transformEvent($event))
                 ->values(),
             'canManage' => $request->user()?->role === 'admin',
