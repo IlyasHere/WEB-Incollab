@@ -37,7 +37,6 @@ type EventPageProps = {
         view: 'list' | 'calendar';
     };
     events: EventItem[];
-    upcomingEvents: EventItem[];
     canManage: boolean;
 };
 
@@ -101,6 +100,7 @@ function buildQuery(category: string, view: 'list' | 'calendar') {
     }
 
     const query = params.toString();
+
     return query ? `/event?${query}` : '/event';
 }
 
@@ -277,11 +277,7 @@ function CalendarEventRow({ event }: { event: EventItem }) {
     );
 }
 
-function SidebarPanel({
-    canManage,
-}: {
-    canManage: boolean;
-}) {
+function SidebarPanel({ canManage }: { canManage: boolean }) {
     return (
         <aside className="space-y-6 xl:sticky xl:top-24">
             <section className="rounded-[28px] border border-[#ECE1F8] bg-white p-6 shadow-[0_22px_48px_rgba(96,66,145,0.08)]">
@@ -298,8 +294,8 @@ function SidebarPanel({
 
                 <div className="mt-6 rounded-3xl bg-[#FCF9FF] p-5 text-sm leading-7 text-[#6B617C]">
                     <p>
-                        Masukkan nama event, tanggal mengikuti, dan upload
-                        bukti sertifikat melalui formulir klaim.
+                        Masukkan nama event, tanggal mengikuti, dan upload bukti
+                        sertifikat melalui formulir klaim.
                     </p>
                     <Link
                         href="/klaim-poin-event"
@@ -348,7 +344,6 @@ export default function EventPage({
     categories,
     filters,
     events,
-    upcomingEvents,
     canManage,
 }: EventPageProps) {
     return (
@@ -468,9 +463,7 @@ export default function EventPage({
                                 </div>
                             </div>
 
-                            <SidebarPanel
-                                canManage={canManage}
-                            />
+                            <SidebarPanel canManage={canManage} />
                         </div>
                     </section>
                 </div>
