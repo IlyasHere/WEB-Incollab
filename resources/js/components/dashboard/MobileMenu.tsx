@@ -24,7 +24,9 @@ export default function MobileMenu({
         <div className="border-b border-[#EFE4F8] bg-white px-4 py-4 md:hidden">
             <nav className="space-y-2">
                 {[...items, settingsItem].map(({ label, href, icon: Icon }) => {
-                    const active = href === currentPath;
+                    const active =
+                        href === currentPath ||
+                        currentPath.startsWith(`${href}/`);
 
                     return (
                         <Link

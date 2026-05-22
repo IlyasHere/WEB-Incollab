@@ -19,6 +19,7 @@
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FeedPostController;
@@ -51,6 +52,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('post/{post}', [FeedPostController::class, 'show'])->name('post.detail');
     Route::get('trending', [TrendingTopicController::class, 'index'])->name('trending.index');
     Route::get('trending/{topic}', [TrendingTopicController::class, 'show'])->name('trending.show');
+    Route::get('chat', [ChatController::class, 'index'])->name('chat');
+    Route::get('chat/{conversation}', [ChatController::class, 'index'])->name('chat.show');
+    Route::post('chat', [ChatController::class, 'start'])->name('chat.start');
+    Route::post('chat/{conversation}/messages', [ChatController::class, 'store'])->name('chat.messages.store');
+    Route::post('chat/{conversation}/read', [ChatController::class, 'read'])->name('chat.read');
 });
 
 Route::middleware(['auth', 'mahasiswa'])->group(function () {

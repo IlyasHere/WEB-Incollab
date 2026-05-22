@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Message;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -55,6 +56,12 @@ class HandleInertiaRequests extends Middleware
             ],
             'notificationUnreadCount' => $user
                 ? Notification::where('user_id', $user->user_id)->whereNull('read_at')->count()
+                : 0,
+            'chatUnreadCount' => $user
+                ? Message::where('sender_id', '!=', $user->user_id)
+                    ->whereNull('read_at')
+                    ->whereHas('conversation', fn ($query) => $query->forUser($user))
+                    ->count()
                 : 0,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
