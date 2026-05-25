@@ -28,12 +28,46 @@ class EventController extends Controller
      */
     public function index(Request $request): Response
     {
+        $filters = $request->validate([
+            'category' => ['nullable', 'string', 'max:100'],
+            'view' => ['nullable', 'string', 'in:list,calendar'],
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+
         $category = $request->string('category')->value() ?: 'Semua';
         $view = $request->string('view')->value() ?: 'list';
+        $search = trim($filters['search'] ?? '');
         $categories = $this->categories();
 
         $eventsQuery = Event::query()
+            ->with('admin')
             ->where('visibility_status', 'Published')
+            ->when($search !== '', function ($query) use ($search) {
+                $lowerSearch = mb_strtolower($search);
+                $normalizedNumber = preg_replace('/\D+/', '', $search);
+
+                $query->where(function ($query) use ($lowerSearch, $normalizedNumber) {
+                    if ($normalizedNumber !== '') {
+                        $query->orWhere('poin_event', (int) $normalizedNumber);
+                    }
+
+                    $query
+                        ->orWhereRaw('LOWER(judul_event) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('LOWER(deskripsi_event) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('LOWER(kategori_event) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('LOWER(lokasi) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('LOWER(penyelenggara) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('LOWER(registration_status) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('LOWER(status_event) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('CAST(tanggal_event AS TEXT) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereRaw('CAST(tanggal_selesai AS TEXT) LIKE ?', ['%'.$lowerSearch.'%'])
+                        ->orWhereHas('admin', function ($query) use ($lowerSearch) {
+                            $query
+                                ->whereRaw('LOWER(name) LIKE ?', ['%'.$lowerSearch.'%'])
+                                ->orWhereRaw('LOWER(email) LIKE ?', ['%'.$lowerSearch.'%']);
+                        });
+                });
+            })
             ->orderBy('tanggal_event');
 
         if ($category !== 'Semua') {
@@ -53,6 +87,7 @@ class EventController extends Controller
             'filters' => [
                 'category' => in_array($category, $categories, true) ? $category : 'Semua',
                 'view' => in_array($view, ['list', 'calendar'], true) ? $view : 'list',
+                'search' => $search,
             ],
             'events' => $events->map(fn (Event $event) => $this->transformEvent($event))->values(),
             'upcomingEvents' => $claimableEvents

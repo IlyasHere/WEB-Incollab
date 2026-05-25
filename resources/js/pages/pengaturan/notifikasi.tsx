@@ -164,6 +164,11 @@ function NotificationCard({
             : notification.type === 'comment'
               ? MessageCircle
               : Info;
+    const actionLabel = notification.url
+        ? 'Buka detail'
+        : isUnread
+          ? 'Tandai sudah dibaca'
+          : 'Sudah dibaca';
 
     return (
         <article
@@ -220,9 +225,7 @@ function NotificationCard({
                     </p>
 
                     <div className="mt-3 inline-flex items-center gap-2 text-xs font-extrabold text-[#6610F2]">
-                        {notification.url
-                            ? 'Buka detail'
-                            : 'Tandai sudah dibaca'}
+                        {actionLabel}
                         <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
                     </div>
                 </div>

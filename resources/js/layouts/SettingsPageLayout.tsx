@@ -89,10 +89,18 @@ export default function SettingsPageLayout({
 
                     <Link
                         href="/pengaturan"
-                        className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]"
+                        className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#6610F2,#A855F7)] text-sm font-bold text-white shadow-[0_10px_20px_rgba(102,16,242,0.25)]"
                         aria-label="Edit profil"
                     >
-                        {initials}
+                        {auth.user.avatar ? (
+                            <img
+                                src={auth.user.avatar}
+                                alt={auth.user.name}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            initials
+                        )}
                     </Link>
                 </div>
             </header>

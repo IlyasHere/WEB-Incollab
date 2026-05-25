@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
@@ -11,11 +12,14 @@ test('login screen can be rendered', function () {
 });
 
 test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email' => 'login-user@gmail.com',
+        'password' => Hash::make('Password123'),
+    ]);
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => 'Password123',
     ]);
 
     $this->assertAuthenticated();
@@ -30,7 +34,10 @@ test('users with two factor enabled are redirected to two factor challenge', fun
         'confirmPassword' => true,
     ]);
 
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email' => 'two-factor-user@gmail.com',
+        'password' => Hash::make('Password123'),
+    ]);
 
     $user->forceFill([
         'two_factor_secret' => encrypt('test-secret'),
@@ -40,7 +47,7 @@ test('users with two factor enabled are redirected to two factor challenge', fun
 
     $response = $this->post(route('login'), [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => 'Password123',
     ]);
 
     $response->assertRedirect(route('two-factor.login'));
@@ -49,11 +56,14 @@ test('users with two factor enabled are redirected to two factor challenge', fun
 });
 
 test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email' => 'invalid-password-user@gmail.com',
+        'password' => Hash::make('Password123'),
+    ]);
 
     $this->post(route('login.store'), [
         'email' => $user->email,
-        'password' => 'wrong-password',
+        'password' => 'Wrong123',
     ]);
 
     $this->assertGuest();
@@ -69,14 +79,44 @@ test('users can logout', function () {
 });
 
 test('users are rate limited', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email' => 'rate-limited-user@gmail.com',
+    ]);
 
     RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,
-        'password' => 'wrong-password',
+        'password' => 'Wrong123',
     ]);
 
     $response->assertTooManyRequests();
+});
+
+test('login requires a gmail address', function () {
+    $response = $this->from(route('login'))->post(route('login.store'), [
+        'email' => 'ilyas@com',
+        'password' => 'Password123',
+    ]);
+
+    $response->assertRedirect(route('login'));
+    $response->assertSessionHasErrors([
+        'email' => 'Email harus menggunakan @gmail.com.',
+    ]);
+});
+
+test('login password must be at least eight characters and include letters and numbers', function () {
+    $this->from(route('login'))->post(route('login.store'), [
+        'email' => 'ilyas@gmail.com',
+        'password' => '12345678',
+    ])->assertSessionHasErrors([
+        'password' => 'Password harus mengandung huruf dan angka.',
+    ]);
+
+    $this->from(route('login'))->post(route('login.store'), [
+        'email' => 'ilyas@gmail.com',
+        'password' => 'Abc123',
+    ])->assertSessionHasErrors([
+        'password' => 'Password minimal 8 karakter.',
+    ]);
 });
