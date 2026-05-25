@@ -3,7 +3,6 @@ import { usePage } from '@inertiajs/react';
 import {
     Bell,
     Bookmark,
-    Compass,
     Coins,
     Home,
     Settings,

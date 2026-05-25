@@ -51,13 +51,18 @@ class NotificationController extends Controller
     private function formatNotification(Notification $notification): array
     {
         $createdAt = $notification->created_at?->copy()->timezone('Asia/Jakarta');
+        $url = $notification->url;
+
+        if (! $url && in_array($notification->type, ['reward', 'reward_merch'], true)) {
+            $url = route('pengaturan.riwayat-poin');
+        }
 
         return [
             'id' => $notification->id,
             'type' => $notification->type,
             'title' => $notification->title,
             'body' => $notification->body,
-            'url' => $notification->url,
+            'url' => $url,
             'readAt' => $notification->read_at?->copy()->timezone('Asia/Jakarta')->toIso8601String(),
             'createdAt' => $createdAt?->toIso8601String(),
             'timeLabel' => $createdAt?->diffForHumans(),

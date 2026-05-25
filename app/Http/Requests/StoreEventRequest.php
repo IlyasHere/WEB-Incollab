@@ -79,7 +79,21 @@ class StoreEventRequest extends FormRequest
         $validator->after(function ($validator) {
             $event = $this->route('event');
 
-            if (! $event instanceof Event || $event->registration_status !== self::CLOSED) {
+            if (! $event instanceof Event) {
+                return;
+            }
+
+            if (
+                $event->registration_status === self::OPEN &&
+                ($this->input('registration_status') ?? self::OPEN) === self::COMING_SOON
+            ) {
+                $validator->errors()->add(
+                    'registration_status',
+                    'Registration status event yang sudah open tidak bisa dikembalikan ke coming soon.'
+                );
+            }
+
+            if ($event->registration_status !== self::CLOSED) {
                 return;
             }
 

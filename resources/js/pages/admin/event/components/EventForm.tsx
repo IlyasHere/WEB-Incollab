@@ -8,11 +8,13 @@ import {
     Ticket,
     Trophy,
 } from 'lucide-react';
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import type { EventFormValues, EventItem } from '../types';
 
 const OPEN_REGISTRATION_STATUS = 'Open';
 const CLOSED_REGISTRATION_STATUS = 'Closed';
+const COMING_SOON_REGISTRATION_STATUS = 'Coming Soon';
 
 function inputClass(disabled = false) {
     return `mt-2 w-full rounded-2xl border px-4 py-3 text-sm text-[#382A49] transition outline-none placeholder:text-[#8B8496] ${
@@ -127,6 +129,33 @@ function initialFormValues(
     };
 }
 
+function allowedRegistrationStatuses(
+    statuses: string[],
+    event?: EventItem,
+): string[] {
+    if (event?.registration_status === OPEN_REGISTRATION_STATUS) {
+        return statuses.filter((status) =>
+            [OPEN_REGISTRATION_STATUS, CLOSED_REGISTRATION_STATUS].includes(
+                status,
+            ),
+        );
+    }
+
+    if (event?.registration_status === CLOSED_REGISTRATION_STATUS) {
+        return statuses.filter(
+            (status) => status === CLOSED_REGISTRATION_STATUS,
+        );
+    }
+
+    return statuses.filter((status) =>
+        [
+            COMING_SOON_REGISTRATION_STATUS,
+            OPEN_REGISTRATION_STATUS,
+            CLOSED_REGISTRATION_STATUS,
+        ].includes(status),
+    );
+}
+
 export function EventForm({
     mode,
     categories,
@@ -153,6 +182,10 @@ export function EventForm({
 
     const registrationIsOpen =
         data.registration_status === OPEN_REGISTRATION_STATUS;
+    const availableRegistrationStatuses = allowedRegistrationStatuses(
+        registrationStatuses,
+        mode === 'edit' ? event : undefined,
+    );
     const isClosedEvent =
         mode === 'edit' &&
         event?.registration_status === CLOSED_REGISTRATION_STATUS;
@@ -184,6 +217,7 @@ export function EventForm({
             }
 
             setCardPreview(nextPreview ?? event?.poster_url ?? null);
+
             return;
         }
 
@@ -293,7 +327,7 @@ export function EventForm({
                                 className={inputClass(isClosedEvent)}
                                 disabled={isClosedEvent}
                             >
-                                {registrationStatuses.map((status) => (
+                                {availableRegistrationStatuses.map((status) => (
                                     <option key={status} value={status}>
                                         {status}
                                     </option>
