@@ -210,7 +210,15 @@ class ChatController extends Controller
 
     private function dateString(Carbon|string|null $date): ?string
     {
-        return $date instanceof Carbon ? $date->toISOString() : $date;
+        if (! $date) {
+            return null;
+        }
+
+        if ($date instanceof Carbon) {
+            return $date->toISOString();
+        }
+
+        return Carbon::parse($date, 'UTC')->toISOString();
     }
 
     private function markConversationRead(Conversation $conversation, User $user): void

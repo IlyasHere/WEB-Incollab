@@ -1,17 +1,22 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    ArrowRight,
     CheckCheck,
     MessageCircle,
     Paperclip,
-    Plus,
     Search,
     SendHorizontal,
     X,
     UserRound,
 } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Fragment,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import { getEcho } from '@/lib/echo';
 import type { RealtimeConfig } from '@/lib/echo';
@@ -54,7 +59,6 @@ type ChatProps = {
     conversations: Conversation[];
     activeConversation: Conversation | null;
     messages: ChatMessage[];
-    users: ChatUser[];
     realtime: RealtimeConfig;
 };
 
@@ -93,16 +97,21 @@ type RealtimePrivateChannel = {
 };
 
 type RealtimePresenceChannel = {
-    here: (callback: (users: PresenceUser[]) => void) => RealtimePresenceChannel;
-    joining: (callback: (user: PresenceUser) => void) => RealtimePresenceChannel;
-    leaving: (callback: (user: PresenceUser) => void) => RealtimePresenceChannel;
+    here: (
+        callback: (users: PresenceUser[]) => void,
+    ) => RealtimePresenceChannel;
+    joining: (
+        callback: (user: PresenceUser) => void,
+    ) => RealtimePresenceChannel;
+    leaving: (
+        callback: (user: PresenceUser) => void,
+    ) => RealtimePresenceChannel;
 };
 
 export default function Chat({
     conversations: initialConversations,
     activeConversation,
     messages: initialMessages,
-    users,
     realtime,
 }: ChatProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
@@ -115,7 +124,6 @@ export default function Chat({
     >({});
     const [body, setBody] = useState('');
     const [sending, setSending] = useState(false);
-    const [selectedUserId, setSelectedUserId] = useState('');
     const [search, setSearch] = useState('');
     const [attachment, setAttachment] = useState<File | null>(null);
     const [attachmentPreview, setAttachmentPreview] = useState<string | null>(
@@ -179,9 +187,8 @@ export default function Chat({
         ) as unknown as RealtimePrivateChannel;
         privateChannelRef.current = privateChannel;
 
-        privateChannel.listen(
-            '.message.sent',
-            (event) => {
+        privateChannel
+            .listen('.message.sent', (event) => {
                 const messageEvent = event as MessageSentEvent;
 
                 if (
@@ -240,29 +247,30 @@ export default function Chat({
                     setTyping(false);
                     markRead(activeConversation.id);
                 }
-            },
-        ).listen('.messages.read', (event) => {
-            const readEvent = event as MessagesReadEvent;
+            })
+            .listen('.messages.read', (event) => {
+                const readEvent = event as MessagesReadEvent;
 
-            if (readEvent.reader_id === currentUserId) {
-                return;
-            }
+                if (readEvent.reader_id === currentUserId) {
+                    return;
+                }
 
-            setMessageOverrides((current) => {
-                const currentMessages =
-                    current[activeConversation.id] ?? initialMessages;
-                const readIds = new Set(readEvent.message_ids);
+                setMessageOverrides((current) => {
+                    const currentMessages =
+                        current[activeConversation.id] ?? initialMessages;
+                    const readIds = new Set(readEvent.message_ids);
 
-                return {
-                    ...current,
-                    [activeConversation.id]: currentMessages.map((message) =>
-                        readIds.has(message.id)
-                            ? { ...message, read_at: readEvent.read_at }
-                            : message,
-                    ),
-                };
+                    return {
+                        ...current,
+                        [activeConversation.id]: currentMessages.map(
+                            (message) =>
+                                readIds.has(message.id)
+                                    ? { ...message, read_at: readEvent.read_at }
+                                    : message,
+                        ),
+                    };
+                });
             });
-        });
 
         privateChannel.listenForWhisper('typing', (event) => {
             if (event.user_id === currentUserId) {
@@ -329,17 +337,25 @@ export default function Chat({
         };
     }, [attachmentPreview]);
 
-    const filteredUsers = useMemo(() => {
+    const filteredConversations = useMemo(() => {
         const keyword = search.trim().toLowerCase();
 
         if (!keyword) {
-            return users;
+            return conversations;
         }
 
-        return users.filter((user) =>
-            `${user.name} ${user.email ?? ''}`.toLowerCase().includes(keyword),
+        return conversations.filter((conversation) =>
+            [
+                conversation.participant?.name,
+                conversation.participant?.email,
+                conversation.latest_message?.body,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()
+                .includes(keyword),
         );
-    }, [search, users]);
+    }, [conversations, search]);
 
     async function submitMessage(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -359,15 +375,18 @@ export default function Chat({
             formData.append('attachment', attachment);
         }
 
-        const response = await fetch(`/chat/${activeConversation.id}/messages`, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                Accept: 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken(),
+        const response = await fetch(
+            `/chat/${activeConversation.id}/messages`,
+            {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                },
+                body: formData,
             },
-            body: formData,
-        });
+        );
 
         setSending(false);
 
@@ -403,16 +422,6 @@ export default function Chat({
             ...current,
             [payload.conversation.id]: payload.conversation,
         }));
-    }
-
-    function startConversation(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        if (!selectedUserId) {
-            return;
-        }
-
-        router.post('/chat', { user_id: Number(selectedUserId) });
     }
 
     function updateDraft(value: string) {
@@ -483,39 +492,6 @@ export default function Chat({
                                 </span>
                             </div>
 
-                            <form
-                                onSubmit={startConversation}
-                                className="mt-5 grid gap-3"
-                            >
-                                <label className="text-sm font-semibold text-[#3E2A59]">
-                                    Mulai chat baru
-                                </label>
-                                <div className="flex gap-2">
-                                    <select
-                                        value={selectedUserId}
-                                        onChange={(event) =>
-                                            setSelectedUserId(event.target.value)
-                                        }
-                                        className="h-11 min-w-0 flex-1 rounded-2xl border border-[#EADCF8] bg-[#F7F1FF] px-3 text-sm font-medium text-[#382A49] outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
-                                    >
-                                        <option value="">Pilih pengguna</option>
-                                        {users.map((user) => (
-                                            <option key={user.id} value={user.id}>
-                                                {user.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        type="submit"
-                                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6610F2] text-white transition hover:bg-[#570DCC] disabled:opacity-60"
-                                        disabled={!selectedUserId}
-                                        aria-label="Mulai chat"
-                                    >
-                                        <Plus className="h-5 w-5" />
-                                    </button>
-                                </div>
-                            </form>
-
                             <div className="relative mt-4">
                                 <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8A7FA2]" />
                                 <input
@@ -524,62 +500,41 @@ export default function Chat({
                                     onChange={(event) =>
                                         setSearch(event.target.value)
                                     }
-                                    placeholder="Cari pengguna..."
+                                    placeholder="Cari percakapan..."
                                     className="h-11 w-full rounded-2xl border border-[#EADCF8] bg-white pr-3 pl-10 text-sm text-[#382A49] outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                                 />
                             </div>
                         </div>
 
-                        <div className="max-h-[calc(100vh-385px)] min-h-[280px] overflow-y-auto p-3">
-                            {conversations.length > 0 ? (
+                        <div className="max-h-[calc(100vh-290px)] min-h-[280px] overflow-y-auto p-3">
+                            {filteredConversations.length > 0 ? (
                                 <div className="space-y-2">
-                                    {conversations.map((conversation) => (
-                                        <ConversationItem
-                                            key={conversation.id}
-                                            conversation={conversation}
-                                            active={
-                                                conversation.id ===
-                                                activeConversation?.id
-                                            }
-                                        />
-                                    ))}
+                                    {filteredConversations.map(
+                                        (conversation) => (
+                                            <ConversationItem
+                                                key={conversation.id}
+                                                conversation={conversation}
+                                                active={
+                                                    conversation.id ===
+                                                    activeConversation?.id
+                                                }
+                                            />
+                                        ),
+                                    )}
                                 </div>
                             ) : (
                                 <EmptyList
-                                    title="Belum ada percakapan"
-                                    description="Pilih pengguna untuk mulai mengirim pesan."
+                                    title={
+                                        conversations.length > 0
+                                            ? 'Percakapan tidak ditemukan'
+                                            : 'Belum ada percakapan'
+                                    }
+                                    description={
+                                        conversations.length > 0
+                                            ? 'Coba kata kunci lain untuk mencari percakapan.'
+                                            : 'Percakapan yang sudah dibuat akan muncul di sini.'
+                                    }
                                 />
-                            )}
-
-                            {filteredUsers.length > 0 && conversations.length === 0 && (
-                                <div className="mt-4 border-t border-[#F3EBFA] pt-4">
-                                    <p className="px-2 text-xs font-bold tracking-[0.16em] text-[#8A7FA2] uppercase">
-                                        Pengguna
-                                    </p>
-                                    <div className="mt-2 space-y-1">
-                                        {filteredUsers.slice(0, 6).map((user) => (
-                                            <button
-                                                key={user.id}
-                                                type="button"
-                                                onClick={() =>
-                                                    setSelectedUserId(String(user.id))
-                                                }
-                                                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition hover:bg-[#F7F1FF]"
-                                            >
-                                                <Avatar user={user} />
-                                                <span className="min-w-0 flex-1">
-                                                    <span className="block truncate text-sm font-bold text-[#2C213B]">
-                                                        {user.name}
-                                                    </span>
-                                                    <span className="block truncate text-xs text-[#8A7FA2]">
-                                                        {user.email}
-                                                    </span>
-                                                </span>
-                                                <ArrowRight className="h-4 w-4 text-[#8A7FA2]" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
                             )}
                         </div>
                     </aside>
@@ -588,10 +543,15 @@ export default function Chat({
                         {activeConversation?.participant ? (
                             <>
                                 <div className="flex items-center gap-3 border-b border-[#F3EBFA] px-5 py-4">
-                                    <Avatar user={activeConversation.participant} />
+                                    <Avatar
+                                        user={activeConversation.participant}
+                                    />
                                     <div className="min-w-0 flex-1">
                                         <h2 className="truncate text-lg font-extrabold text-[#241A35]">
-                                            {activeConversation.participant.name}
+                                            {
+                                                activeConversation.participant
+                                                    .name
+                                            }
                                         </h2>
                                         <p className="flex items-center gap-2 truncate text-sm text-[#8A7FA2]">
                                             <span
@@ -608,31 +568,42 @@ export default function Chat({
                                                   : realtime.enabled
                                                     ? 'Offline'
                                                     : 'Realtime belum dikonfigurasi'}
-                                            {activeConversation.last_message_at &&
-                                                !typing && (
-                                                    <span>
-                                                        •{' '}
-                                                        {formatTime(
-                                                            activeConversation.last_message_at,
-                                                        )}
-                                                    </span>
-                                                )}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto bg-[#FBF8FF] px-4 py-5 sm:px-6">
                                     <div className="space-y-3">
-                                        {messages.map((message) => (
-                                            <MessageBubble
-                                                key={message.id}
-                                                message={message}
-                                                mine={
-                                                    message.sender_id ===
-                                                    currentUserId
-                                                }
-                                            />
-                                        ))}
+                                        {messages.map((message, index) => {
+                                            const previousMessage =
+                                                messages[index - 1];
+                                            const showDateSeparator =
+                                                getDateKey(
+                                                    message.created_at,
+                                                ) !==
+                                                getDateKey(
+                                                    previousMessage?.created_at,
+                                                );
+
+                                            return (
+                                                <Fragment key={message.id}>
+                                                    {showDateSeparator && (
+                                                        <DateSeparator
+                                                            value={
+                                                                message.created_at
+                                                            }
+                                                        />
+                                                    )}
+                                                    <MessageBubble
+                                                        message={message}
+                                                        mine={
+                                                            message.sender_id ===
+                                                            currentUserId
+                                                        }
+                                                    />
+                                                </Fragment>
+                                            );
+                                        })}
                                         {typing &&
                                             activeConversation.participant && (
                                                 <TypingBubble
@@ -708,8 +679,7 @@ export default function Chat({
                                         <button
                                             type="submit"
                                             disabled={
-                                                (!body.trim() &&
-                                                    !attachment) ||
+                                                (!body.trim() && !attachment) ||
                                                 sending
                                             }
                                             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#6610F2] text-white transition hover:bg-[#570DCC] disabled:opacity-60"
@@ -730,9 +700,10 @@ export default function Chat({
                                         Pilih teman ngobrol
                                     </h2>
                                     <p className="mt-2 text-sm leading-6 text-[#766B8A]">
-                                        Mulai percakapan baru dari daftar pengguna,
-                                        lalu pesan akan tersimpan dan siap disiarkan
-                                        realtime saat konfigurasi broadcast aktif.
+                                        Pilih percakapan dari daftar untuk
+                                        membaca dan mengirim pesan secara
+                                        realtime saat konfigurasi broadcast
+                                        aktif.
                                     </p>
                                 </div>
                             </div>
@@ -847,7 +818,7 @@ function MessageBubble({
                     </a>
                 )}
                 {message.body && (
-                    <p className="whitespace-pre-wrap break-words">
+                    <p className="break-words whitespace-pre-wrap">
                         {message.body}
                     </p>
                 )}
@@ -865,6 +836,22 @@ function MessageBubble({
                     )}
                 </div>
             </div>
+        </div>
+    );
+}
+
+function DateSeparator({ value }: { value?: string | null }) {
+    const label = formatMessageDate(value);
+
+    if (!label) {
+        return null;
+    }
+
+    return (
+        <div className="flex justify-center py-1">
+            <span className="rounded-full border border-[#EADCF8] bg-white px-3 py-1 text-xs font-bold text-[#766B8A] shadow-sm">
+                {label}
+            </span>
         </div>
     );
 }
@@ -905,7 +892,13 @@ function TypingBubble({ user }: { user: ChatUser }) {
     );
 }
 
-function Avatar({ user, active = false }: { user: ChatUser; active?: boolean }) {
+function Avatar({
+    user,
+    active = false,
+}: {
+    user: ChatUser;
+    active?: boolean;
+}) {
     const initials = user.name
         .split(' ')
         .map((part) => part[0])
@@ -916,7 +909,9 @@ function Avatar({ user, active = false }: { user: ChatUser; active?: boolean }) 
     return (
         <span
             className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-extrabold ${
-                active ? 'bg-white/20 text-white' : 'bg-[#F0E7FF] text-[#6610F2]'
+                active
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[#F0E7FF] text-[#6610F2]'
             }`}
         >
             {user.avatar ? (
@@ -960,14 +955,58 @@ function getCsrfToken() {
 }
 
 function formatTime(value?: string | null) {
-    if (!value) {
+    const date = parseChatDate(value);
+
+    if (!date) {
         return '';
     }
 
     return new Intl.DateTimeFormat('id-ID', {
         hour: '2-digit',
         minute: '2-digit',
-    }).format(new Date(value));
+    }).format(date);
+}
+
+function getDateKey(value?: string | null) {
+    const date = parseChatDate(value);
+
+    if (!date) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(date);
+}
+
+function formatMessageDate(value?: string | null) {
+    const date = parseChatDate(value);
+
+    if (!date) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
+
+function parseChatDate(value?: string | null) {
+    if (!value) {
+        return null;
+    }
+
+    const normalized = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(value)
+        ? `${value.replace(' ', 'T')}Z`
+        : value;
+    const date = new Date(normalized);
+
+    return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function formatFileSize(size?: number | null) {
