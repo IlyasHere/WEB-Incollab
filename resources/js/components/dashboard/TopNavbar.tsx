@@ -4,6 +4,7 @@ import { Bell, Menu, Search, X, LogOut } from 'lucide-react';
 type TopNavbarProps = {
     userName: string;
     userAvatar?: string | null;
+    notificationUnreadCount?: number;
     mobileMenuOpen: boolean;
     onToggleMenu: () => void;
     onLogout?: () => void;
@@ -12,6 +13,7 @@ type TopNavbarProps = {
 export default function TopNavbar({
     userName,
     userAvatar,
+    notificationUnreadCount = 0,
     mobileMenuOpen,
     onToggleMenu,
     onLogout,
@@ -25,7 +27,7 @@ export default function TopNavbar({
 
     return (
         <header className="sticky top-0 z-30 border-b border-[#EFE4F8] bg-white/95 backdrop-blur">
-            <div className="flex h-[72px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex h-[80px] items-center gap-3 px-4 sm:px-6 lg:px-8">
                 <button
                     type="button"
                     onClick={onToggleMenu}
@@ -51,14 +53,20 @@ export default function TopNavbar({
                         className="h-12 w-full rounded-full border border-[#EADCF8] bg-[#F7F1FF] pr-4 pl-11 text-sm text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                     />
                 </div>
-                
+
                 <Link
                     href="/pengaturan/notifikasi"
                     className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#EEE4F9] text-[#6610F2] transition hover:bg-[#F7F1FF]"
                     aria-label="Notifikasi"
                 >
                     <Bell className="h-5 w-5" />
-                    <span className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-[#D11149]" />
+                    {notificationUnreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D11149] px-1.5 text-[10px] font-extrabold text-white ring-2 ring-white">
+                            {notificationUnreadCount > 99
+                                ? '99+'
+                                : notificationUnreadCount}
+                        </span>
+                    )}
                 </Link>
 
                 {/* Avatar + Logout Dropdown */}

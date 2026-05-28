@@ -15,9 +15,19 @@ class Reward extends Model
     protected $fillable = [
         'admin_id',
         'nama_reward',
+        'kategori_reward',
         'poin_dibutuhkan',
         'stok',
+        'deskripsi',
+        'gambar',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'gambar' => 'array',
+        ];
+    }
 
     // Relasi
     public function admin()

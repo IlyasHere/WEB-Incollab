@@ -9,19 +9,14 @@ import type {
     CollaborationPartner,
     TrendingTopic,
 } from '@/components/dashboard/RightSidebar';
+import WelcomeOnboarding from '@/components/onboarding/WelcomeOnboarding';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import type { Auth } from '@/types/auth';
-
-const topics: TrendingTopic[] = [
-    { tag: '#HackathonNasional', posts: '1.2k postingan baru' },
-    { tag: '#PKMKC2024', posts: '850 postingan baru' },
-    { tag: '#UIUXPortofolio', posts: '432 postingan baru' },
-    { tag: '#LombaEsai', posts: '210 postingan baru' },
-];
 
 type DashboardProps = {
     posts: FeedPost[];
     partners: CollaborationPartner[];
+    topics: TrendingTopic[];
 };
 
 function EmptyFeedState() {
@@ -43,12 +38,17 @@ function EmptyFeedState() {
     );
 }
 
-export default function Dashboard({ posts, partners }: DashboardProps) {
+export default function Dashboard({ posts, partners, topics }: DashboardProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
         <>
             <Head title="Dashboard" />
+
+            <WelcomeOnboarding
+                userName={auth.user.name}
+                show={auth.user.onboarding_completed_at === null}
+            />
 
             <main className="px-4 py-5 pb-28 sm:px-6 sm:py-6 md:pb-8 lg:px-8 xl:px-10">
                 <div className="mx-auto flex max-w-[1320px] gap-6 xl:gap-8">

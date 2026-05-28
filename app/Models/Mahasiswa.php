@@ -26,9 +26,7 @@ class Mahasiswa extends Model
         'instagram',
         'linkedin',
         'github',
-        'behance',
         'portfolio',
-        'tersedia_kolaborasi',
         'total_poin',
     ];
 
@@ -37,7 +35,6 @@ class Mahasiswa extends Model
         return [
             'skill' => 'array',
             'minat' => 'array',
-            'tersedia_kolaborasi' => 'boolean',
         ];
     }
 

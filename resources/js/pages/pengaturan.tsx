@@ -1,5 +1,13 @@
 import { useForm } from '@inertiajs/react';
-import { Github, Instagram, Linkedin } from 'lucide-react';
+import {
+    ChevronDown,
+    Github,
+    HelpCircle,
+    Instagram,
+    Linkedin,
+    Pencil,
+    Search,
+} from 'lucide-react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import SettingsPageLayout from '@/layouts/SettingsPageLayout';
@@ -17,15 +25,19 @@ type MahasiswaProfile = {
     instagram: string | null;
     linkedin: string | null;
     github: string | null;
-    behance: string | null;
     portfolio: string | null;
-    tersedia_kolaborasi: boolean | null;
     total_poin: number;
 };
 
 type PengaturanProps = {
     profileUser: User;
     mahasiswa: MahasiswaProfile;
+    universities: UniversityOption[];
+};
+
+type UniversityOption = {
+    name: string;
+    lldikti_region: string | null;
 };
 
 type ProfileForm = {
@@ -40,9 +52,7 @@ type ProfileForm = {
     instagram: string;
     linkedin: string;
     github: string;
-    behance: string;
     portfolio: string;
-    tersedia_kolaborasi: boolean;
     foto: File | null;
 };
 
@@ -51,9 +61,11 @@ const interestOptions = ['Teknologi', 'Desain', 'Bisnis', 'Sains', 'Seni'];
 export default function Pengaturan({
     profileUser,
     mahasiswa,
+    universities,
 }: PengaturanProps) {
     const [skillInput, setSkillInput] = useState('');
     const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
     const initials = profileUser.name
         .split(' ')
         .map((part) => part[0])
@@ -73,35 +85,45 @@ export default function Pengaturan({
         return null;
     }, [mahasiswa.foto, profileUser.avatar]);
 
-    const { data, setData, put, processing, errors } = useForm<ProfileForm>({
-        name: profileUser.name ?? '',
-        // username: '',
-        universitas: mahasiswa.universitas ?? '',
-        jurusan: mahasiswa.jurusan ?? '',
-        angkatan: mahasiswa.angkatan ?? '',
-        semester: mahasiswa.semester ? String(mahasiswa.semester) : '',
-        bio: mahasiswa.bio ?? '',
-        skill: mahasiswa.skill ?? [],
-        minat: mahasiswa.minat ?? [],
-        instagram: mahasiswa.instagram ?? '',
-        linkedin: mahasiswa.linkedin ?? '',
-        github: mahasiswa.github ?? '',
-        behance: mahasiswa.behance ?? '',
-        portfolio: mahasiswa.portfolio ?? '',
-        tersedia_kolaborasi: mahasiswa.tersedia_kolaborasi ?? true,
-        foto: null,
-    });
+    const { data, setData, put, processing, errors, reset } =
+        useForm<ProfileForm>({
+            name: profileUser.name ?? '',
+            universitas: mahasiswa.universitas ?? '',
+            jurusan: mahasiswa.jurusan ?? '',
+            angkatan: mahasiswa.angkatan ?? '',
+            semester: mahasiswa.semester ? String(mahasiswa.semester) : '',
+            bio: mahasiswa.bio ?? '',
+            skill: mahasiswa.skill ?? [],
+            minat: mahasiswa.minat ?? [],
+            instagram: mahasiswa.instagram ?? '',
+            linkedin: mahasiswa.linkedin ?? '',
+            github: mahasiswa.github ?? '',
+            portfolio: mahasiswa.portfolio ?? '',
+            foto: null,
+        });
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
+        if (!isEditing) {
+            return;
+        }
+
         put('/pengaturan', {
             forceFormData: true,
             preserveScroll: true,
+            onSuccess: () => {
+                setIsEditing(false);
+                setFotoPreview(null);
+            },
         });
     };
 
     const addSkill = () => {
+        if (!isEditing) {
+            return;
+        }
+
         const nextSkill = skillInput.trim();
 
         if (!nextSkill || data.skill.length >= 5) {
@@ -119,6 +141,10 @@ export default function Pengaturan({
     };
 
     const removeSkill = (skill: string) => {
+        if (!isEditing) {
+            return;
+        }
+
         setData(
             'skill',
             data.skill.filter((item) => item !== skill),
@@ -126,6 +152,10 @@ export default function Pengaturan({
     };
 
     const toggleMinat = (item: string) => {
+        if (!isEditing) {
+            return;
+        }
+
         setData(
             'minat',
             data.minat.includes(item)
@@ -135,6 +165,10 @@ export default function Pengaturan({
     };
 
     const changeFoto = (event: ChangeEvent<HTMLInputElement>) => {
+        if (!isEditing) {
+            return;
+        }
+
         const file = event.target.files?.[0] ?? null;
 
         setData('foto', file);
@@ -142,9 +176,7 @@ export default function Pengaturan({
     };
 
     return (
-        <SettingsPageLayout
-            title="Pengaturan"
-        >
+        <SettingsPageLayout title="Pengaturan">
             <form
                 onSubmit={submit}
                 className="grid gap-8 lg:grid-cols-[280px_1fr]"
@@ -164,22 +196,30 @@ export default function Pengaturan({
                         </div>
 
                         <div className="mt-5 flex justify-center gap-3">
-                            <label className="cursor-pointer rounded-xl bg-[#6610F2] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#570DD1]">
+                            <label
+                                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                                    isEditing
+                                        ? 'cursor-pointer bg-[#6610F2] text-white hover:bg-[#570DD1]'
+                                        : 'cursor-not-allowed bg-[#EEE9F5] text-[#9B8FB3]'
+                                }`}
+                            >
                                 Ubah
                                 <input
                                     type="file"
                                     accept="image/*"
                                     className="hidden"
+                                    disabled={!isEditing}
                                     onChange={changeFoto}
                                 />
                             </label>
                             <button
                                 type="button"
+                                disabled={!isEditing}
                                 onClick={() => {
                                     setData('foto', null);
                                     setFotoPreview(null);
                                 }}
-                                className="rounded-xl bg-[#F3ECFF] px-4 py-2 text-sm font-semibold text-[#5E5873] transition hover:bg-[#E9D8FF]"
+                                className="rounded-xl bg-[#F3ECFF] px-4 py-2 text-sm font-semibold text-[#5E5873] transition hover:bg-[#E9D8FF] disabled:cursor-not-allowed disabled:bg-[#EEE9F5] disabled:text-[#9B8FB3]"
                             >
                                 Hapus
                             </button>
@@ -207,20 +247,49 @@ export default function Pengaturan({
                 </div>
 
                 <div>
-                    <FormSection title="Informasi Pribadi">
+                    <div className="mb-6 flex flex-col gap-3 border-b border-[#EFE4F8] pb-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 className="text-lg font-bold text-[#382A49]">
+                                Edit Profile
+                            </h2>
+                            <p className="mt-1 text-sm text-[#766B8A]">
+                                Mode baca aktif agar profil aman dari perubahan
+                                tidak sengaja.
+                            </p>
+                        </div>
+
+                        {!isEditing && (
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(true)}
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#6610F2] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(102,16,242,0.22)] transition hover:bg-[#570DD1]"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                Edit
+                            </button>
+                        )}
+                    </div>
+
+                    <FormSection
+                        title="Informasi Pribadi"
+                        help={<ProfileHelpTooltip />}
+                    >
                         <div className="grid gap-4 md:grid-cols-2">
                             <InputField
                                 label="Nama Lengkap"
                                 value={data.name}
                                 error={errors.name}
+                                disabled={!isEditing || processing}
                                 onChange={(value) => setData('name', value)}
                             />
                         </div>
 
-                        <InputField
+                        <UniversityCombobox
                             label="Universitas"
                             value={data.universitas}
+                            options={universities}
                             error={errors.universitas}
+                            disabled={!isEditing || processing}
                             onChange={(value) => setData('universitas', value)}
                         />
 
@@ -229,12 +298,14 @@ export default function Pengaturan({
                                 label="Jurusan"
                                 value={data.jurusan}
                                 error={errors.jurusan}
+                                disabled={!isEditing || processing}
                                 onChange={(value) => setData('jurusan', value)}
                             />
                             <InputField
                                 label="Angkatan"
                                 value={data.angkatan}
                                 error={errors.angkatan}
+                                disabled={!isEditing || processing}
                                 onChange={(value) => setData('angkatan', value)}
                             />
                             <InputField
@@ -242,6 +313,7 @@ export default function Pengaturan({
                                 type="number"
                                 value={data.semester}
                                 error={errors.semester}
+                                disabled={!isEditing || processing}
                                 onChange={(value) => setData('semester', value)}
                             />
                         </div>
@@ -254,10 +326,11 @@ export default function Pengaturan({
                                 rows={3}
                                 value={data.bio}
                                 maxLength={300}
+                                disabled={!isEditing || processing}
                                 onChange={(event) =>
                                     setData('bio', event.target.value)
                                 }
-                                className="w-full resize-none rounded-xl border border-[#D8CDE8] px-4 py-3 text-sm text-[#382A49] transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                                className="w-full resize-none rounded-xl border border-[#D8CDE8] px-4 py-3 text-sm text-[#382A49] transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10 disabled:bg-[#F7F1FF] disabled:text-[#8A7FA2]"
                             />
                             {errors.bio && (
                                 <InputError>{errors.bio}</InputError>
@@ -280,8 +353,9 @@ export default function Pengaturan({
                                         <button
                                             key={skill}
                                             type="button"
+                                            disabled={!isEditing || processing}
                                             onClick={() => removeSkill(skill)}
-                                            className="rounded-full bg-[#6610F2] px-3 py-1.5 text-sm font-medium text-white"
+                                            className="rounded-full bg-[#6610F2] px-3 py-1.5 text-sm font-medium text-white disabled:cursor-default disabled:bg-[#F3ECFF] disabled:text-[#6610F2]"
                                         >
                                             {skill} x
                                         </button>
@@ -291,6 +365,7 @@ export default function Pengaturan({
                                 <div className="flex rounded-xl border border-[#D8CDE8]">
                                     <input
                                         value={skillInput}
+                                        disabled={!isEditing || processing}
                                         onChange={(event) =>
                                             setSkillInput(event.target.value)
                                         }
@@ -301,12 +376,13 @@ export default function Pengaturan({
                                             }
                                         }}
                                         placeholder="Ketik untuk menambah skill..."
-                                        className="h-11 flex-1 rounded-l-xl px-4 text-sm outline-none"
+                                        className="h-11 flex-1 rounded-l-xl px-4 text-sm outline-none disabled:bg-[#F7F1FF] disabled:text-[#8A7FA2]"
                                     />
                                     <button
                                         type="button"
+                                        disabled={!isEditing || processing}
                                         onClick={addSkill}
-                                        className="px-4 text-lg font-bold text-[#6610F2]"
+                                        className="px-4 text-lg font-bold text-[#6610F2] disabled:cursor-not-allowed disabled:text-[#9B8FB3]"
                                     >
                                         +
                                     </button>
@@ -330,6 +406,9 @@ export default function Pengaturan({
                                             <button
                                                 key={item}
                                                 type="button"
+                                                disabled={
+                                                    !isEditing || processing
+                                                }
                                                 onClick={() =>
                                                     toggleMinat(item)
                                                 }
@@ -350,20 +429,6 @@ export default function Pengaturan({
                             </div>
                         </div>
 
-                        {/* <label className="flex items-center gap-3 rounded-xl border border-[#EFE4F8] p-4 text-sm font-semibold text-[#382A49]">
-                            <input
-                                type="checkbox"
-                                checked={data.tersedia_kolaborasi}
-                                onChange={(event) =>
-                                    setData(
-                                        'tersedia_kolaborasi',
-                                        event.target.checked,
-                                    )
-                                }
-                                className="h-4 w-4 rounded border-[#D8CDE8] text-[#6610F2]"
-                            />
-                            Tersedia untuk kolaborasi
-                        </label> */}
                     </FormSection>
 
                     <FormSection title="Kontak & Tautan">
@@ -372,6 +437,7 @@ export default function Pengaturan({
                                 label="Instagram"
                                 value={data.instagram}
                                 error={errors.instagram}
+                                disabled={!isEditing || processing}
                                 onChange={(value) =>
                                     setData('instagram', value)
                                 }
@@ -380,47 +446,55 @@ export default function Pengaturan({
                                 label="LinkedIn"
                                 value={data.linkedin}
                                 error={errors.linkedin}
+                                disabled={!isEditing || processing}
                                 onChange={(value) => setData('linkedin', value)}
                             />
                             <InputField
                                 label="GitHub"
                                 value={data.github}
                                 error={errors.github}
+                                disabled={!isEditing || processing}
                                 onChange={(value) => setData('github', value)}
                             />
-                            <InputField
-                                label="Behance"
-                                value={data.behance}
-                                error={errors.behance}
-                                onChange={(value) => setData('behance', value)}
-                            />
+                         
                         </div>
 
                         <InputField
                             label="Portfolio / Website"
                             value={data.portfolio}
                             error={errors.portfolio}
+                            disabled={!isEditing || processing}
                             onChange={(value) => setData('portfolio', value)}
                         />
                     </FormSection>
 
-                    <div className="mt-8 flex justify-end gap-3 border-t border-[#EFE4F8] pt-6">
-                        <button
-                            type="button"
-                            disabled={processing}
-                            className="rounded-xl border border-[#BFB5CF] px-6 py-3 text-sm font-semibold text-[#5E5873] transition hover:bg-[#F8F3FF] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            Batal
-                        </button>
+                    {isEditing && (
+                        <div className="mt-8 flex justify-end gap-3 border-t border-[#EFE4F8] pt-6">
+                            <button
+                                type="button"
+                                disabled={processing}
+                                onClick={() => {
+                                    reset();
+                                    setSkillInput('');
+                                    setFotoPreview(null);
+                                    setIsEditing(false);
+                                }}
+                                className="rounded-xl border border-[#BFB5CF] px-6 py-3 text-sm font-semibold text-[#5E5873] transition hover:bg-[#F8F3FF] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                Batal
+                            </button>
 
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="rounded-xl bg-[#6610F2] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(102,16,242,0.25)] transition hover:bg-[#570DD1] disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                            {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                        </button>
-                    </div>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="rounded-xl bg-[#6610F2] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(102,16,242,0.25)] transition hover:bg-[#570DD1] disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                                {processing
+                                    ? 'Menyimpan...'
+                                    : 'Simpan Perubahan'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </form>
         </SettingsPageLayout>
@@ -444,19 +518,140 @@ function SocialPreview({
 
 function FormSection({
     title,
+    help,
     children,
 }: {
     title: string;
+    help?: ReactNode;
     children: ReactNode;
 }) {
     return (
         <section className="mb-8">
-            <div className="mb-5 border-b border-[#EFE4F8] pb-3">
+            <div className="mb-5 flex items-center gap-2 border-b border-[#EFE4F8] pb-3">
                 <h2 className="font-semibold text-[#382A49]">{title}</h2>
+                {help}
             </div>
 
             <div className="space-y-4">{children}</div>
         </section>
+    );
+}
+
+function ProfileHelpTooltip() {
+    return (
+        <div className="group relative">
+            <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#6610F2] transition hover:bg-[#F3ECFF]"
+                aria-label="Panduan informasi pribadi"
+            >
+                <HelpCircle className="h-4 w-4" />
+            </button>
+
+            <div className="pointer-events-none absolute left-1/2 z-20 mt-3 w-[min(20rem,calc(100vw-3rem))] -translate-x-1/2 translate-y-2 rounded-2xl border border-[#EFE4F8] bg-white p-4 text-sm text-[#5E5873] opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.14)] transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+                <p className="font-semibold text-[#382A49]">
+                    Panduan edit profil
+                </p>
+                <p className="mt-2 leading-6">
+                    Pastikan nama, universitas, angkatan, dan semester sesuai
+                    data akademikmu.
+                </p>
+                <p className="mt-2 leading-6">
+                    Jurusan wajib diisi dengan benar karena dipakai untuk
+                    mengenali bidang kolaborasi dan rekomendasi partner.
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function UniversityCombobox({
+    label,
+    value,
+    options,
+    error,
+    disabled = false,
+    onChange,
+}: {
+    label: string;
+    value: string;
+    options: UniversityOption[];
+    error?: string;
+    disabled?: boolean;
+    onChange: (value: string) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const query = value.trim().toLowerCase();
+    const filteredOptions = useMemo(() => {
+        if (!query) {
+            return options.slice(0, 12);
+        }
+
+        return options
+            .filter((option) => option.name.toLowerCase().includes(query))
+            .slice(0, 12);
+    }, [options, query]);
+
+    return (
+        <div className="relative">
+            <label className="mb-2 block text-sm font-medium text-[#5E5873]">
+                {label}
+            </label>
+
+            <div className="relative">
+                <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#9B8FB3]" />
+                <input
+                    type="text"
+                    value={value}
+                    disabled={disabled}
+                    placeholder="Cari universitas..."
+                    onFocus={() => setOpen(!disabled)}
+                    onBlur={() => {
+                        window.setTimeout(() => setOpen(false), 120);
+                    }}
+                    onChange={(event) => {
+                        onChange(event.target.value);
+                        setOpen(true);
+                    }}
+                    className="h-11 w-full rounded-xl border border-[#D8CDE8] px-10 text-sm text-[#382A49] transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10 disabled:bg-[#F7F1FF] disabled:text-[#8A7FA2]"
+                />
+                <ChevronDown className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-[#9B8FB3]" />
+            </div>
+
+            {open && !disabled && (
+                <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-[#EFE4F8] bg-white p-2 shadow-[0_18px_45px_rgba(56,42,73,0.14)]">
+                    {filteredOptions.length > 0 ? (
+                        filteredOptions.map((option) => (
+                            <button
+                                key={option.name}
+                                type="button"
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => {
+                                    onChange(option.name);
+                                    setOpen(false);
+                                }}
+                                className="flex w-full flex-col rounded-xl px-3 py-2 text-left transition hover:bg-[#F7F1FF]"
+                            >
+                                <span className="text-sm font-semibold text-[#382A49]">
+                                    {option.name}
+                                </span>
+                                {option.lldikti_region && (
+                                    <span className="mt-0.5 text-xs text-[#8A7FA2]">
+                                        LLDikti Wilayah {option.lldikti_region}
+                                    </span>
+                                )}
+                            </button>
+                        ))
+                    ) : (
+                        <div className="px-3 py-3 text-sm text-[#8A7FA2]">
+                            Universitas tidak ditemukan.
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {error && <InputError>{error}</InputError>}
+        </div>
     );
 }
 

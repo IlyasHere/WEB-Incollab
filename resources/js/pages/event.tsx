@@ -1,13 +1,17 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowRight,
     CalendarDays,
     Clock3,
+    FileUp,
     LayoutGrid,
     MapPin,
+    Search,
     ShieldCheck,
+    X,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 type EventItem = {
@@ -21,6 +25,8 @@ type EventItem = {
     points: number;
     registration_url: string | null;
     status: string | null;
+    visibility_status?: string | null;
+    registration_status?: string | null;
     poster_url: string | null;
     detail_poster_url?: string | null;
     organizer: string | null;
@@ -32,9 +38,9 @@ type EventPageProps = {
     filters: {
         category: string;
         view: 'list' | 'calendar';
+        search: string;
     };
     events: EventItem[];
-    upcomingEvents: EventItem[];
     canManage: boolean;
 };
 
@@ -86,7 +92,7 @@ function formatDateRange(startDate: string | null, endDate: string | null) {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 }
 
-function buildQuery(category: string, view: 'list' | 'calendar') {
+function buildQuery(category: string, view: 'list' | 'calendar', search = '') {
     const params = new URLSearchParams();
 
     if (category !== 'Semua') {
@@ -97,7 +103,12 @@ function buildQuery(category: string, view: 'list' | 'calendar') {
         params.set('view', view);
     }
 
+    if (search.trim() !== '') {
+        params.set('search', search.trim());
+    }
+
     const query = params.toString();
+
     return query ? `/event?${query}` : '/event';
 }
 
@@ -107,13 +118,13 @@ function EventPoster({ event }: { event: EventItem }) {
             <img
                 src={event.poster_url}
                 alt={event.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
         );
     }
 
     return (
-        <div className="flex h-full w-full items-end bg-[radial-gradient(circle_at_top_left,_rgba(167,139,250,0.55),_transparent_42%),linear-gradient(135deg,_#1D1A39_0%,_#273A5B_55%,_#3D2D72_100%)] p-6 text-white">
+        <div className="flex h-full w-full items-end bg-[radial-gradient(circle_at_top_left,_rgba(167,139,250,0.55),_transparent_42%),linear-gradient(135deg,_#1D1A39_0%,_#273A5B_55%,_#3D2D72_100%)] p-6 text-white transition-transform duration-500 ease-out group-hover:scale-105">
             <div>
                 <p className="text-xs font-semibold tracking-[0.24em] text-white/70 uppercase">
                     InCollab Event
@@ -131,7 +142,7 @@ function EventCard({ event }: { event: EventItem }) {
         categoryStyles[event.category ?? ''] ?? 'bg-[#EEF2FF] text-[#4338CA]';
 
     return (
-        <article className="overflow-hidden rounded-[28px] border border-[#ECE1F8] bg-white shadow-[0_24px_50px_rgba(97,62,155,0.10)]">
+        <article className="group overflow-hidden rounded-[28px] border border-[#ECE1F8] bg-white shadow-[0_24px_50px_rgba(97,62,155,0.10)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#B794F6] hover:shadow-[0_30px_64px_rgba(97,62,155,0.18)]">
             <div className="relative h-60 overflow-hidden bg-[#EDE7F7]">
                 <EventPoster event={event} />
                 <span
@@ -170,14 +181,21 @@ function EventCard({ event }: { event: EventItem }) {
                 </p>
 
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="rounded-full bg-[#F6F0FF] px-4 py-2 text-sm font-semibold text-[#6610F2]">
-                        {event.points} poin
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="rounded-full bg-[#F6F0FF] px-4 py-2 text-sm font-semibold text-[#6610F2]">
+                            {event.points} poin
+                        </div>
+                        <div className="rounded-full bg-[#EEF4FF] px-4 py-2 text-sm font-semibold text-[#1D4ED8]">
+                            {event.registration_status ??
+                                event.status ??
+                                'Coming Soon'}
+                        </div>
                     </div>
 
                     {event.poster_url || event.detail_poster_url ? (
                         <Link
                             href={`/event/${event.id}`}
-                            className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] px-5 py-3 text-sm font-semibold text-[#7C3AED] transition hover:bg-[#F7F1FF]"
+                            className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] px-5 py-3 text-sm font-semibold text-[#7C3AED] transition hover:bg-[#F7F1FF] group-hover:bg-[#6610F2] group-hover:text-white"
                         >
                             Lihat Detail
                         </Link>
@@ -198,7 +216,7 @@ function CalendarEventRow({ event }: { event: EventItem }) {
     const { month, day } = formatShortMonth(event.date);
 
     return (
-        <article className="flex flex-col gap-5 rounded-[26px] border border-[#EBDDFA] bg-white p-5 shadow-[0_22px_48px_rgba(96,66,145,0.08)] sm:flex-row sm:items-center">
+        <article className="group flex flex-col gap-5 rounded-[26px] border border-[#EBDDFA] bg-white p-5 shadow-[0_22px_48px_rgba(96,66,145,0.08)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-[#B794F6] hover:shadow-[0_28px_58px_rgba(96,66,145,0.16)] sm:flex-row sm:items-center">
             <div className="flex w-full items-center gap-4 sm:max-w-[170px]">
                 <div className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-3xl bg-[#F3EAFF] text-[#6610F2]">
                     <span className="text-sm font-bold tracking-[0.18em]">
@@ -252,10 +270,10 @@ function CalendarEventRow({ event }: { event: EventItem }) {
                 {event.poster_url || event.detail_poster_url ? (
                     <Link
                         href={`/event/${event.id}`}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-[#6610F2] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(102,16,242,0.20)]"
+                        className="inline-flex items-center gap-2 rounded-2xl bg-[#6610F2] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(102,16,242,0.20)] transition group-hover:shadow-[0_22px_38px_rgba(102,16,242,0.30)]"
                     >
                         Lihat Detail
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                 ) : (
                     <span className="inline-flex items-center rounded-2xl bg-[#F3EAFF] px-5 py-3 text-sm font-semibold text-[#7C3AED]">
@@ -267,64 +285,32 @@ function CalendarEventRow({ event }: { event: EventItem }) {
     );
 }
 
-function SidebarPanel({
-    canManage,
-    upcomingEvents,
-}: {
-    canManage: boolean;
-    upcomingEvents: EventItem[];
-}) {
+function SidebarPanel({ canManage }: { canManage: boolean }) {
     return (
         <aside className="space-y-6 xl:sticky xl:top-24">
             <section className="rounded-[28px] border border-[#ECE1F8] bg-white p-6 shadow-[0_22px_48px_rgba(96,66,145,0.08)]">
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-[28px] font-bold text-[#241B35]">
-                        Upcoming Events
+                        Klaim Poin
                     </h2>
-                    <CalendarDays className="h-6 w-6 text-[#7C3AED]" />
+                    <FileUp className="h-6 w-6 text-[#7C3AED]" />
                 </div>
+                <p className="mt-3 text-sm leading-6 text-[#6B617C]">
+                    Sudah ikut event? Upload sertifikat di sini. Poin hanya
+                    masuk setelah bukti disetujui admin.
+                </p>
 
-                <div className="mt-6 space-y-4">
-                    {upcomingEvents.length > 0 ? (
-                        upcomingEvents.map((event) => {
-                            const { month, day } = formatShortMonth(event.date);
-
-                            return (
-                                <div
-                                    key={`upcoming-${event.id}`}
-                                    className="flex gap-4 rounded-3xl bg-[#FCF9FF] p-4"
-                                >
-                                    <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#F1E8FF] text-[#6610F2]">
-                                        <span className="text-xs font-bold tracking-[0.16em]">
-                                            {month}
-                                        </span>
-                                        <span className="text-2xl leading-none font-extrabold">
-                                            {day}
-                                        </span>
-                                    </div>
-
-                                    <div className="min-w-0">
-                                        <p className="line-clamp-2 text-base font-bold text-[#241B35]">
-                                            {event.title}
-                                        </p>
-                                        <p className="mt-1 text-sm text-[#6A617D]">
-                                            {event.organizer ?? 'Penyelenggara'}
-                                        </p>
-                                        <div className="mt-2 flex items-center gap-2 text-sm text-[#7A708E]">
-                                            <Clock3 className="h-4 w-4 text-[#7C3AED]" />
-                                            <span>
-                                                {formatDate(event.date)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <div className="rounded-3xl bg-[#FCF9FF] p-5 text-sm leading-7 text-[#6B617C]">
-                            Belum ada event yang dipublikasikan admin.
-                        </div>
-                    )}
+                <div className="mt-6 rounded-3xl bg-[#FCF9FF] p-5 text-sm leading-7 text-[#6B617C]">
+                    <p>
+                        Masukkan nama event, tanggal mengikuti, dan upload bukti
+                        sertifikat melalui formulir klaim.
+                    </p>
+                    <Link
+                        href="/klaim-poin-event"
+                        className="mt-4 inline-flex items-center justify-center rounded-xl bg-[#6610F2] px-5 py-2.5 text-sm font-semibold text-white"
+                    >
+                        Isi Form Klaim
+                    </Link>
                 </div>
             </section>
 
@@ -366,9 +352,30 @@ export default function EventPage({
     categories,
     filters,
     events,
-    upcomingEvents,
     canManage,
 }: EventPageProps) {
+    const [search, setSearch] = useState(filters.search ?? '');
+    const hasSearch = filters.search.trim() !== '';
+
+    const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        router.get(
+            '/event',
+            {
+                ...(filters.category !== 'Semua'
+                    ? { category: filters.category }
+                    : {}),
+                ...(filters.view !== 'list' ? { view: filters.view } : {}),
+                ...(search.trim() !== '' ? { search: search.trim() } : {}),
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
+    };
+
     return (
         <>
             <Head title="Event" />
@@ -400,6 +407,7 @@ export default function EventPage({
                                             href={buildQuery(
                                                 filters.category,
                                                 'list',
+                                                filters.search,
                                             )}
                                             className={`inline-flex items-center gap-2 rounded-[18px] px-5 py-3 text-sm font-semibold transition ${
                                                 filters.view === 'list'
@@ -414,6 +422,7 @@ export default function EventPage({
                                             href={buildQuery(
                                                 filters.category,
                                                 'calendar',
+                                                filters.search,
                                             )}
                                             className={`inline-flex items-center gap-2 rounded-[18px] px-5 py-3 text-sm font-semibold transition ${
                                                 filters.view === 'calendar'
@@ -427,6 +436,44 @@ export default function EventPage({
                                     </div>
                                 </div>
 
+                                <form
+                                    onSubmit={submitSearch}
+                                    className="mt-8 flex flex-col gap-3 rounded-[24px] border border-[#E7DBF8] bg-white p-3 shadow-[0_16px_36px_rgba(111,76,168,0.08)] sm:flex-row sm:items-center"
+                                >
+                                    <div className="relative min-w-0 flex-1">
+                                        <Search className="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#8A7FA2]" />
+                                        <input
+                                            type="search"
+                                            value={search}
+                                            onChange={(event) =>
+                                                setSearch(event.target.value)
+                                            }
+                                            placeholder="Cari event, kategori, lokasi, penyelenggara, tanggal, status, atau poin..."
+                                            className="h-12 w-full rounded-[18px] border border-[#EADCF8] bg-[#FBF7FF] pr-4 pl-12 text-sm font-medium text-[#382A49] outline-none transition placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                                        />
+                                    </div>
+
+                                    {hasSearch && (
+                                        <Link
+                                            href={buildQuery(
+                                                filters.category,
+                                                filters.view,
+                                            )}
+                                            className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] border border-[#D8CDE8] px-4 text-sm font-semibold text-[#766B8A] transition hover:border-[#7C3AED] hover:text-[#6610F2]"
+                                        >
+                                            <X className="h-4 w-4" />
+                                            Reset
+                                        </Link>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        className="inline-flex h-12 items-center justify-center rounded-[16px] bg-[#6610F2] px-6 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(102,16,242,0.20)] transition hover:bg-[#5710C9]"
+                                    >
+                                        Cari
+                                    </button>
+                                </form>
+
                                 <div className="mt-8 flex flex-wrap gap-3">
                                     {categories.map((category) => (
                                         <Link
@@ -434,6 +481,7 @@ export default function EventPage({
                                             href={buildQuery(
                                                 category,
                                                 filters.view,
+                                                filters.search,
                                             )}
                                             className={`rounded-full border px-5 py-3 text-sm font-semibold transition ${
                                                 filters.category === category
@@ -446,7 +494,7 @@ export default function EventPage({
                                     ))}
                                 </div>
 
-                                <div className="mt-10">
+                                <div id="daftar-event" className="mt-10">
                                     {events.length > 0 ? (
                                         filters.view === 'list' ? (
                                             <div className="grid gap-6 md:grid-cols-2">
@@ -470,26 +518,26 @@ export default function EventPage({
                                     ) : (
                                         <div className="rounded-[28px] border border-dashed border-[#DCCBFA] bg-white/80 p-8 text-center shadow-[0_18px_40px_rgba(111,76,168,0.06)]">
                                             <p className="text-sm font-bold tracking-[0.18em] text-[#7C3AED] uppercase">
-                                                Belum Ada Event
+                                                {hasSearch
+                                                    ? 'Event Tidak Ditemukan'
+                                                    : 'Belum Ada Event'}
                                             </p>
                                             <h2 className="mt-3 text-2xl font-bold text-[#241B35]">
-                                                Admin belum menambahkan event
-                                                untuk kategori ini
+                                                {hasSearch
+                                                    ? `Tidak ada event yang cocok dengan "${filters.search}"`
+                                                    : 'Admin belum menambahkan event untuk kategori ini'}
                                             </h2>
                                             <p className="mt-3 text-base leading-7 text-[#685E79]">
-                                                Begitu admin membuat card event
-                                                dari panel admin, daftar ini
-                                                akan otomatis terisi.
+                                                {hasSearch
+                                                    ? 'Coba pakai kata kunci lain seperti nama event, kategori, lokasi, penyelenggara, status, tanggal, atau jumlah poin.'
+                                                    : 'Begitu admin membuat card event dari panel admin, daftar ini akan otomatis terisi.'}
                                             </p>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            <SidebarPanel
-                                canManage={canManage}
-                                upcomingEvents={upcomingEvents}
-                            />
+                            <SidebarPanel canManage={canManage} />
                         </div>
                     </section>
                 </div>

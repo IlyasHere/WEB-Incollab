@@ -3,7 +3,6 @@ import { usePage } from '@inertiajs/react';
 import {
     Bell,
     Bookmark,
-    Compass,
     Coins,
     Home,
     Settings,
@@ -24,7 +23,7 @@ type DashboardLayoutProps = {
 
 const primaryNavItems: DashboardNavItem[] = [
     { label: 'Beranda', href: '/dashboard', icon: Home },
-    { label: 'Eksplorasi', href: '/eksplorasi', icon: Compass },
+    // { label: 'Eksplorasi', href: '/eksplorasi', icon: Compass },
     { label: 'Event', href: '/event', icon: Trophy },
     { label: 'Tukar Poin', href: '/tukar-poin', icon: Coins },
     { label: 'Tersimpan', href: '/tersimpan', icon: Bookmark },
@@ -38,9 +37,17 @@ const settingsNavItem: DashboardNavItem = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const { auth } = usePage<{ auth: Auth }>().props;
+    const { auth, notificationUnreadCount } = usePage<{
+        auth: Auth;
+        notificationUnreadCount: number;
+    }>().props;
     const { currentUrl } = useCurrentUrl();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navItems = primaryNavItems.map((item) =>
+        item.label === 'Notifikasi'
+            ? { ...item, badgeCount: notificationUnreadCount }
+            : item,
+    );
 
     return (
         <div
@@ -52,7 +59,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         >
             <div className="mx-auto flex min-h-screen max-w-[1600px]">
                 <AppSidebar
-                    items={primaryNavItems}
+                    items={navItems}
                     settingsItem={settingsNavItem}
                     currentPath={currentUrl}
                 />
@@ -61,13 +68,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <TopNavbar
                         userName={auth.user.name}
                         userAvatar={auth.user.avatar}
+                        notificationUnreadCount={notificationUnreadCount}
                         mobileMenuOpen={mobileMenuOpen}
                         onToggleMenu={() => setMobileMenuOpen((open) => !open)}
                         onLogout={() => router.post('/logout')}
                     />
 
                     <MobileMenu
-                        items={primaryNavItems}
+                        items={navItems}
                         settingsItem={settingsNavItem}
                         currentPath={currentUrl}
                         open={mobileMenuOpen}

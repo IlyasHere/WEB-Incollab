@@ -4,21 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\FeedPost;
 use App\Models\User;
+use App\Support\FeedPostFormatter;
+use App\Support\TrendingTopicFinder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
-    {
+    public function index(
+        Request $request,
+        FeedPostFormatter $feedPostFormatter,
+        TrendingTopicFinder $trendingTopicFinder
+    ) {
         return Inertia::render('dashboard', [
-            'posts' => $this->feedPosts($request),
+            'posts' => $this->feedPosts($request, $feedPostFormatter),
             'partners' => $this->partners($request),
+            'topics' => $trendingTopicFinder->get(4),
         ]);
     }
 
-    private function feedPosts(Request $request)
+    private function feedPosts(Request $request, FeedPostFormatter $feedPostFormatter)
     {
         if (! Schema::hasTable('feed_posts')) {
             return collect();
@@ -26,50 +32,32 @@ class DashboardController extends Controller
 
         $query = FeedPost::with('user.mahasiswa');
 
-        if (Schema::hasTable('feed_post_images')) {
+        $hasImagesTable = Schema::hasTable('feed_post_images');
+        $hasCommentsTable = Schema::hasTable('komentar') && Schema::hasColumn('komentar', 'post_id');
+
+        if ($hasImagesTable) {
             $query->with('images');
         }
 
-        if (Schema::hasTable('komentar') && Schema::hasColumn('komentar', 'post_id')) {
+        if ($hasCommentsTable) {
             $query->withCount('komentar');
         }
 
-        return $query
+        $posts = $query
             ->latest()
-            ->get()
-            ->map(function (FeedPost $post) use ($request) {
-                $user = $post->user;
-                $mahasiswa = $user?->mahasiswa;
-                $images = collect();
+            ->get();
 
-                if ($post->relationLoaded('images')) {
-                    $images = $post->images
-                        ->map(fn ($image) => asset('storage/'.$image->image_path))
-                        ->values();
-                }
+        $posts->each(function (FeedPost $post) use ($hasImagesTable, $hasCommentsTable) {
+            if (! $hasImagesTable) {
+                $post->setRelation('images', collect());
+            }
 
-                return [
-                    'id' => $post->post_id,
-                    'user' => [
-                        'name' => $user?->name ?? 'Mahasiswa',
-                        'major' => collect([$mahasiswa?->jurusan, $mahasiswa?->universitas])
-                            ->filter()
-                            ->join(' • ') ?: 'Mahasiswa',
-                        'avatar' => $this->resolveAvatar($mahasiswa?->foto, $user?->avatar),
-                    ],
-                    'postedAt' => $post->created_at?->diffForHumans() ?? 'Baru saja',
-                    'badge' => 'POSTINGAN',
-                    'badgeColor' => 'bg-[#F0E7FF] text-[#6610F2]',
-                    'title' => $post->title,
-                    'description' => $post->content,
-                    'hashtags' => $post->tags ?? [],
-                    'likes' => 0,
-                    'comments' => $post->komentar_count ?? 0,
-                    'image' => $images->first(),
-                    'images' => $images,
-                    'canDelete' => $post->user_id === $request->user()->user_id,
-                ];
-            });
+            if (! $hasCommentsTable) {
+                $post->setAttribute('komentar_count', 0);
+            }
+        });
+
+        return $feedPostFormatter->formatMany($posts, $request->user());
     }
 
     private function partners(Request $request)

@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     protected $table = 'users';
 
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'role',
         'google_id',
         'avatar',
+        'onboarding_completed_at',
     ];
 
     protected $hidden = [
@@ -36,6 +38,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'onboarding_completed_at' => 'datetime',
         ];
     }
 

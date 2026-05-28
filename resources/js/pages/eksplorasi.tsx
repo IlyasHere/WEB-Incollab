@@ -34,7 +34,7 @@ export default function Eksplorasi() {
             <Head title="Eksplorasi" />
             <PlaceholderPage
                 title="Eksplorasi"
-                description="Halaman ini disiapkan sebagai placeholder untuk area eksplorasi konten, kolaborasi, dan proyek baru."
+                description="Halaman ini disiapkan sebagai placeholder untuk area eksplorasi postingan, topik, dan kolaborasi. Nantikan fitur-fitur menarik yang akan datang di sini!"
             />
         </>
     );
