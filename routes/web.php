@@ -18,6 +18,7 @@
 // require __DIR__.'/settings.php';
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
@@ -99,7 +100,8 @@ Route::middleware(['auth', 'admin'])
         Route::post('poin/{klaimPoin}/approve', [EventPointClaimController::class, 'approve'])->name('poin.approve');
         Route::post('poin/{klaimPoin}/reject', [EventPointClaimController::class, 'reject'])->name('poin.reject');
         Route::inertia('reminder', 'admin/reminder/index')->name('reminder');
-        Route::inertia('pengaturan', 'admin/pengaturan/index')->name('pengaturan');
+        Route::get('pengaturan', [AdminProfileController::class, 'edit'])->name('pengaturan');
+        Route::post('pengaturan', [AdminProfileController::class, 'update'])->name('pengaturan.update');
     });
 
 Route::get('/auth/google', [GoogleController::class, 'redirect']);
