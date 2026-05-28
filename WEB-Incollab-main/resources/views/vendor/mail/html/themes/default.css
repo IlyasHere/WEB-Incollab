@@ -1,0 +1,29 @@
+body, body *:not(html):not(style):not(br):not(tr):not(code) {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+body { background-color: #f3f0fa; margin: 0; padding: 0; }
+.wrapper { background-color: #f3f0fa; padding: 40px 20px; }
+.content { width: 100%; }
+.inner-body { background-color: #ffffff; border-radius: 16px; width: 570px; box-shadow: 0 4px 24px rgba(112,26,209,0.10); }
+.content-cell { padding: 40px; }
+.header { padding: 30px 0 10px; text-align: center; }
+.header a { color: #7c3aed; display: inline-block; font-size: 22px; font-weight: 700; text-decoration: none; }
+.footer { padding: 20px 0; text-align: center; width: 570px; }
+.footer p { color: #9ca3af; font-size: 12px; text-align: center; }
+h1 { color: #4c1d95; font-size: 22px; font-weight: 700; margin-top: 0; }
+p { color: #374151; font-size: 15px; line-height: 1.7; margin-top: 0; }
+a { color: #7c3aed; }
+.button { border-radius: 10px !important; }
+.button-primary { background-color: #7c3aed !important; }
+.button-primary a { color: #ffffff !important; font-weight: 600 !important; }
+.panel { background-color: #f5f3ff; border-left: 4px solid #7c3aed; border-radius: 8px; padding: 16px 20px; margin: 24px 0; }
+.panel-content p { color: #4c1d95; }
+.button-primary table td { background-color: #7c3aed !important; }
+.button-primary table td a { 
+    background-color: #7c3aed !important; 
+    color: #ffffff !important; 
+    font-weight: 700 !important;
+    padding: 14px 32px !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+}
