@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { CalendarDays, Plus, Sparkles, Trophy } from 'lucide-react';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import AdminLayout from '@/layouts/AdminLayout';
 import { EventFilters } from './components/EventFilters';
 import { EventTable } from './components/EventTable';
@@ -115,34 +117,47 @@ export default function AdminEventIndex({
                     </Link>
                 </section>
 
-                <section className="grid gap-5 sm:grid-cols-3">
-                    {summaryCards.map((card) => {
-                        const Icon = card.icon;
+                {isFiltering ? (
+                    <section className="grid gap-5 sm:grid-cols-3">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                className="h-32 rounded-2xl"
+                            />
+                        ))}
+                    </section>
+                ) : (
+                    <section className="grid gap-5 sm:grid-cols-3">
+                        {summaryCards.map((card) => {
+                            const Icon = card.icon;
 
-                        return (
-                            <article
-                                key={card.label}
-                                className="relative overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)]"
-                            >
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-xs font-bold tracking-wide text-[#4F465F] uppercase">
-                                            {card.label}
-                                        </p>
-                                        <p className="mt-5 text-3xl font-extrabold text-[#4C00D8]">
-                                            {card.value.toLocaleString('id-ID')}
-                                        </p>
+                            return (
+                                <article
+                                    key={card.label}
+                                    className="relative overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)]"
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p className="text-xs font-bold tracking-wide text-[#4F465F] uppercase">
+                                                {card.label}
+                                            </p>
+                                            <p className="mt-5 text-3xl font-extrabold text-[#4C00D8]">
+                                                {card.value.toLocaleString(
+                                                    'id-ID',
+                                                )}
+                                            </p>
+                                        </div>
+                                        <span
+                                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${card.accent}`}
+                                        >
+                                            <Icon className="h-5 w-5" />
+                                        </span>
                                     </div>
-                                    <span
-                                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${card.accent}`}
-                                    >
-                                        <Icon className="h-5 w-5" />
-                                    </span>
-                                </div>
-                            </article>
-                        );
-                    })}
-                </section>
+                                </article>
+                            );
+                        })}
+                    </section>
+                )}
 
                 <EventFilters
                     search={search}

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { EventFilters, EventItem, EventsPage } from '../types';
 import { formatDateRange, hasActiveFilter, pageHref } from '../utils';
 
@@ -183,14 +184,6 @@ export function EventTable({
 }) {
     return (
         <section className="relative overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white shadow-[0_18px_45px_rgba(56,42,73,0.06)]">
-            {isFiltering && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[2px]">
-                    <div className="rounded-2xl border border-[#EFE4F8] bg-white px-5 py-4 text-sm font-bold text-[#382A49] shadow-[0_18px_45px_rgba(102,16,242,0.14)]">
-                        Menyaring event...
-                    </div>
-                </div>
-            )}
-
             <div className="overflow-x-auto">
                 <div className="grid min-w-[1280px] grid-cols-[90px_minmax(240px,1.4fr)_140px_150px_160px_140px_160px_120px] bg-[#F0E7FF] px-6 py-4 text-xs font-extrabold tracking-wide text-[#4F465F] uppercase">
                     <span>Poster</span>
@@ -204,7 +197,9 @@ export function EventTable({
                 </div>
 
                 <div className="divide-y divide-[#EFE4F8]">
-                    {events.data.length > 0 ? (
+                    {isFiltering ? (
+                        <EventTableSkeleton />
+                    ) : events.data.length > 0 ? (
                         events.data.map((event) => (
                             <EventRow
                                 key={event.id}
@@ -230,5 +225,30 @@ export function EventTable({
                 />
             </div>
         </section>
+    );
+}
+
+function EventTableSkeleton() {
+    return (
+        <>
+            {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                    key={index}
+                    className="grid min-w-[1280px] grid-cols-[90px_minmax(240px,1.4fr)_140px_150px_160px_140px_160px_120px] items-center px-6 py-4"
+                >
+                    <Skeleton className="h-14 w-14 rounded-xl" />
+                    <div className="min-w-0 space-y-2">
+                        <Skeleton className="h-5 w-56" />
+                        <Skeleton className="h-3 w-36" />
+                    </div>
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-7 w-24 rounded-full" />
+                    <Skeleton className="h-7 w-32 rounded-full" />
+                    <Skeleton className="ml-auto h-5 w-20" />
+                </div>
+            ))}
+        </>
     );
 }

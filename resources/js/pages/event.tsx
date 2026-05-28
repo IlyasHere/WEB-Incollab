@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePageLoading } from '@/hooks/use-page-loading';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 type EventItem = {
@@ -195,7 +197,7 @@ function EventCard({ event }: { event: EventItem }) {
                     {event.poster_url || event.detail_poster_url ? (
                         <Link
                             href={`/event/${event.id}`}
-                            className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] px-5 py-3 text-sm font-semibold text-[#7C3AED] transition hover:bg-[#F7F1FF] group-hover:bg-[#6610F2] group-hover:text-white"
+                            className="inline-flex items-center justify-center rounded-2xl border border-[#7C3AED] px-5 py-3 text-sm font-semibold text-[#7C3AED] transition group-hover:bg-[#6610F2] group-hover:text-white hover:bg-[#F7F1FF]"
                         >
                             Lihat Detail
                         </Link>
@@ -285,6 +287,57 @@ function CalendarEventRow({ event }: { event: EventItem }) {
     );
 }
 
+function EventListSkeleton({ view }: { view: 'list' | 'calendar' }) {
+    if (view === 'calendar') {
+        return (
+            <div className="space-y-5">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <article
+                        key={index}
+                        className="flex flex-col gap-5 rounded-[26px] border border-[#EBDDFA] bg-white p-5 shadow-[0_22px_48px_rgba(96,66,145,0.08)] sm:flex-row sm:items-center"
+                    >
+                        <Skeleton className="h-20 w-20 shrink-0 rounded-3xl" />
+                        <div className="min-w-0 flex-1 space-y-3">
+                            <Skeleton className="h-6 w-2/3" />
+                            <Skeleton className="h-4 w-44" />
+                            <Skeleton className="h-4 w-full max-w-lg" />
+                        </div>
+                        <Skeleton className="h-11 w-32 rounded-2xl" />
+                    </article>
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid gap-6 md:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+                <article
+                    key={index}
+                    className="overflow-hidden rounded-[28px] border border-[#ECE1F8] bg-white shadow-[0_24px_50px_rgba(97,62,155,0.10)]"
+                >
+                    <Skeleton className="h-60 w-full rounded-none" />
+                    <div className="space-y-5 p-6">
+                        <div className="space-y-3">
+                            <Skeleton className="h-8 w-4/5" />
+                            <Skeleton className="h-5 w-48" />
+                        </div>
+                        <div className="space-y-3">
+                            <Skeleton className="h-4 w-56" />
+                            <Skeleton className="h-4 w-64" />
+                        </div>
+                        <Skeleton className="h-16 w-full" />
+                        <div className="flex items-center justify-between gap-4">
+                            <Skeleton className="h-10 w-32 rounded-full" />
+                            <Skeleton className="h-11 w-28 rounded-2xl" />
+                        </div>
+                    </div>
+                </article>
+            ))}
+        </div>
+    );
+}
+
 function SidebarPanel({ canManage }: { canManage: boolean }) {
     return (
         <aside className="space-y-6 xl:sticky xl:top-24">
@@ -355,6 +408,7 @@ export default function EventPage({
     canManage,
 }: EventPageProps) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const isLoading = usePageLoading();
     const hasSearch = filters.search.trim() !== '';
 
     const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -449,7 +503,7 @@ export default function EventPage({
                                                 setSearch(event.target.value)
                                             }
                                             placeholder="Cari event, kategori, lokasi, penyelenggara, tanggal, status, atau poin..."
-                                            className="h-12 w-full rounded-[18px] border border-[#EADCF8] bg-[#FBF7FF] pr-4 pl-12 text-sm font-medium text-[#382A49] outline-none transition placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                                            className="h-12 w-full rounded-[18px] border border-[#EADCF8] bg-[#FBF7FF] pr-4 pl-12 text-sm font-medium text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                                         />
                                     </div>
 
@@ -495,7 +549,11 @@ export default function EventPage({
                                 </div>
 
                                 <div id="daftar-event" className="mt-10">
-                                    {events.length > 0 ? (
+                                    {isLoading ? (
+                                        <EventListSkeleton
+                                            view={filters.view}
+                                        />
+                                    ) : events.length > 0 ? (
                                         filters.view === 'list' ? (
                                             <div className="grid gap-6 md:grid-cols-2">
                                                 {events.map((event) => (
