@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FeedPost;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -19,16 +20,33 @@ class DashboardController extends Controller
 
     private function feedPosts(Request $request)
     {
-        return FeedPost::with(['user.mahasiswa', 'images'])
-            ->withCount('komentar')
+        if (! Schema::hasTable('feed_posts')) {
+            return collect();
+        }
+
+        $query = FeedPost::with('user.mahasiswa');
+
+        if (Schema::hasTable('feed_post_images')) {
+            $query->with('images');
+        }
+
+        if (Schema::hasTable('komentar') && Schema::hasColumn('komentar', 'post_id')) {
+            $query->withCount('komentar');
+        }
+
+        return $query
             ->latest()
             ->get()
             ->map(function (FeedPost $post) use ($request) {
                 $user = $post->user;
                 $mahasiswa = $user?->mahasiswa;
-                $images = $post->images
-                    ->map(fn ($image) => asset('storage/'.$image->image_path))
-                    ->values();
+                $images = collect();
+
+                if ($post->relationLoaded('images')) {
+                    $images = $post->images
+                        ->map(fn ($image) => asset('storage/'.$image->image_path))
+                        ->values();
+                }
 
                 return [
                     'id' => $post->post_id,
@@ -46,7 +64,7 @@ class DashboardController extends Controller
                     'description' => $post->content,
                     'hashtags' => $post->tags ?? [],
                     'likes' => 0,
-                    'comments' => $post->komentar_count,
+                    'comments' => $post->komentar_count ?? 0,
                     'image' => $images->first(),
                     'images' => $images,
                     'canDelete' => $post->user_id === $request->user()->user_id,
