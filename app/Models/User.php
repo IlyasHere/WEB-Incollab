@@ -53,6 +53,11 @@ class User extends Authenticatable
         return $this->hasMany(FeedPost::class, 'user_id', 'user_id');
     }
 
+    public function bookmarks()
+    {
+    return $this->hasMany(Bookmark::class, 'user_id', 'user_id');
+    }
+
     // Helper cek role
     public function isAdmin(): bool
     {

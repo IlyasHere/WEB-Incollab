@@ -32,6 +32,7 @@ use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\RewardController;
 use App\Http\Controllers\TrendingTopicController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\BookmarkController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -65,7 +66,7 @@ Route::middleware(['auth', 'mahasiswa'])->group(function () {
     Route::post('klaim-poin-event', [EventPointClaimController::class, 'storeGeneral'])->name('event-point-claim.store');
     Route::get('event/{event}/klaim-poin', [EventPointClaimController::class, 'create'])->name('event-point-claim.event.create');
     Route::post('event/{event}/klaim-poin', [EventPointClaimController::class, 'store'])->name('event-point-claim.event.store');
-    Route::inertia('tersimpan', 'tersimpan')->name('tersimpan');
+    Route::get('tersimpan',[BookmarkController::class, 'index'])->name('tersimpan');
     Route::get('pengaturan', [ProfileSettingController::class, 'edit'])->name('pengaturan');
     Route::put('pengaturan', [ProfileSettingController::class, 'update'])->name('pengaturan.update');
     Route::get('pengaturan/notifikasi', [NotificationController::class, 'index'])->name('pengaturan.notifikasi');
@@ -76,6 +77,8 @@ Route::middleware(['auth', 'mahasiswa'])->group(function () {
     Route::post('pengaturan/bantuan/laporan', [LaporanPengaduanController::class, 'store'])->name('pengaturan.bantuan.laporan.store');
     Route::post('post/{post}/comments', [FeedPostController::class, 'storeComment'])->name('post.comments.store');
     Route::delete('post/{post}', [FeedPostController::class, 'destroy'])->name('post.destroy');
+    Route::post('event/{event}/bookmark',[BookmarkController::class, 'store'])->name('bookmark.store');
+    Route::delete('event/{event}/bookmark',[BookmarkController::class, 'destroy'])->name('bookmark.destroy');
 });
 
 Route::middleware(['auth', 'admin'])

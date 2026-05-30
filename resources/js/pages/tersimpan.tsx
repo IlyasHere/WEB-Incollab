@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
@@ -29,44 +30,34 @@ const categories: Category[] = [
     'Hackathon',
 ];
 
-const savedEvents: SavedEvent[] = [
-    {
-        id: 1,
-        title: 'Seminar UI/UX Modern',
-        category: 'Seminar',
-        organizer: 'InCollab Academy',
-        date: '15 Mei 2026',
-        location: 'Zoom Meeting',
-        image: '/images/seminar.jpg',
-    },
-    {
-        id: 2,
-        title: 'Workshop Laravel React',
-        category: 'Workshop',
-        organizer: 'GDG Campus',
-        date: '20 Mei 2026',
-        location: 'Bekasi',
-        image: '/images/workshop.jpg',
-    },
-    {
-        id: 3,
-        title: 'Kompetisi Business Plan',
-        category: 'Kompetisi',
-        organizer: 'TechFest',
-        date: '25 Mei 2026',
-        location: 'Hybrid',
-        image: '/images/kompetisi.jpg',
-    },
-];
+type Props = {
+    savedEvents: any[];
+};
 
-export default function Tersimpan() {
+export default function Tersimpan({
+    savedEvents,
+}: Props) {
     const [activeCategory, setActiveCategory] =
         useState<Category>('Semua');
 
     const [search, setSearch] = useState('');
 
+    const events = savedEvents.map((bookmark) => ({
+        id: bookmark.event.event_id,
+        title: bookmark.event.judul_event,
+        category: bookmark.event.kategori_event,
+        organizer: bookmark.event.penyelenggara ?? 'InCollab',
+        date: bookmark.event.tanggal_event,
+        location: bookmark.event.lokasi,
+        image:
+            bookmark.event.poster_event ??
+            '/images/default-event.jpg',
+    }));
+
+    // dst...
+
     const filteredEvents = useMemo(() => {
-        return savedEvents.filter((event) => {
+        return events.filter((event) => {
             const matchCategory =
                 activeCategory === 'Semua'
                     ? true
@@ -82,7 +73,7 @@ export default function Tersimpan() {
 
             return matchCategory && matchSearch;
         });
-    }, [activeCategory, search]);
+    }, [events, activeCategory, search]);
 
     return (
         <>
@@ -186,7 +177,14 @@ export default function Tersimpan() {
                                                     {event.category}
                                                 </span>
 
-                                                <button className="text-sm font-semibold text-[#D11149] transition hover:opacity-70">
+                                                <button
+                                                    onClick={() =>
+                                                        router.delete(`/event/${event.id}/bookmark`, {
+                                                            preserveScroll: true,
+                                                        })
+                                                    }
+                                                    className="text-sm font-semibold text-[#D11149] transition hover:opacity-70"
+                                                >
                                                     Hapus
                                                 </button>
 

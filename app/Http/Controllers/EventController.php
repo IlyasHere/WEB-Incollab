@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Bookmark;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
@@ -209,8 +211,17 @@ class EventController extends Controller
             abort(404);
         }
 
+        $isBookmarked = false;
+
+        if (Auth::check()) {
+            $isBookmarked = Bookmark::where('user_id', Auth::id())
+                ->where('event_id', $event->event_id)
+                ->exists();
+        }
+
         return Inertia::render('event-detail', [
             'event' => $this->transformEvent($event),
+            'isBookmarked' => $isBookmarked,
         ]);
     }
 
@@ -332,6 +343,12 @@ class EventController extends Controller
             'created_at' => optional($event->created_at)->toDateTimeString(),
             'organizer' => $event->penyelenggara ?? optional($event->admin)->name,
             'admin_name' => optional($event->admin)->name,
+
+            'isBookmarked' => Auth::check()
+            ? Bookmark::where('user_id', Auth::id())
+                ->where('event_id', $event->event_id)
+                ->exists()
+            : false,
         ];
     }
 
