@@ -65,4 +65,9 @@ class Event extends Model
     {
         return [];
     }
+
+    public function bookmarks()
+    {
+    return $this->hasMany(Bookmark::class, 'event_id', 'event_id');
+    }
 }

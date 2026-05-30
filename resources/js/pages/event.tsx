@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Bookmark } from 'lucide-react';
 import {
     ArrowRight,
     CalendarDays,
@@ -31,6 +32,7 @@ type EventItem = {
     detail_poster_url?: string | null;
     organizer: string | null;
     admin_name: string | null;
+    isBookmarked: boolean;
 };
 
 type EventPageProps = {
@@ -115,12 +117,40 @@ function buildQuery(category: string, view: 'list' | 'calendar', search = '') {
 function EventPoster({ event }: { event: EventItem }) {
     if (event.poster_url) {
         return (
+        <div className="relative h-full w-full">
             <img
                 src={event.poster_url}
                 alt={event.title}
                 className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
-        );
+
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (event.isBookmarked) {
+                        router.delete(`/event/${event.id}/bookmark`);
+                    } else {
+                        router.post(`/event/${event.id}/bookmark`);
+                    }
+                }}
+                className={`absolute top-3 left-3 rounded-full p-2 shadow-md transition ${
+                    event.isBookmarked
+                        ? 'bg-[#6610F2]'
+                        : 'bg-white/90'
+                }`}
+            >
+                <Bookmark
+                    className={`h-5 w-5 ${
+                        event.isBookmarked
+                            ? 'text-white'
+                            : 'text-[#6610F2]'
+                    }`}
+                />
+            </button>
+        </div>
+    );
     }
 
     return (
