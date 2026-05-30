@@ -1,8 +1,10 @@
 import { Head } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
+import EventCard, { EventItem } from '@/components/EventCard';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 type Category =
@@ -33,6 +35,7 @@ const categories: Category[] = [
 type Props = {
     savedEvents: any[];
 };
+// Use shared `EventCard` component (imported above)
 
 export default function Tersimpan({
     savedEvents,
@@ -42,38 +45,44 @@ export default function Tersimpan({
 
     const [search, setSearch] = useState('');
 
-    const events = savedEvents.map((bookmark) => ({
-        id: bookmark.event.event_id,
-        title: bookmark.event.judul_event,
-        category: bookmark.event.kategori_event,
-        organizer: bookmark.event.penyelenggara ?? 'InCollab',
-        date: bookmark.event.tanggal_event,
-        location: bookmark.event.lokasi,
-        image:
-            bookmark.event.poster_event ??
-            '/images/default-event.jpg',
-    }));
+    const [localEvents, setLocalEvents] = useState<EventItem[]>(() =>
+        savedEvents.map((bookmark) => ({
+            id: bookmark.event.event_id,
+            title: bookmark.event.judul_event,
+            description: bookmark.event.deskripsi_event ?? null,
+            date: bookmark.event.tanggal_event ?? null,
+            end_date: bookmark.event.tanggal_selesai_event ?? null,
+            location: bookmark.event.lokasi ?? null,
+            category: bookmark.event.kategori_event ?? null,
+            points: bookmark.event.poin ?? 0,
+            registration_url: null,
+            status: bookmark.event.status ?? null,
+            visibility_status: null,
+            registration_status: null,
+            poster_url: bookmark.event.poster_event ?? '/images/default-event.jpg',
+            detail_poster_url: null,
+            organizer: bookmark.event.penyelenggara ?? 'InCollab',
+            admin_name: null,
+            isBookmarked: true,
+        })),
+    );
 
     // dst...
 
     const filteredEvents = useMemo(() => {
-        return events.filter((event) => {
+        return localEvents.filter((event) => {
             const matchCategory =
                 activeCategory === 'Semua'
                     ? true
                     : event.category === activeCategory;
 
             const matchSearch =
-                event.title
-                    .toLowerCase()
-                    .includes(search.toLowerCase()) ||
-                event.organizer
-                    .toLowerCase()
-                    .includes(search.toLowerCase());
+                event.title.toLowerCase().includes(search.toLowerCase()) ||
+                (event.organizer ?? '').toLowerCase().includes(search.toLowerCase());
 
             return matchCategory && matchSearch;
         });
-    }, [events, activeCategory, search]);
+    }, [localEvents, activeCategory, search]);
 
     return (
         <>
@@ -151,80 +160,21 @@ export default function Tersimpan({
                     <section className="mt-6">
 
                         {filteredEvents.length > 0 ? (
-
-                            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-
+                            <div className="grid gap-6 md:grid-cols-2">
                                 {filteredEvents.map((event) => (
-                                    <article
+                                    <EventCard
                                         key={event.id}
-                                        className="overflow-hidden rounded-[28px] border border-[#EFE4F8] bg-white shadow-[0_18px_40px_rgba(102,16,242,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(102,16,242,0.12)]"
-                                    >
-
-                                        {/* IMAGE */}
-                                        <div
-                                            className="h-[190px] bg-cover bg-center"
-                                            style={{
-                                                backgroundImage: `url(${event.image})`,
-                                            }}
-                                        />
-
-                                        {/* CONTENT */}
-                                        <div className="p-5">
-
-                                            <div className="flex items-center justify-between">
-
-                                                <span className="rounded-full bg-[#F3ECFF] px-3 py-1 text-xs font-semibold text-[#6610F2]">
-                                                    {event.category}
-                                                </span>
-
-                                                <button
-                                                    onClick={() =>
-                                                        router.delete(`/event/${event.id}/bookmark`, {
-                                                            preserveScroll: true,
-                                                        })
-                                                    }
-                                                    className="text-sm font-semibold text-[#D11149] transition hover:opacity-70"
-                                                >
-                                                    Hapus
-                                                </button>
-
-                                            </div>
-
-                                            <h2 className="mt-4 text-xl font-bold text-[#221A32]">
-                                                {event.title}
-                                            </h2>
-
-                                            <p className="mt-1 text-sm text-[#6B6280]">
-                                                {event.organizer}
-                                            </p>
-
-                                            <div className="mt-4 space-y-2 text-sm text-[#5A516C]">
-
-                                                <div className="flex items-center gap-2">
-                                                    <span>📅</span>
-                                                    <span>{event.date}</span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    <span>📍</span>
-                                                    <span>{event.location}</span>
-                                                </div>
-
-                                            </div>
-
-                                            <a
-                                                href="/event"
-                                                className="mt-6 flex w-full items-center justify-center rounded-2xl bg-[#6610F2] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#520dd1]"
-                                            >
-                                                Lihat Detail
-                                            </a>
-
-                                        </div>
-                                    </article>
+                                        event={event}
+                                        onToggleBookmark={(id, current) => {
+                                            // optimistic removal from UI
+                                            setLocalEvents((prev) => prev.filter((e) => e.id !== id));
+                                            router.delete(`/event/${id}/bookmark`);
+                                        }}
+                                    />
                                 ))}
                             </div>
-
                         ) : (
+                    
 
                             <div className="flex min-h-[340px] flex-col items-center justify-center rounded-[28px] border border-dashed border-[#DCCEF3] bg-[#FCFAFF] text-center">
 
