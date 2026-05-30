@@ -14,16 +14,6 @@ type Category =
     | 'Seminar'
     | 'Hackathon';
 
-type SavedEvent = {
-    id: number;
-    title: string;
-    category: Exclude<Category, 'Semua'>;
-    organizer: string;
-    date: string;
-    location: string;
-    image: string;
-};
-
 const categories: Category[] = [
     'Semua',
     'Kompetisi',
@@ -33,7 +23,7 @@ const categories: Category[] = [
 ];
 
 type Props = {
-    savedEvents: any[];
+    savedEvents: EventItem[];
 };
 // Use shared `EventCard` component (imported above)
 
@@ -45,27 +35,7 @@ export default function Tersimpan({
 
     const [search, setSearch] = useState('');
 
-    const [localEvents, setLocalEvents] = useState<EventItem[]>(() =>
-        savedEvents.map((bookmark) => ({
-            id: bookmark.event.event_id,
-            title: bookmark.event.judul_event,
-            description: bookmark.event.deskripsi_event ?? null,
-            date: bookmark.event.tanggal_event ?? null,
-            end_date: bookmark.event.tanggal_selesai_event ?? null,
-            location: bookmark.event.lokasi ?? null,
-            category: bookmark.event.kategori_event ?? null,
-            points: bookmark.event.poin ?? 0,
-            registration_url: null,
-            status: bookmark.event.status ?? null,
-            visibility_status: null,
-            registration_status: null,
-            poster_url: bookmark.event.poster_event ?? '/images/default-event.jpg',
-            detail_poster_url: null,
-            organizer: bookmark.event.penyelenggara ?? 'InCollab',
-            admin_name: null,
-            isBookmarked: true,
-        })),
-    );
+    const [localEvents, setLocalEvents] = useState<EventItem[]>(savedEvents);
 
     // dst...
 
