@@ -362,7 +362,13 @@ class EventController extends Controller
             return $path;
         }
 
-        return Storage::disk('public')->url($path);
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            return '/'.$path;
+        }
+
+        return '/storage/'.$path;
     }
 
     private function replaceMedia(?string $currentPath, string $nextPath): string
