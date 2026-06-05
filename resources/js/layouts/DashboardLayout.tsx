@@ -1,5 +1,15 @@
 import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
+import {
+    Bell,
+    Bookmark,
+    MessageCircle,
+    Compass,
+    Coins,
+    Home,
+    Settings,
+    Trophy,
+} from 'lucide-react';
 import { Bell, Bookmark, Coins, Home, Settings, Trophy } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -20,6 +30,7 @@ const primaryNavItems: DashboardNavItem[] = [
     { label: 'Event', href: '/event', icon: Trophy },
     { label: 'Tukar Poin', href: '/tukar-poin', icon: Coins },
     { label: 'Tersimpan', href: '/tersimpan', icon: Bookmark },
+    { label: 'Chat', href: '/chat', icon: MessageCircle },
     { label: 'Notifikasi', href: '/pengaturan/notifikasi', icon: Bell },
 ];
 
@@ -30,16 +41,19 @@ const settingsNavItem: DashboardNavItem = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const { auth, notificationUnreadCount } = usePage<{
+    const { auth, chatUnreadCount, notificationUnreadCount } = usePage<{
         auth: Auth;
+        chatUnreadCount: number;
         notificationUnreadCount: number;
     }>().props;
     const { currentUrl } = useCurrentUrl();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const navItems = primaryNavItems.map((item) =>
-        item.label === 'Notifikasi'
-            ? { ...item, badgeCount: notificationUnreadCount }
-            : item,
+        item.label === 'Chat'
+            ? { ...item, badgeCount: chatUnreadCount }
+            : item.label === 'Notifikasi'
+              ? { ...item, badgeCount: notificationUnreadCount }
+              : item,
     );
 
     return (

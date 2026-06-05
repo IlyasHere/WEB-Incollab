@@ -53,6 +53,19 @@ class User extends Authenticatable
         return $this->hasMany(FeedPost::class, 'user_id', 'user_id');
     }
 
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id', 'user_id');
+    }
+
+    public function conversationsAsUserOne()
+    {
+        return $this->hasMany(Conversation::class, 'user_one_id', 'user_id');
+    }
+
+    public function conversationsAsUserTwo()
+    {
+        return $this->hasMany(Conversation::class, 'user_two_id', 'user_id');
     public function bookmarks()
     {
     return $this->hasMany(Bookmark::class, 'user_id', 'user_id');

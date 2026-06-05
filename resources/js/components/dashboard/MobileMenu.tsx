@@ -48,6 +48,12 @@ export default function MobileMenu({
     }
 
     return (
+        <div className="border-b border-[#EFE4F8] bg-white px-4 py-4 md:hidden">
+            <nav className="space-y-2">
+                {[...items, settingsItem].map(({ label, href, icon: Icon }) => {
+                    const active =
+                        href === currentPath ||
+                        currentPath.startsWith(`${href}/`);
         <div
             className="fixed inset-0 z-50 md:hidden"
             aria-hidden={!open}

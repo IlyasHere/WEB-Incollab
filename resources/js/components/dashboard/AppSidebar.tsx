@@ -15,7 +15,7 @@ type AppSidebarProps = {
 };
 
 function isActive(href: string, currentPath: string) {
-    return href === currentPath;
+    return href === currentPath || currentPath.startsWith(`${href}/`);
 }
 
 export default function AppSidebar({
