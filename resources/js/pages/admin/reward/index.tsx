@@ -22,6 +22,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import AdminLayout from '@/layouts/AdminLayout';
 
 type RewardCategory = 'voucher' | 'merch';
@@ -182,14 +183,22 @@ export default function AdminRewardIndex({
                     </button>
                 </section>
 
-                <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                    {summaryCards.map((card) => (
-                        <SummaryCard
-                            key={card.label}
-                            {...card}
-                        />
-                    ))}
-                </section>
+                {isFiltering ? (
+                    <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                        {Array.from({ length: 4 }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                className="h-36 rounded-2xl"
+                            />
+                        ))}
+                    </section>
+                ) : (
+                    <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                        {summaryCards.map((card) => (
+                            <SummaryCard key={card.label} {...card} />
+                        ))}
+                    </section>
+                )}
 
                 <section className="flex flex-col gap-4 lg:flex-row lg:items-center">
                     <label className="relative block min-w-0 flex-1">
@@ -235,14 +244,6 @@ export default function AdminRewardIndex({
                 </section>
 
                 <section className="relative overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white shadow-[0_18px_45px_rgba(56,42,73,0.06)]">
-                    {isFiltering && (
-                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[2px]">
-                            <div className="rounded-2xl border border-[#EFE4F8] bg-white px-5 py-4 text-sm font-bold text-[#382A49] shadow-[0_18px_45px_rgba(102,16,242,0.14)]">
-                                Menyaring reward...
-                            </div>
-                        </div>
-                    )}
-
                     <div className="overflow-x-auto">
                         <div className="grid min-w-[980px] grid-cols-[minmax(280px,1.6fr)_130px_120px_110px_130px_120px_120px] bg-[#F0E7FF] px-6 py-4 text-xs font-extrabold tracking-wide text-[#4F465F] uppercase">
                             <span>Reward</span>
@@ -255,7 +256,9 @@ export default function AdminRewardIndex({
                         </div>
 
                         <div className="divide-y divide-[#EFE4F8]">
-                            {rewards.data.length > 0 ? (
+                            {isFiltering ? (
+                                <RewardTableSkeleton />
+                            ) : rewards.data.length > 0 ? (
                                 rewards.data.map((reward) => (
                                     <RewardRow
                                         key={reward.id}
@@ -265,7 +268,9 @@ export default function AdminRewardIndex({
                                     />
                                 ))
                             ) : (
-                                <EmptyRewardState hasFilter={hasActiveFilter(filters)} />
+                                <EmptyRewardState
+                                    hasFilter={hasActiveFilter(filters)}
+                                />
                             )}
                         </div>
                     </div>
@@ -305,6 +310,33 @@ export default function AdminRewardIndex({
                     onClose={() => setDeletingReward(null)}
                 />
             )}
+        </>
+    );
+}
+
+function RewardTableSkeleton() {
+    return (
+        <>
+            {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                    key={index}
+                    className="grid min-w-[980px] grid-cols-[minmax(280px,1.6fr)_130px_120px_110px_130px_120px_120px] items-center px-6 py-4"
+                >
+                    <div className="flex min-w-0 items-center gap-4">
+                        <Skeleton className="h-14 w-14 rounded-xl" />
+                        <div className="min-w-0 flex-1 space-y-2">
+                            <Skeleton className="h-5 w-48" />
+                            <Skeleton className="h-3 w-24" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-12" />
+                    <Skeleton className="h-7 w-24 rounded-full" />
+                    <Skeleton className="h-4 w-12" />
+                    <Skeleton className="ml-auto h-5 w-20" />
+                </div>
+            ))}
         </>
     );
 }
@@ -354,9 +386,7 @@ function EmptyRewardState({ hasFilter }: { hasFilter: boolean }) {
                     )}
                 </div>
                 <h2 className="mt-5 text-lg font-extrabold text-[#1F1730]">
-                    {hasFilter
-                        ? 'Reward tidak ditemukan'
-                        : 'Belum ada reward'}
+                    {hasFilter ? 'Reward tidak ditemukan' : 'Belum ada reward'}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-[#766B8A]">
                     {hasFilter
@@ -1332,7 +1362,9 @@ function Pagination({
 }
 
 function InputError({ children }: { children: ReactNode }) {
-    return <p className="mt-2 text-sm font-medium text-[#D11149]">{children}</p>;
+    return (
+        <p className="mt-2 text-sm font-medium text-[#D11149]">{children}</p>
+    );
 }
 
 function cleanFilters(filters: Filters) {

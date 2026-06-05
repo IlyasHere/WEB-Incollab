@@ -1,6 +1,6 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { avatarColors } from '../constants';
 import type { Filters, ReportsPage } from '../types';
-import { FilterLoadingOverlay } from './FilterLoadingOverlay';
 import { Pagination } from './Pagination';
 import { ReportRow } from './ReportRow';
 
@@ -15,8 +15,6 @@ export function PengaduanTable({
 }) {
     return (
         <section className="relative overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white shadow-[0_18px_45px_rgba(177,145,221,0.12)]">
-            {isFiltering && <FilterLoadingOverlay />}
-
             <div className="overflow-x-auto">
                 <table className="w-full min-w-[840px] border-collapse text-left">
                     <thead>
@@ -30,7 +28,9 @@ export function PengaduanTable({
                         </tr>
                     </thead>
                     <tbody>
-                        {reports.data.length > 0 ? (
+                        {isFiltering ? (
+                            <PengaduanTableSkeleton />
+                        ) : reports.data.length > 0 ? (
                             reports.data.map((report, index) => (
                                 <ReportRow
                                     key={report.id}
@@ -68,5 +68,40 @@ export function PengaduanTable({
                 />
             </div>
         </section>
+    );
+}
+
+function PengaduanTableSkeleton() {
+    return (
+        <>
+            {Array.from({ length: 6 }).map((_, index) => (
+                <tr key={index} className="border-b border-[#EFE4F8]">
+                    <td className="px-5 py-4">
+                        <Skeleton className="h-4 w-12" />
+                    </td>
+                    <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-24" />
+                            </div>
+                        </div>
+                    </td>
+                    <td className="px-5 py-4">
+                        <Skeleton className="h-7 w-28 rounded-full" />
+                    </td>
+                    <td className="px-5 py-4">
+                        <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-5 py-4">
+                        <Skeleton className="h-7 w-24 rounded-full" />
+                    </td>
+                    <td className="px-5 py-4">
+                        <Skeleton className="mx-auto h-8 w-20 rounded-lg" />
+                    </td>
+                </tr>
+            ))}
+        </>
     );
 }

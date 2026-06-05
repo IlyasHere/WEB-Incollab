@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePageLoading } from '@/hooks/use-page-loading';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 type RewardCategory = 'voucher' | 'merch';
@@ -74,6 +76,54 @@ function canRedeem(reward: RewardItem, currentPoints: number) {
     return reward.stock > 0 && currentPoints >= reward.points;
 }
 
+function RewardCatalogSkeleton() {
+    return (
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+                <article
+                    key={index}
+                    className="flex min-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#EFE4F8] bg-white shadow-[0_14px_34px_rgba(102,16,242,0.06)]"
+                >
+                    <Skeleton className="aspect-[1.65] w-full rounded-none" />
+                    <div className="flex flex-1 flex-col p-5">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-3 w-20" />
+                                <Skeleton className="h-5 w-4/5" />
+                            </div>
+                            <Skeleton className="h-10 w-10 rounded-xl" />
+                        </div>
+                        <Skeleton className="mt-5 h-4 w-full" />
+                        <Skeleton className="mt-2 h-4 w-5/6" />
+                        <Skeleton className="mt-auto h-9 w-32 rounded-full" />
+                        <Skeleton className="mt-4 h-12 w-full rounded-xl" />
+                    </div>
+                </article>
+            ))}
+        </div>
+    );
+}
+
+function PointSidebarSkeleton() {
+    return (
+        <aside className="space-y-5">
+            {Array.from({ length: 3 }).map((_, index) => (
+                <section
+                    key={index}
+                    className="rounded-2xl border border-[#EFE4F8] bg-white p-5 shadow-[0_14px_34px_rgba(102,16,242,0.06)]"
+                >
+                    <Skeleton className="h-5 w-36" />
+                    <div className="mt-5 space-y-3">
+                        <Skeleton className="h-16 w-full rounded-2xl" />
+                        <Skeleton className="h-12 w-full rounded-xl" />
+                        <Skeleton className="h-12 w-3/4 rounded-xl" />
+                    </div>
+                </section>
+            ))}
+        </aside>
+    );
+}
+
 export default function TukarPoin({
     rewards = [],
     currentPoints = 0,
@@ -90,6 +140,7 @@ export default function TukarPoin({
     const [processingRewardId, setProcessingRewardId] = useState<number | null>(
         null,
     );
+    const isLoading = usePageLoading();
 
     const filteredRewards = useMemo(() => {
         const normalizedSearch = search.trim().toLowerCase();
@@ -221,7 +272,9 @@ export default function TukarPoin({
                                 </div>
                             </div>
 
-                            {filteredRewards.length > 0 ? (
+                            {isLoading ? (
+                                <RewardCatalogSkeleton />
+                            ) : filteredRewards.length > 0 ? (
                                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                                     {filteredRewards.map((reward) => (
                                         <RewardCard
@@ -251,14 +304,18 @@ export default function TukarPoin({
                             )}
                         </div>
 
-                        <aside className="space-y-5">
-                            <PointSummaryCard
-                                currentPoints={currentPoints}
-                                summary={summary}
-                            />
-                            <GuideCard />
-                            <PointEventCard events={pointEvents} />
-                        </aside>
+                        {isLoading ? (
+                            <PointSidebarSkeleton />
+                        ) : (
+                            <aside className="space-y-5">
+                                <PointSummaryCard
+                                    currentPoints={currentPoints}
+                                    summary={summary}
+                                />
+                                <GuideCard />
+                                <PointEventCard events={pointEvents} />
+                            </aside>
+                        )}
                     </section>
                 </div>
             </main>

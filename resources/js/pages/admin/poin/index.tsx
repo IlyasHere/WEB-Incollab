@@ -1,12 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import {
-    CheckCircle2,
-    Clock3,
-    FileText,
-    Search,
-    XCircle,
-} from 'lucide-react';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { CheckCircle2, Clock3, FileText, Search, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 
 type ClaimStatus = 'Menunggu Verifikasi' | 'Diterima' | 'Ditolak';
@@ -350,7 +345,7 @@ export default function AdminPoinIndex({
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Cari nama, NIM, event, atau sertifikat..."
-                            className="h-12 w-full rounded-2xl border border-[#E2D4F3] pl-11 pr-4 text-sm outline-none focus:border-[#6610F2]"
+                            className="h-12 w-full rounded-2xl border border-[#E2D4F3] pr-4 pl-11 text-sm outline-none focus:border-[#6610F2]"
                         />
                     </div>
                     <select
@@ -418,6 +413,4 @@ export default function AdminPoinIndex({
     );
 }
 
-AdminPoinIndex.layout = (page: ReactNode) => (
-    <AdminLayout>{page}</AdminLayout>
-);
+AdminPoinIndex.layout = (page: ReactNode) => <AdminLayout>{page}</AdminLayout>;
