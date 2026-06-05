@@ -24,10 +24,7 @@ type RightSidebarProps = {
     partners: CollaborationPartner[];
 };
 
-export default function RightSidebar({
-    topics,
-    partners,
-}: RightSidebarProps) {
+export default function RightSidebar({ topics, partners }: RightSidebarProps) {
     const getInitials = (name: string) =>
         name
             .split(' ')
@@ -66,17 +63,10 @@ export default function RightSidebar({
                         </div>
                     ) : (
                         <p className="text-sm leading-6 text-[#7C7292]">
-                            Belum ada topik ramai. Buat postingan dengan
-                            hashtag agar topik muncul di sini.
+                            Belum ada topik ramai. Buat postingan dengan hashtag
+                            agar topik muncul di sini.
                         </p>
                     )}
-
-                    <Link
-                        href="/trending"
-                        className="mt-6 text-sm font-semibold text-[#6610F2]"
-                    >
-                        Lihat semua topik
-                    </Link>
                 </section>
 
                 <section className="rounded-[28px] border border-[#F0E5FB] bg-white p-0 shadow-[0_16px_38px_rgba(177,145,221,0.14)]">
@@ -119,15 +109,6 @@ export default function RightSidebar({
                                 </Link>
                             </div>
                         ))}
-                    </div>
-
-                    <div className="border-t border-[#F4EAFD] px-5 py-4 text-center">
-                        <button
-                            type="button"
-                            className="text-sm font-semibold text-[#1A8FE3]"
-                        >
-                            Lihat Semua
-                        </button>
                     </div>
                 </section>
             </div>

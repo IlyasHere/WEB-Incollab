@@ -96,7 +96,15 @@ class PointHistoryController extends Controller
                     'rewardCategory' => $reward?->kategori_reward ?? 'voucher',
                     'status' => $status,
                     'redemptionCode' => $redemption->kode_penukaran,
+                    'redemptionExpiresAt' => $this->formatDateTime(
+                        $redemption->expires_at
+                            ?: $this->fallbackExpiryDate($date, $reward?->berlaku_hari),
+                    ),
+                    'redemptionLocation' => $reward?->lokasi_penukaran
+                        ?: $this->defaultRedemptionLocation($reward?->kategori_reward),
                     'redemptionGuide' => $this->redemptionGuide($reward?->kategori_reward),
+                    'redemptionInstructions' => $reward?->instruksi_penukaran
+                        ?: $this->redemptionGuide($reward?->kategori_reward),
                     'sort_date' => $this->sortDate($date),
                 ];
             });
@@ -119,8 +127,29 @@ class PointHistoryController extends Controller
     {
         return match ($category) {
             'merch' => 'Tunjukkan kode ini ke admin/panitia untuk verifikasi pengambilan merchandise.',
-            default => 'Gunakan kode ini sesuai instruksi voucher. Jangan bagikan kode ke orang lain.',
+            default => 'Gunakan kode ini sebelum tanggal expired. Jangan bagikan kode ke orang lain.',
         };
+    }
+
+    private function defaultRedemptionLocation(?string $category): string
+    {
+        return match ($category) {
+            'merch' => 'Ambil di booth/admin InCollab saat jam operasional.',
+            default => 'Gunakan di merchant atau kanal penukaran yang tertera pada voucher.',
+        };
+    }
+
+    private function fallbackExpiryDate(mixed $date, ?int $validityDays): ?CarbonInterface
+    {
+        if (! $date) {
+            return null;
+        }
+
+        $datetime = $date instanceof CarbonInterface
+            ? $date->copy()
+            : Carbon::parse((string) $date, config('app.timezone'));
+
+        return $datetime->addDays($validityDays ?: 30);
     }
 
     private function sortDate(mixed $date): int

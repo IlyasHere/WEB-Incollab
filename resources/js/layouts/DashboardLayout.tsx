@@ -1,13 +1,6 @@
 import { router } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
-import {
-    Bell,
-    Bookmark,
-    Coins,
-    Home,
-    Settings,
-    Trophy,
-} from 'lucide-react';
+import { Bell, Bookmark, Coins, Home, Settings, Trophy } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import AppSidebar from '@/components/dashboard/AppSidebar';
@@ -68,7 +61,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <TopNavbar
                         userName={auth.user.name}
                         userAvatar={auth.user.avatar}
-                        notificationUnreadCount={notificationUnreadCount}
                         mobileMenuOpen={mobileMenuOpen}
                         onToggleMenu={() => setMobileMenuOpen((open) => !open)}
                         onLogout={() => router.post('/logout')}

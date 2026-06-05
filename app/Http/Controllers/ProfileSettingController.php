@@ -54,7 +54,7 @@ class ProfileSettingController extends Controller
             'linkedin' => ['nullable', 'string', 'max:255'],
             'github' => ['nullable', 'string', 'max:255'],
             'portfolio' => ['nullable', 'string', 'max:255'],
-            'foto' => ['nullable', 'image', 'max:2048'],
+            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $user = $request->user();

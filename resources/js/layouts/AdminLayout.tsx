@@ -1,7 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import {
-    CalendarDays,
     Coins,
     Gift,
     Grid2X2,
@@ -29,7 +28,7 @@ type AdminNavItem = {
 const navItems: AdminNavItem[] = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: Grid2X2 },
     { label: 'Event', href: '/admin/event', icon: Trophy },
-    { label: 'Reminder', href: '/admin/reminder', icon: CalendarDays },
+    // { label: 'Reminder', href: '/admin/reminder', icon: CalendarDays },
     { label: 'Pengaduan', href: '/admin/pengaduan', icon: Megaphone },
     { label: 'Reward', href: '/admin/reward', icon: Gift },
     { label: 'Poin', href: '/admin/poin', icon: Coins },
