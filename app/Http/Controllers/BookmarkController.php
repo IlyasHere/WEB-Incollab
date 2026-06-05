@@ -16,6 +16,11 @@ class BookmarkController extends Controller
             'event_id' => $event->event_id,
         ]);
 
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Event berhasil disimpan.',
+        ]);
+
         return back();
     }
 
@@ -24,6 +29,11 @@ class BookmarkController extends Controller
         Bookmark::where('user_id', Auth::id())
             ->where('event_id', $event->event_id)
             ->delete();
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Event dihapus dari tersimpan.',
+        ]);
 
         return back();
     }

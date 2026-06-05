@@ -437,7 +437,7 @@ export default function ProfileShow({ profile, posts }: ProfileShowProps) {
                                 Feed
                             </h2>
                             <p className="mt-1 text-sm text-[#5F556F]">
-                                Postingan dan proyek terbaru dari {profile.name}
+                                Postingan  terbaru dari {profile.name}
                                 .
                             </p>
 

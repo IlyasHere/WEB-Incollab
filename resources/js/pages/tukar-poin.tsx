@@ -1,17 +1,18 @@
 import { Head, router } from '@inertiajs/react';
 import {
     AlertTriangle,
+    CalendarClock,
     CheckCircle2,
     ChevronRight,
     CircleDollarSign,
     HelpCircle,
     Info,
+    MapPin,
     Package,
     Search,
     ShoppingBag,
     Sparkles,
     Ticket,
-    Trophy,
     X,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -34,15 +35,10 @@ type RewardItem = {
     status: 'Aktif' | 'Stok Habis';
     redeemedCount: number;
     description: string;
+    redemptionLocation: string;
+    redemptionInstructions: string;
+    validityDays: number;
     images: string[];
-};
-
-type PointEvent = {
-    id: number;
-    title: string;
-    date: string;
-    points: number;
-    category: string;
 };
 
 type TukarPoinProps = {
@@ -53,7 +49,6 @@ type TukarPoinProps = {
         redeemedRewards: number;
         spentPoints: number;
     };
-    pointEvents: PointEvent[];
 };
 
 const categoryOptions: Array<{ value: CategoryFilter; label: string }> = [
@@ -128,7 +123,6 @@ export default function TukarPoin({
     rewards = [],
     currentPoints = 0,
     summary,
-    pointEvents = [],
 }: TukarPoinProps) {
     const [activeCategory, setActiveCategory] =
         useState<CategoryFilter>('semua');
@@ -313,7 +307,6 @@ export default function TukarPoin({
                                     summary={summary}
                                 />
                                 <GuideCard />
-                                <PointEventCard events={pointEvents} />
                             </aside>
                         )}
                     </section>
@@ -529,48 +522,6 @@ function GuideCard() {
     );
 }
 
-function PointEventCard({ events }: { events: PointEvent[] }) {
-    return (
-        <section className="rounded-2xl border border-[#EFE4F8] bg-white p-5 shadow-[0_14px_34px_rgba(102,16,242,0.06)]">
-            <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-[#A77800]" />
-                <h2 className="text-lg font-extrabold text-[#1F1730]">
-                    Event Penghasil Poin
-                </h2>
-            </div>
-
-            <div className="mt-4 space-y-3">
-                {events.length > 0 ? (
-                    events.map((event) => (
-                        <article
-                            key={event.id}
-                            className="flex items-start justify-between gap-3 rounded-xl border border-[#EFE4F8] p-3 transition hover:border-[#6610F2]/30 hover:bg-[#FBF7FF]"
-                        >
-                            <div className="min-w-0">
-                                <h3 className="line-clamp-2 text-sm font-extrabold text-[#1F1730]">
-                                    {event.title}
-                                </h3>
-                                <p className="mt-1 text-xs font-semibold text-[#8A7FA2]">
-                                    {event.category}{' '}
-                                    {event.date && `- ${event.date}`}
-                                </p>
-                            </div>
-                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FFF6D8] px-2.5 py-1 text-xs font-extrabold text-[#746000]">
-                                <CircleDollarSign className="h-3.5 w-3.5" />+
-                                {formatNumber(event.points)}
-                            </span>
-                        </article>
-                    ))
-                ) : (
-                    <p className="rounded-xl border border-dashed border-[#D8CDE8] p-4 text-sm leading-6 text-[#766B8A]">
-                        Belum ada event aktif yang menghasilkan poin.
-                    </p>
-                )}
-            </div>
-        </section>
-    );
-}
-
 function RewardDetailModal({
     reward,
     currentPoints,
@@ -618,28 +569,30 @@ function RewardDetailModal({
                 </div>
 
                 <div className="max-h-[calc(92vh-74px)] overflow-y-auto">
-                    <div className="grid gap-5 p-5 md:grid-cols-[240px_minmax(0,1fr)]">
-                        <div className="overflow-hidden rounded-2xl bg-[#F0E7FF]">
+                    <div className="p-5">
+                        <div className="overflow-hidden rounded-2xl border border-[#EFE4F8] bg-[#F7F1FF]">
                             <img
                                 src={image}
                                 alt={reward.name}
-                                className="aspect-square h-full w-full object-cover"
+                                className="max-h-[360px] w-full object-contain"
                             />
                         </div>
 
-                        <div>
-                            <span className="inline-flex rounded-full bg-[#F7F1FF] px-3 py-1 text-xs font-extrabold text-[#6610F2]">
-                                {reward.categoryLabel}
-                            </span>
-                            <h3 className="mt-3 text-2xl font-extrabold text-[#1F1730]">
-                                {reward.name}
-                            </h3>
-                            <p className="mt-3 text-sm leading-6 text-[#5F5573]">
-                                {reward.description ||
-                                    'Reward dapat ditukar menggunakan poin aktif mahasiswa.'}
-                            </p>
+                        <div className="mt-5 space-y-5">
+                            <div>
+                                <span className="inline-flex rounded-full bg-[#F7F1FF] px-3 py-1 text-xs font-extrabold text-[#6610F2]">
+                                    {reward.categoryLabel}
+                                </span>
+                                <h3 className="mt-3 text-2xl font-extrabold text-[#1F1730]">
+                                    {reward.name}
+                                </h3>
+                                <p className="mt-3 text-sm leading-6 text-[#5F5573]">
+                                    {reward.description ||
+                                        'Reward dapat ditukar menggunakan poin aktif mahasiswa.'}
+                                </p>
+                            </div>
 
-                            <div className="mt-5 grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-3">
                                 <DetailStat
                                     label="Poin Dibutuhkan"
                                     value={formatNumber(reward.points)}
@@ -650,8 +603,32 @@ function RewardDetailModal({
                                 />
                             </div>
 
+                            <div className="rounded-2xl border border-[#EFE4F8] bg-[#FBF7FF] p-4">
+                                <h4 className="text-sm font-extrabold text-[#1F1730]">
+                                    Info Penukaran
+                                </h4>
+                                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                                    <RedemptionInfoRow
+                                        icon={MapPin}
+                                        label="Lokasi / Kanal"
+                                        value={reward.redemptionLocation}
+                                    />
+                                    <RedemptionInfoRow
+                                        icon={CalendarClock}
+                                        label="Masa Berlaku Kupon"
+                                        value={`${reward.validityDays || 30} hari setelah penukaran`}
+                                    />
+                                    <RedemptionInfoRow
+                                        icon={Info}
+                                        label="Instruksi"
+                                        value={reward.redemptionInstructions}
+                                        className="md:col-span-2"
+                                    />
+                                </div>
+                            </div>
+
                             {!redeemable && (
-                                <div className="mt-4 rounded-xl border border-[#FFD1DC] bg-[#FFF5F7] p-3 text-sm leading-6 font-semibold text-[#D11149]">
+                                <div className="rounded-xl border border-[#FFD1DC] bg-[#FFF5F7] p-3 text-sm leading-6 font-semibold text-[#D11149]">
                                     {reward.stock <= 0
                                         ? 'Reward ini sedang stok habis.'
                                         : `Poin kamu kurang ${formatNumber(
@@ -680,6 +657,14 @@ function RewardDetailModal({
                                             {formatNumber(remainingPoints)}
                                         </span>
                                         .
+                                    </p>
+                                    <p className="mt-2 text-sm leading-6 text-[#5F5573]">
+                                        Kupon/kode penukaran berlaku selama{' '}
+                                        <span className="font-extrabold text-[#1F1730]">
+                                            {reward.validityDays || 30} hari
+                                        </span>{' '}
+                                        dan detailnya akan muncul di Riwayat
+                                        Poin.
                                     </p>
                                 </div>
                             </div>
@@ -731,6 +716,32 @@ function RewardDetailModal({
                     </div>
                 </div>
             </section>
+        </div>
+    );
+}
+
+function RedemptionInfoRow({
+    icon: Icon,
+    label,
+    value,
+    className = '',
+}: {
+    icon: typeof Info;
+    label: string;
+    value: string;
+    className?: string;
+}) {
+    return (
+        <div className={`flex gap-3 rounded-xl bg-white p-3 ${className}`}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F0E7FF] text-[#6610F2]">
+                <Icon className="h-4.5 w-4.5" />
+            </span>
+            <div className="min-w-0">
+                <p className="text-xs font-bold text-[#8A7FA2]">{label}</p>
+                <p className="mt-1 text-sm leading-6 font-semibold text-[#382A49]">
+                    {value}
+                </p>
+            </div>
         </div>
     );
 }

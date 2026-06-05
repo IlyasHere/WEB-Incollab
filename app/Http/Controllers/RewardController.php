@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
 use App\Models\Notification;
 use App\Models\PenukaranPoin;
 use App\Models\Reward;
@@ -39,19 +38,6 @@ class RewardController extends Controller
                 'redeemedRewards' => PenukaranPoin::where('mhs_id', $mahasiswa->mhs_id)->count(),
                 'spentPoints' => (int) PenukaranPoin::where('mhs_id', $mahasiswa->mhs_id)->sum('jumlah_poin'),
             ],
-            'pointEvents' => Event::query()
-                ->where('poin_event', '>', 0)
-                ->latest('tanggal_event')
-                ->limit(3)
-                ->get()
-                ->map(fn (Event $event) => [
-                    'id' => $event->event_id,
-                    'title' => $event->judul_event,
-                    'date' => optional($event->tanggal_event)->format('d M Y'),
-                    'points' => (int) $event->poin_event,
-                    'category' => $event->kategori_event ?? 'Event',
-                ])
-                ->values(),
         ]);
     }
 
@@ -121,6 +107,9 @@ class RewardController extends Controller
             'poin_dibutuhkan' => ['required', 'integer', 'min:1', 'max:1000000'],
             'stok' => ['required', 'integer', 'min:0', 'max:1000000'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'lokasi_penukaran' => ['nullable', 'string', 'max:255'],
+            'instruksi_penukaran' => ['nullable', 'string', 'max:1000'],
+            'berlaku_hari' => ['nullable', 'integer', 'min:1', 'max:365'],
             'images' => ['nullable', 'array', 'max:2'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
@@ -131,6 +120,8 @@ class RewardController extends Controller
             $imagePaths[] = Storage::disk('public')->putFile('reward', $image);
         }
 
+        $isVoucher = $validated['kategori_reward'] === 'voucher';
+
         Reward::create([
             'admin_id' => $request->user()->user_id,
             'nama_reward' => $validated['nama_reward'],
@@ -139,6 +130,9 @@ class RewardController extends Controller
             'stok' => $validated['stok'],
             'deskripsi' => $validated['deskripsi'] ?? null,
             'gambar' => $imagePaths,
+            'lokasi_penukaran' => $isVoucher ? ($validated['lokasi_penukaran'] ?? null) : null,
+            'instruksi_penukaran' => $isVoucher ? ($validated['instruksi_penukaran'] ?? null) : null,
+            'berlaku_hari' => $isVoucher ? ($validated['berlaku_hari'] ?? 30) : 30,
         ]);
 
         Inertia::flash('toast', [
@@ -157,9 +151,14 @@ class RewardController extends Controller
             'poin_dibutuhkan' => ['required', 'integer', 'min:1', 'max:1000000'],
             'stok' => ['required', 'integer', 'min:0', 'max:1000000'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
+            'lokasi_penukaran' => ['nullable', 'string', 'max:255'],
+            'instruksi_penukaran' => ['nullable', 'string', 'max:1000'],
+            'berlaku_hari' => ['nullable', 'integer', 'min:1', 'max:365'],
             'images' => ['nullable', 'array', 'max:2'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        $isVoucher = $validated['kategori_reward'] === 'voucher';
 
         $changes = [
             'nama_reward' => $validated['nama_reward'],
@@ -167,6 +166,9 @@ class RewardController extends Controller
             'poin_dibutuhkan' => $validated['poin_dibutuhkan'],
             'stok' => $validated['stok'],
             'deskripsi' => $validated['deskripsi'] ?? null,
+            'lokasi_penukaran' => $isVoucher ? ($validated['lokasi_penukaran'] ?? null) : null,
+            'instruksi_penukaran' => $isVoucher ? ($validated['instruksi_penukaran'] ?? null) : null,
+            'berlaku_hari' => $isVoucher ? ($validated['berlaku_hari'] ?? 30) : 30,
         ];
 
         if ($request->hasFile('images')) {
@@ -251,6 +253,7 @@ class RewardController extends Controller
                 'jumlah_poin' => $points,
                 'status_penukaran' => 'Berhasil',
                 'kode_penukaran' => $this->generateRedemptionCode($lockedReward),
+                'expires_at' => now()->addDays((int) ($lockedReward->berlaku_hari ?: 30))->toDateString(),
             ]);
 
             Notification::create([
@@ -287,6 +290,9 @@ class RewardController extends Controller
             'status' => $stock > 0 ? 'Aktif' : 'Stok Habis',
             'redeemedCount' => $reward->penukaran_poin_count,
             'description' => $reward->deskripsi ?? '',
+            'redemptionLocation' => $reward->lokasi_penukaran ?: $this->defaultRedemptionLocation($reward->kategori_reward),
+            'redemptionInstructions' => $reward->instruksi_penukaran ?: $this->redemptionGuide($reward->kategori_reward),
+            'validityDays' => (int) ($reward->berlaku_hari ?: 30),
             'images' => collect($reward->gambar ?? [])
                 ->map(fn (string $path) => asset('storage/'.$path))
                 ->values(),
@@ -318,6 +324,22 @@ class RewardController extends Controller
             'body' => "Penukaran {$reward->nama_reward} berhasil. Kode penukaran sudah tersedia di riwayat poin.",
             'url' => route('pengaturan.riwayat-poin'),
         ];
+    }
+
+    private function defaultRedemptionLocation(?string $category): string
+    {
+        return match ($category) {
+            'merch' => 'Ambil di booth/admin InCollab saat jam operasional.',
+            default => 'Gunakan kode di merchant atau kanal penukaran yang tertera pada voucher.',
+        };
+    }
+
+    private function redemptionGuide(?string $category): string
+    {
+        return match ($category) {
+            'merch' => 'Tunjukkan kode penukaran ke admin/panitia. Merchandise akan diverifikasi sebelum diserahkan atau dikirim.',
+            default => 'Gunakan kode voucher sebelum tanggal expired. Simpan kode ini dan jangan bagikan ke orang lain.',
+        };
     }
 
     private function generateRedemptionCode(Reward $reward): string

@@ -39,6 +39,9 @@ type Reward = {
     status: RewardStatus;
     redeemedCount: number;
     description: string;
+    redemptionLocation: string;
+    redemptionInstructions: string;
+    validityDays: number;
     images: string[];
 };
 
@@ -497,6 +500,90 @@ function RewardRow({
     );
 }
 
+type RedemptionDetailField =
+    | 'lokasi_penukaran'
+    | 'instruksi_penukaran'
+    | 'berlaku_hari';
+
+type RedemptionDetailFieldsProps = {
+    data: Record<RedemptionDetailField, string>;
+    errors: Partial<Record<RedemptionDetailField, string>>;
+    onChange: (field: RedemptionDetailField, value: string) => void;
+};
+
+function RedemptionDetailFields({
+    data,
+    errors,
+    onChange,
+}: RedemptionDetailFieldsProps) {
+    return (
+        <div className="rounded-2xl border border-[#EFE4F8] bg-[#FBF7FF] p-4">
+            <h3 className="text-sm font-extrabold text-[#1F1730]">
+                Detail Penukaran Voucher
+            </h3>
+            <div className="mt-4 grid gap-5 md:grid-cols-[1fr_140px]">
+                <label className="block">
+                    <span className="text-sm font-semibold text-[#1F1730]">
+                        Lokasi / Kanal Penukaran
+                    </span>
+                    <input
+                        type="text"
+                        value={data.lokasi_penukaran}
+                        onChange={(event) =>
+                            onChange('lokasi_penukaran', event.target.value)
+                        }
+                        placeholder="Contoh: link merchant voucher atau halaman checkout"
+                        className="mt-2 h-11 w-full rounded-lg border border-[#D8CDE8] bg-white px-4 text-sm text-[#382A49] transition outline-none placeholder:text-[#8B8496] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                    />
+                    {errors.lokasi_penukaran && (
+                        <InputError>{errors.lokasi_penukaran}</InputError>
+                    )}
+                </label>
+
+                <label className="block">
+                    <span className="text-sm font-semibold text-[#1F1730]">
+                        Berlaku
+                    </span>
+                    <input
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={data.berlaku_hari}
+                        onChange={(event) =>
+                            onChange('berlaku_hari', event.target.value)
+                        }
+                        className="mt-2 h-11 w-full rounded-lg border border-[#D8CDE8] bg-white px-4 text-sm text-[#382A49] transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                    />
+                    <p className="mt-1 text-xs font-medium text-[#8B8496]">
+                        hari
+                    </p>
+                    {errors.berlaku_hari && (
+                        <InputError>{errors.berlaku_hari}</InputError>
+                    )}
+                </label>
+            </div>
+
+            <label className="mt-4 block">
+                <span className="text-sm font-semibold text-[#1F1730]">
+                    Instruksi Penukaran
+                </span>
+                <textarea
+                    rows={3}
+                    value={data.instruksi_penukaran}
+                    onChange={(event) =>
+                        onChange('instruksi_penukaran', event.target.value)
+                    }
+                    placeholder="Contoh: Masukkan kode di halaman checkout merchant atau tunjukkan kode voucher ke kasir."
+                    className="mt-2 w-full resize-none rounded-lg border border-[#D8CDE8] bg-white px-4 py-3 text-sm text-[#382A49] transition outline-none placeholder:text-[#8B8496] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                />
+                {errors.instruksi_penukaran && (
+                    <InputError>{errors.instruksi_penukaran}</InputError>
+                )}
+            </label>
+        </div>
+    );
+}
+
 function AddRewardModal({
     onClose,
     onSaved,
@@ -513,6 +600,9 @@ function AddRewardModal({
             poin_dibutuhkan: string;
             stok: string;
             deskripsi: string;
+            lokasi_penukaran: string;
+            instruksi_penukaran: string;
+            berlaku_hari: string;
             images: File[];
         }>({
             nama_reward: '',
@@ -520,6 +610,9 @@ function AddRewardModal({
             poin_dibutuhkan: '',
             stok: '',
             deskripsi: '',
+            lokasi_penukaran: '',
+            instruksi_penukaran: '',
+            berlaku_hari: '30',
             images: [],
         });
 
@@ -722,13 +815,24 @@ function AddRewardModal({
                                 <div className="relative mt-2">
                                     <select
                                         value={data.kategori_reward}
-                                        onChange={(event) =>
+                                        onChange={(event) => {
+                                            const category = event.target
+                                                .value as RewardCategory | '';
+
                                             setData(
                                                 'kategori_reward',
-                                                event.target
-                                                    .value as RewardCategory,
-                                            )
-                                        }
+                                                category,
+                                            );
+
+                                            if (category === 'merch') {
+                                                setData('lokasi_penukaran', '');
+                                                setData(
+                                                    'instruksi_penukaran',
+                                                    '',
+                                                );
+                                                setData('berlaku_hari', '30');
+                                            }
+                                        }}
                                         className="h-11 w-full appearance-none rounded-lg border border-[#D8CDE8] bg-white px-4 pr-10 text-sm text-[#382A49] transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                                     >
                                         <option value="">Pilih kategori</option>
@@ -822,6 +926,16 @@ function AddRewardModal({
                                 <InputError>{errors.deskripsi}</InputError>
                             )}
                         </label>
+
+                        {data.kategori_reward === 'voucher' && (
+                            <RedemptionDetailFields
+                                data={data}
+                                errors={errors}
+                                onChange={(field, value) =>
+                                    setData(field, value)
+                                }
+                            />
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-[#EFE4F8] bg-[#FBF7FF] px-6 py-4">
@@ -864,6 +978,9 @@ function EditRewardModal({
             poin_dibutuhkan: string;
             stok: string;
             deskripsi: string;
+            lokasi_penukaran: string;
+            instruksi_penukaran: string;
+            berlaku_hari: string;
             images: File[];
         }>({
             nama_reward: reward.name,
@@ -871,6 +988,9 @@ function EditRewardModal({
             poin_dibutuhkan: String(reward.points),
             stok: String(reward.stock),
             deskripsi: reward.description,
+            lokasi_penukaran: reward.redemptionLocation ?? '',
+            instruksi_penukaran: reward.redemptionInstructions ?? '',
+            berlaku_hari: String(reward.validityDays || 30),
             images: [],
         });
 
@@ -1078,13 +1198,24 @@ function EditRewardModal({
                                 <div className="relative mt-2">
                                     <select
                                         value={data.kategori_reward}
-                                        onChange={(event) =>
+                                        onChange={(event) => {
+                                            const category = event.target
+                                                .value as RewardCategory;
+
                                             setData(
                                                 'kategori_reward',
-                                                event.target
-                                                    .value as RewardCategory,
-                                            )
-                                        }
+                                                category,
+                                            );
+
+                                            if (category === 'merch') {
+                                                setData('lokasi_penukaran', '');
+                                                setData(
+                                                    'instruksi_penukaran',
+                                                    '',
+                                                );
+                                                setData('berlaku_hari', '30');
+                                            }
+                                        }}
                                         className="h-11 w-full appearance-none rounded-lg border border-[#D8CDE8] bg-white px-4 pr-10 text-sm text-[#382A49] transition outline-none focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                                     >
                                         <option value="voucher">Voucher</option>
@@ -1181,6 +1312,16 @@ function EditRewardModal({
                                 <InputError>{errors.deskripsi}</InputError>
                             )}
                         </label>
+
+                        {data.kategori_reward === 'voucher' && (
+                            <RedemptionDetailFields
+                                data={data}
+                                errors={errors}
+                                onChange={(field, value) =>
+                                    setData(field, value)
+                                }
+                            />
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-[#EFE4F8] bg-[#FBF7FF] px-6 py-4">

@@ -20,6 +20,9 @@ class Reward extends Model
         'stok',
         'deskripsi',
         'gambar',
+        'lokasi_penukaran',
+        'instruksi_penukaran',
+        'berlaku_hari',
     ];
 
     protected function casts(): array
