@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import AdminLayout from '@/layouts/AdminLayout';
 import { PengaduanFilters } from './components/PengaduanFilters';
 import { PengaduanSummaryGrid } from './components/PengaduanSummaryGrid';
@@ -61,7 +62,18 @@ export default function AdminPengaduanIndex({
                     </header>
                 </div>
 
-                <PengaduanSummaryGrid summary={summary} />
+                {isFiltering ? (
+                    <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                        {Array.from({ length: 4 }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                className="h-32 rounded-2xl"
+                            />
+                        ))}
+                    </section>
+                ) : (
+                    <PengaduanSummaryGrid summary={summary} />
+                )}
 
                 <PengaduanFilters
                     search={search}

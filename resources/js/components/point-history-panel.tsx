@@ -38,7 +38,10 @@ export type PointHistoryItem = {
     source?: string;
     status?: string | null;
     redemptionCode?: string | null;
+    redemptionExpiresAt?: string | null;
+    redemptionLocation?: string | null;
     redemptionGuide?: string | null;
+    redemptionInstructions?: string | null;
 };
 
 type PointHistoryPanelProps = {
@@ -161,8 +164,7 @@ function HistoryItem({
     const time = formatTime(item.date);
     const isMerchRedemption = item.rewardCategory === 'merch';
     const hasRedemptionInfo =
-        item.type === 'penukaran' &&
-        (isMerchRedemption || item.redemptionCode);
+        item.type === 'penukaran' && (isMerchRedemption || item.redemptionCode);
 
     return (
         <li className="group relative grid grid-cols-[4rem_1fr] gap-4 rounded-2xl px-2 py-8 transition hover:bg-[#FBF7FF] md:grid-cols-[4.5rem_1fr_auto] md:items-center">
@@ -398,6 +400,9 @@ function RedemptionCodeModal({
 }) {
     const time = formatTime(item.date);
     const isMerchRedemption = item.rewardCategory === 'merch';
+    const expiryDate = item.redemptionExpiresAt
+        ? formatDate(item.redemptionExpiresAt)
+        : null;
     const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>(
         'idle',
     );
@@ -457,30 +462,37 @@ function RedemptionCodeModal({
                 <div className="space-y-4 p-5">
                     {!isMerchRedemption && (
                         <div className="rounded-2xl border border-[#EFE4F8] bg-[#FBF7FF] p-4">
-                            <p className="text-xs font-bold text-[#8A7FA2]">
-                                Kode Rahasia
-                            </p>
-                            <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3">
-                                <p className="font-mono text-xl font-extrabold tracking-wide text-[#6610F2]">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-xs font-bold text-[#8A7FA2]">
+                                        Kode Kupon
+                                    </p>
+                                    {expiryDate && (
+                                        <p className="mt-1 text-xs font-extrabold text-[#D11149]">
+                                            Expired {expiryDate}
+                                        </p>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={copyCode}
+                                    className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-extrabold transition ${
+                                        copyState === 'copied'
+                                            ? 'bg-[#DCFCE7] text-[#15803D]'
+                                            : 'bg-[#FFF6D8] text-[#A77800] hover:bg-[#FFECA8] hover:text-[#746000]'
+                                    }`}
+                                    aria-label="Salin kode penukaran"
+                                >
+                                    <Copy className="size-4" />
+                                    {copyState === 'copied'
+                                        ? 'Tersalin'
+                                        : 'Salin'}
+                                </button>
+                            </div>
+                            <div className="mt-3 rounded-xl bg-white px-4 py-4">
+                                <p className="font-mono text-2xl font-extrabold tracking-wide break-all text-[#6610F2]">
                                     {item.redemptionCode}
                                 </p>
-                                <div className="flex shrink-0 flex-col items-end gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={copyCode}
-                                        className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-extrabold transition ${
-                                            copyState === 'copied'
-                                                ? 'bg-[#DCFCE7] text-[#15803D]'
-                                                : 'bg-[#FFF6D8] text-[#A77800] hover:bg-[#FFECA8] hover:text-[#746000]'
-                                        }`}
-                                        aria-label="Salin kode penukaran"
-                                    >
-                                        <Copy className="size-4" />
-                                        {copyState === 'copied'
-                                            ? 'Tersalin'
-                                            : 'Salin'}
-                                    </button>
-                                </div>
                             </div>
                             {copyState !== 'idle' && (
                                 <div
@@ -518,9 +530,15 @@ function RedemptionCodeModal({
                                 <StatusBadge status={item.status} />
                             </div>
                         </div>
+                        <div className="rounded-xl border border-[#EFE4F8] p-3">
+                            <p className="text-xs font-bold text-[#8A7FA2]">
+                                Expired Kupon
+                            </p>
+                            <p className="mt-2 text-sm font-extrabold text-[#1F1730]">
+                                {expiryDate ?? '-'}
+                            </p>
+                        </div>
                     </div>
-
-                    
                 </div>
             </section>
         </div>

@@ -57,6 +57,8 @@ type ProfileForm = {
 };
 
 const interestOptions = ['Teknologi', 'Desain', 'Bisnis', 'Sains', 'Seni'];
+const photoMaxSize = 2 * 1024 * 1024;
+const photoAllowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
 export default function Pengaturan({
     profileUser,
@@ -65,6 +67,7 @@ export default function Pengaturan({
 }: PengaturanProps) {
     const [skillInput, setSkillInput] = useState('');
     const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+    const [fotoError, setFotoError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const initials = profileUser.name
         .split(' ')
@@ -115,6 +118,7 @@ export default function Pengaturan({
             onSuccess: () => {
                 setIsEditing(false);
                 setFotoPreview(null);
+                setFotoError(null);
             },
         });
     };
@@ -171,6 +175,26 @@ export default function Pengaturan({
 
         const file = event.target.files?.[0] ?? null;
 
+        setFotoError(null);
+
+        if (file && !photoAllowedTypes.includes(file.type)) {
+            setData('foto', null);
+            setFotoPreview(null);
+            setFotoError('Format foto harus JPG, PNG, atau WEBP.');
+            event.target.value = '';
+
+            return;
+        }
+
+        if (file && file.size > photoMaxSize) {
+            setData('foto', null);
+            setFotoPreview(null);
+            setFotoError('Ukuran foto maksimal 2MB.');
+            event.target.value = '';
+
+            return;
+        }
+
         setData('foto', file);
         setFotoPreview(file ? URL.createObjectURL(file) : null);
     };
@@ -206,7 +230,7 @@ export default function Pengaturan({
                                 Ubah
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/png,image/webp"
                                     className="hidden"
                                     disabled={!isEditing}
                                     onChange={changeFoto}
@@ -218,12 +242,18 @@ export default function Pengaturan({
                                 onClick={() => {
                                     setData('foto', null);
                                     setFotoPreview(null);
+                                    setFotoError(null);
                                 }}
                                 className="rounded-xl bg-[#F3ECFF] px-4 py-2 text-sm font-semibold text-[#5E5873] transition hover:bg-[#E9D8FF] disabled:cursor-not-allowed disabled:bg-[#EEE9F5] disabled:text-[#9B8FB3]"
                             >
                                 Hapus
                             </button>
                         </div>
+                        <p className="mt-3 text-xs leading-5 font-medium text-[#766B8A]">
+                            Format foto: JPG, PNG, atau WEBP. Ukuran maksimal
+                            2MB.
+                        </p>
+                        {fotoError && <InputError>{fotoError}</InputError>}
                         {errors.foto && <InputError>{errors.foto}</InputError>}
                     </div>
 

@@ -10,6 +10,8 @@ import type {
     TrendingTopic,
 } from '@/components/dashboard/RightSidebar';
 import WelcomeOnboarding from '@/components/onboarding/WelcomeOnboarding';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePageLoading } from '@/hooks/use-page-loading';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import type { Auth } from '@/types/auth';
 
@@ -38,8 +40,72 @@ function EmptyFeedState() {
     );
 }
 
+function DashboardSkeleton() {
+    return (
+        <div className="mx-auto flex max-w-[1320px] gap-6 xl:gap-8">
+            <section className="min-w-0 flex-1 space-y-5 sm:space-y-6">
+                <section className="rounded-[28px] border border-[#EFE4F8] bg-white p-5 shadow-[0_18px_45px_rgba(177,145,221,0.13)]">
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-36" />
+                            <Skeleton className="h-3 w-52" />
+                        </div>
+                    </div>
+                    <Skeleton className="mt-5 h-24 w-full rounded-2xl" />
+                </section>
+
+                {Array.from({ length: 3 }).map((_, index) => (
+                    <section
+                        key={index}
+                        className="rounded-[28px] border border-[#EFE4F8] bg-white p-5 shadow-[0_18px_45px_rgba(177,145,221,0.13)]"
+                    >
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-11 w-11 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-4 w-40" />
+                                <Skeleton className="h-3 w-28" />
+                            </div>
+                        </div>
+                        <Skeleton className="mt-5 h-6 w-3/4" />
+                        <Skeleton className="mt-3 h-4 w-full" />
+                        <Skeleton className="mt-2 h-4 w-5/6" />
+                        <Skeleton className="mt-5 h-56 w-full rounded-2xl" />
+                    </section>
+                ))}
+            </section>
+
+            <aside className="hidden w-[320px] shrink-0 space-y-5 xl:block">
+                {Array.from({ length: 2 }).map((_, index) => (
+                    <section
+                        key={index}
+                        className="rounded-[28px] border border-[#EFE4F8] bg-white p-5 shadow-[0_18px_45px_rgba(177,145,221,0.13)]"
+                    >
+                        <Skeleton className="h-5 w-36" />
+                        <div className="mt-5 space-y-4">
+                            {Array.from({ length: 4 }).map((__, itemIndex) => (
+                                <div
+                                    key={itemIndex}
+                                    className="flex items-center gap-3"
+                                >
+                                    <Skeleton className="h-10 w-10 rounded-full" />
+                                    <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-3 w-full" />
+                                        <Skeleton className="h-3 w-2/3" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                ))}
+            </aside>
+        </div>
+    );
+}
+
 export default function Dashboard({ posts, partners, topics }: DashboardProps) {
     const { auth } = usePage<{ auth: Auth }>().props;
+    const isLoading = usePageLoading();
 
     return (
         <>
@@ -51,26 +117,30 @@ export default function Dashboard({ posts, partners, topics }: DashboardProps) {
             />
 
             <main className="px-4 py-5 pb-28 sm:px-6 sm:py-6 md:pb-8 lg:px-8 xl:px-10">
-                <div className="mx-auto flex max-w-[1320px] gap-6 xl:gap-8">
-                    <section className="min-w-0 flex-1">
-                        <div className="space-y-5 sm:space-y-6">
-                            <ComposerCard
-                                userName={auth.user.name}
-                                userAvatar={auth.user.avatar}
-                            />
+                {isLoading ? (
+                    <DashboardSkeleton />
+                ) : (
+                    <div className="mx-auto flex max-w-[1320px] gap-6 xl:gap-8">
+                        <section className="min-w-0 flex-1">
+                            <div className="space-y-5 sm:space-y-6">
+                                <ComposerCard
+                                    userName={auth.user.name}
+                                    userAvatar={auth.user.avatar}
+                                />
 
-                            {posts.length > 0 ? (
-                                posts.map((post) => (
-                                    <PostCard key={post.id} post={post} />
-                                ))
-                            ) : (
-                                <EmptyFeedState />
-                            )}
-                        </div>
-                    </section>
+                                {posts.length > 0 ? (
+                                    posts.map((post) => (
+                                        <PostCard key={post.id} post={post} />
+                                    ))
+                                ) : (
+                                    <EmptyFeedState />
+                                )}
+                            </div>
+                        </section>
 
-                    <RightSidebar topics={topics} partners={partners} />
-                </div>
+                        <RightSidebar topics={topics} partners={partners} />
+                    </div>
+                )}
             </main>
         </>
     );

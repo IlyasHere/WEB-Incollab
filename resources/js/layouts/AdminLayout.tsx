@@ -1,7 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import type { LucideIcon } from 'lucide-react';
 import {
-    CalendarDays,
     Coins,
     Gift,
     Grid2X2,
@@ -29,7 +28,7 @@ type AdminNavItem = {
 const navItems: AdminNavItem[] = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: Grid2X2 },
     { label: 'Event', href: '/admin/event', icon: Trophy },
-    { label: 'Reminder', href: '/admin/reminder', icon: CalendarDays },
+    // { label: 'Reminder', href: '/admin/reminder', icon: CalendarDays },
     { label: 'Pengaduan', href: '/admin/pengaduan', icon: Megaphone },
     { label: 'Reward', href: '/admin/reward', icon: Gift },
     { label: 'Poin', href: '/admin/poin', icon: Coins },
@@ -156,8 +155,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             <div className="min-w-0 flex-1" />
 
                             <div className="group relative">
-                                <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[#F0E7FF] text-xs font-extrabold text-[#6610F2] shadow-[0_10px_22px_rgba(102,16,242,0.12)] ring-1 ring-[#EFE4F8]">
-                                    {initials}
+                                <div className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#F0E7FF] text-xs font-extrabold text-[#6610F2] shadow-[0_10px_22px_rgba(102,16,242,0.12)] ring-1 ring-[#EFE4F8]">
+                                    {auth.user.avatar ? (
+                                        <img
+                                            src={auth.user.avatar}
+                                            alt={userName}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        initials
+                                    )}
                                 </div>
 
                                 <div className="invisible absolute top-14 right-0 w-48 translate-y-2 rounded-2xl border border-[#EFE4F8] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.12)] transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">

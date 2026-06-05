@@ -8,6 +8,8 @@ import {
     MessageCircle,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePageLoading } from '@/hooks/use-page-loading';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
 type NotificationItem = {
@@ -30,6 +32,8 @@ export default function PengaturanNotifikasi({
     notifications = [],
     unreadCount = 0,
 }: PengaturanNotifikasiProps) {
+    const isLoading = usePageLoading();
+
     const markAllAsRead = () => {
         if (unreadCount <= 0) {
             return;
@@ -120,7 +124,9 @@ export default function PengaturanNotifikasi({
                         </button>
                     </div>
 
-                    {notifications.length > 0 ? (
+                    {isLoading ? (
+                        <NotificationListSkeleton />
+                    ) : notifications.length > 0 ? (
                         <div className="space-y-4">
                             {notifications.map((item) => (
                                 <NotificationCard
@@ -150,6 +156,32 @@ export default function PengaturanNotifikasi({
     );
 }
 
+function NotificationListSkeleton() {
+    return (
+        <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+                <article
+                    key={index}
+                    className="rounded-[24px] border border-[#EADCF8] bg-white p-4 shadow-[0_10px_30px_rgba(102,16,242,0.08)]"
+                >
+                    <div className="flex items-start gap-4">
+                        <Skeleton className="h-14 w-14 shrink-0 rounded-2xl" />
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-3">
+                                <Skeleton className="h-5 w-56" />
+                                <Skeleton className="h-4 w-20" />
+                            </div>
+                            <Skeleton className="mt-3 h-4 w-full" />
+                            <Skeleton className="mt-2 h-4 w-4/5" />
+                            <Skeleton className="mt-4 h-4 w-24" />
+                        </div>
+                    </div>
+                </article>
+            ))}
+        </div>
+    );
+}
+
 function NotificationCard({
     notification,
     onOpen,
@@ -164,6 +196,11 @@ function NotificationCard({
             : notification.type === 'comment'
               ? MessageCircle
               : Info;
+    const actionLabel = notification.url
+        ? 'Buka detail'
+        : isUnread
+          ? 'Tandai sudah dibaca'
+          : 'Sudah dibaca';
 
     return (
         <article
@@ -220,9 +257,7 @@ function NotificationCard({
                     </p>
 
                     <div className="mt-3 inline-flex items-center gap-2 text-xs font-extrabold text-[#6610F2]">
-                        {notification.url
-                            ? 'Buka detail'
-                            : 'Tandai sudah dibaca'}
+                        {actionLabel}
                         <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
                     </div>
                 </div>

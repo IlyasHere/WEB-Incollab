@@ -24,6 +24,8 @@ class Event extends Model
         'poin_event',
         'link_pendaftaran',
         'status_event',
+        'visibility_status',
+        'registration_status',
         'poster_event',
         'detail_poster_event',
         'penyelenggara',
@@ -62,5 +64,10 @@ class Event extends Model
     public function tampilkanPerTanggal(string $tanggal): array
     {
         return [];
+    }
+
+    public function bookmarks()
+    {
+    return $this->hasMany(Bookmark::class, 'event_id', 'event_id');
     }
 }

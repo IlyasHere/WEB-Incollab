@@ -39,15 +39,10 @@ class TrendingTopicController extends Controller
                 ->contains(fn (string $tag) => $trendingTopicFinder->normalizeKey($tag) === $topicKey))
             ->values();
 
-        $relatedTopics = $allTopics
-            ->reject(fn (array $item) => $item['slug'] === $topicKey)
-            ->take(6)
-            ->values();
-
         return Inertia::render('trending/show', [
             'topic' => $currentTopic,
             'posts' => $feedPostFormatter->formatMany($posts, $request->user()),
-            'relatedTopics' => $relatedTopics,
+            'trendingTopics' => $allTopics->take(5)->values(),
         ]);
     }
 }

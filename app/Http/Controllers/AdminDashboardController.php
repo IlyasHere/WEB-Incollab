@@ -16,7 +16,7 @@ class AdminDashboardController extends Controller
 
         return Inertia::render('admin/dashboard', [
             'summary' => [
-                'publishedEvents' => Event::where('status_event', 'Published')->count(),
+                'publishedEvents' => Event::where('visibility_status', 'Published')->count(),
                 'scheduledReminders' => Event::whereDate('tanggal_event', '>=', $today)->count(),
                 'newReports' => LaporanPengaduan::where('status_laporan', 'Baru')->count(),
                 'newReportsToday' => LaporanPengaduan::where('status_laporan', 'Baru')
@@ -33,7 +33,7 @@ class AdminDashboardController extends Controller
                     'id' => $event->event_id,
                     'name' => $event->judul_event ?? 'Event',
                     'date' => $event->tanggal_event?->timezone('Asia/Jakarta')->translatedFormat('d M Y') ?? '-',
-                    'status' => $this->eventStatusLabel($event->status_event),
+                    'status' => $this->eventStatusLabel($event->registration_status),
                 ])
                 ->values(),
             'latestReports' => LaporanPengaduan::query()
@@ -54,8 +54,9 @@ class AdminDashboardController extends Controller
     private function eventStatusLabel(?string $status): string
     {
         return match ($status) {
-            'Published' => 'Aktif',
-            'Draft' => 'Draft',
+            'Open' => 'Pendaftaran Buka',
+            'Closed' => 'Pendaftaran Tutup',
+            'Coming Soon' => 'Segera Hadir',
             default => $status ?: 'Draft',
         };
     }

@@ -1,9 +1,11 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Bookmark } from 'lucide-react';
 import {
     ArrowLeft,
     CalendarDays,
     ExternalLink,
     Gift,
+    FileUp,
     MapPin,
     ShieldAlert,
     UserRound,
@@ -22,6 +24,8 @@ type EventItem = {
     points: number;
     registration_url: string | null;
     status: string | null;
+    visibility_status?: string | null;
+    registration_status?: string | null;
     poster_url: string | null;
     detail_poster_url: string | null;
     organizer: string | null;
@@ -30,6 +34,7 @@ type EventItem = {
 
 type EventDetailPageProps = {
     event: EventItem;
+    isBookmarked: boolean;
 };
 
 const categoryStyles: Record<string, string> = {
@@ -84,9 +89,14 @@ function DetailImage({ event }: { event: EventItem }) {
     );
 }
 
-export default function EventDetailPage({ event }: EventDetailPageProps) {
+export default function EventDetailPage({
+    event,
+    isBookmarked,
+}: EventDetailPageProps){
     const badgeClass =
         categoryStyles[event.category ?? ''] ?? 'bg-[#EEF2FF] text-[#4338CA]';
+    const registrationStatus =
+        event.registration_status ?? event.status ?? 'Coming Soon';
 
     return (
         <>
@@ -116,22 +126,50 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                             <div className="space-y-8 p-6 sm:p-8">
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div>
-                                        <h1 className="text-3xl leading-tight font-bold text-[#231A34] sm:text-4xl">
-                                            {event.title}
-                                        </h1>
+                                        <div className="flex items-start justify-between gap-4">
+                                            <h1 className="text-3xl leading-tight font-bold text-[#231A34] sm:text-4xl">
+                                                {event.title}
+                                            </h1>
+                                        </div>
+
                                         <p className="mt-3 text-lg leading-8 text-[#665B78]">
                                             {event.description ||
                                                 'Detail event akan diumumkan lebih lanjut oleh admin.'}
                                         </p>
                                     </div>
 
-                                    <div className="rounded-[24px] bg-[#FFF7ED] px-5 py-4 text-right">
-                                        <p className="text-sm font-semibold tracking-[0.14em] text-[#EA580C] uppercase">
-                                            Status Event
-                                        </p>
-                                        <p className="mt-2 text-lg font-bold text-[#9A3412]">
-                                            {event.status ?? 'Segera hadir'}
-                                        </p>
+                                    <div className="flex items-start gap-2">
+                                        <div className="rounded-[24px] bg-[#FFF7ED] px-5 py-4 text-right">
+                                            <p className="text-sm font-semibold tracking-[0.14em] text-[#EA580C] uppercase">
+                                                Status Event
+                                            </p>
+                                            <p className="mt-2 text-lg font-bold text-[#9A3412]">
+                                                {registrationStatus}
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                if (isBookmarked) {
+                                                    router.delete(`/event/${event.id}/bookmark`);
+                                                } else {
+                                                    router.post(`/event/${event.id}/bookmark`);
+                                                }
+                                            }}
+                                            className={`rounded-[20px] p-4 transition ${
+                                                isBookmarked
+                                                    ? 'bg-[#6610F2]'
+                                                    : 'bg-[#F3EDFF] hover:bg-[#E9DDFF]'
+                                            }`}
+                                        >
+                                            <Bookmark
+                                                className={`h-8 w-8 ${
+                                                    isBookmarked
+                                                        ? 'text-white'
+                                                        : 'text-[#6610F2]'
+                                                }`}
+                                            />
+                                        </button>
                                     </div>
                                 </div>
 
@@ -226,12 +264,17 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                                             Pendaftaran
                                         </p>
                                         <p className="mt-2 text-base text-[#635875]">
-                                            Gunakan tombol di samping untuk
-                                            membuka laman pendaftaran event.
+                                            {registrationStatus === 'Open'
+                                                ? 'Gunakan tombol di samping untuk membuka laman pendaftaran event.'
+                                                : registrationStatus ===
+                                                    'Closed'
+                                                  ? 'Pendaftaran event ini sudah ditutup oleh admin.'
+                                                  : 'Link pendaftaran akan dibuka saat admin mengubah status registrasi ke Open.'}
                                         </p>
                                     </div>
 
-                                    {event.registration_url ? (
+                                    {registrationStatus === 'Open' &&
+                                    event.registration_url ? (
                                         <a
                                             href={event.registration_url}
                                             target="_blank"
@@ -243,9 +286,32 @@ export default function EventDetailPage({ event }: EventDetailPageProps) {
                                         </a>
                                     ) : (
                                         <span className="inline-flex items-center rounded-2xl bg-[#F1E8FF] px-6 py-3 text-sm font-semibold text-[#7C3AED]">
-                                            Link pendaftaran menyusul
+                                            {registrationStatus === 'Closed'
+                                                ? 'Pendaftaran ditutup'
+                                                : 'Link pendaftaran menyusul'}
                                         </span>
                                     )}
+                                </div>
+
+                                <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-[#E7DBF8] bg-white p-6">
+                                    <div>
+                                        <p className="text-sm font-semibold tracking-[0.16em] text-[#6610F2] uppercase">
+                                            Klaim Poin
+                                        </p>
+                                        <p className="mt-2 text-base text-[#635875]">
+                                            Setelah mengikuti event, upload
+                                            sertifikat atau bukti keikutsertaan
+                                            untuk diverifikasi admin.
+                                        </p>
+                                    </div>
+
+                                    <Link
+                                        href="/klaim-poin-event"
+                                        className="inline-flex items-center gap-2 rounded-2xl bg-[#6610F2] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(102,16,242,0.20)]"
+                                    >
+                                        Ajukan Klaim
+                                        <FileUp className="h-4 w-4" />
+                                    </Link>
                                 </div>
                             </div>
                         </section>
