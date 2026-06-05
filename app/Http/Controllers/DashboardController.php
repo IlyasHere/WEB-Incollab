@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\FeedPostFormatter;
 use App\Support\TrendingTopicFinder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -25,10 +26,36 @@ class DashboardController extends Controller
 
     private function feedPosts(Request $request, FeedPostFormatter $feedPostFormatter)
     {
-        $posts = FeedPost::with(['user.mahasiswa', 'images'])
-            ->withCount('komentar')
+        if (! Schema::hasTable('feed_posts')) {
+            return collect();
+        }
+
+        $query = FeedPost::with('user.mahasiswa');
+
+        $hasImagesTable = Schema::hasTable('feed_post_images');
+        $hasCommentsTable = Schema::hasTable('komentar') && Schema::hasColumn('komentar', 'post_id');
+
+        if ($hasImagesTable) {
+            $query->with('images');
+        }
+
+        if ($hasCommentsTable) {
+            $query->withCount('komentar');
+        }
+
+        $posts = $query
             ->latest()
             ->get();
+
+        $posts->each(function (FeedPost $post) use ($hasImagesTable, $hasCommentsTable) {
+            if (! $hasImagesTable) {
+                $post->setRelation('images', collect());
+            }
+
+            if (! $hasCommentsTable) {
+                $post->setAttribute('komentar_count', 0);
+            }
+        });
 
         return $feedPostFormatter->formatMany($posts, $request->user());
     }

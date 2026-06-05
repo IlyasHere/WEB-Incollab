@@ -8,6 +8,7 @@ import {
     LogOut,
     Megaphone,
     Menu,
+    Settings,
     Trophy,
     X,
 } from 'lucide-react';
@@ -32,7 +33,7 @@ const navItems: AdminNavItem[] = [
     { label: 'Pengaduan', href: '/admin/pengaduan', icon: Megaphone },
     { label: 'Reward', href: '/admin/reward', icon: Gift },
     { label: 'Poin', href: '/admin/poin', icon: Coins },
-    // { label: 'Pengaturan', href: '/admin/pengaturan', icon: Settings },
+    { label: 'Pengaturan', href: '/admin/pengaturan', icon: Settings },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

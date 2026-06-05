@@ -66,6 +66,10 @@ class HandleInertiaRequests extends Middleware
             return str_starts_with($foto, 'http') ? $foto : asset('storage/'.$foto);
         }
 
+        if ($avatar && ! str_starts_with($avatar, 'http') && ! str_starts_with($avatar, '/')) {
+            return asset('storage/'.$avatar);
+        }
+
         return $avatar;
     }
 }
