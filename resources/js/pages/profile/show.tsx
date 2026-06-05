@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     BookOpen,
@@ -12,6 +12,7 @@ import {
     Instagram,
     Linkedin,
     MessageSquare,
+    Send,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import DashboardLayout from '@/layouts/DashboardLayout';
@@ -131,7 +132,7 @@ function ProfilePostCard({ post }: { post: ProfilePost }) {
                         {post.hashtags.slice(0, 3).map((tag) => (
                             <span
                                 key={tag}
-                            className="rounded-[10px] bg-[#F1E8FA] px-2 py-1 text-xs font-medium text-[#5F556F]"
+                                className="rounded-[10px] bg-[#F1E8FA] px-2 py-1 text-xs font-medium text-[#5F556F]"
                             >
                                 {tag}
                             </span>
@@ -190,6 +191,10 @@ export default function ProfileShow({ profile, posts }: ProfileShowProps) {
         },
     ].filter((contact) => contact.value && contact.label);
 
+    function startChat() {
+        router.post('/chat', { user_id: profile.id });
+    }
+
     return (
         <>
             <Head title={`Profil ${profile.name}`} />
@@ -208,8 +213,8 @@ export default function ProfileShow({ profile, posts }: ProfileShowProps) {
                             Profil Pengguna
                         </h1>
                         <p className="mt-2 text-sm leading-6 text-[#5F556F]">
-                            Lihat informasi profil dan postingan kolaborasi
-                            dari pengguna ini.
+                            Lihat informasi profil dan postingan kolaborasi dari
+                            pengguna ini.
                         </p>
                     </header>
 
@@ -230,30 +235,41 @@ export default function ProfileShow({ profile, posts }: ProfileShowProps) {
                             </div>
 
                             <div className="min-w-0">
-                                <div className="max-w-3xl">
-                                    <h2 className="text-2xl font-extrabold text-[#1F1730] sm:text-3xl">
-                                        {profile.name}
-                                    </h2>
-                                    <p className="mt-2 flex flex-wrap items-center gap-1 text-sm font-semibold text-[#6610F2] sm:text-base">
-                                        <GraduationCap className="h-4 w-4" />
-                                        <span>
-                                            {profile.jurusan ||
-                                                'Jurusan belum diisi'}
-                                        </span>
-                                        <span>•</span>
-                                        <span>
-                                            {profile.universitas ||
-                                                'Universitas belum diisi'}
-                                        </span>
-                                    </p>
-                                    <p className="mt-2 text-sm text-[#5F556F] sm:text-base">
-                                        Angkatan {profile.angkatan || '-'} •
-                                        Semester {profile.semester || '-'}
-                                    </p>
-                                    <p className="mt-5 text-[15px] leading-7 text-[#4C435E] sm:text-base">
-                                        {profile.bio ||
-                                            'Pengguna ini belum menambahkan bio profil.'}
-                                    </p>
+                                <div className="flex max-w-3xl flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0">
+                                        <h2 className="text-2xl font-extrabold text-[#1F1730] sm:text-3xl">
+                                            {profile.name}
+                                        </h2>
+                                        <p className="mt-2 flex flex-wrap items-center gap-1 text-sm font-semibold text-[#6610F2] sm:text-base">
+                                            <GraduationCap className="h-4 w-4" />
+                                            <span>
+                                                {profile.jurusan ||
+                                                    'Jurusan belum diisi'}
+                                            </span>
+                                            <span>•</span>
+                                            <span>
+                                                {profile.universitas ||
+                                                    'Universitas belum diisi'}
+                                            </span>
+                                        </p>
+                                        <p className="mt-2 text-sm text-[#5F556F] sm:text-base">
+                                            Angkatan {profile.angkatan || '-'} •
+                                            Semester {profile.semester || '-'}
+                                        </p>
+                                        <p className="mt-5 text-[15px] leading-7 text-[#4C435E] sm:text-base">
+                                            {profile.bio ||
+                                                'Pengguna ini belum menambahkan bio profil.'}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={startChat}
+                                        className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] bg-[#6610F2] px-4 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.24)] transition hover:bg-[#570DD1]"
+                                    >
+                                        <Send className="h-4 w-4" />
+                                        Mulai Chat
+                                    </button>
                                 </div>
 
                                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -364,8 +380,8 @@ export default function ProfileShow({ profile, posts }: ProfileShowProps) {
                                         </div>
                                     ) : (
                                         <p className="text-sm text-[#766B8A]">
-                                            Pengguna ini belum menambahkan kontak
-                                            atau tautan.
+                                            Pengguna ini belum menambahkan
+                                            kontak atau tautan.
                                         </p>
                                     )}
                                 </div>
@@ -375,7 +391,7 @@ export default function ProfileShow({ profile, posts }: ProfileShowProps) {
 
                     <section>
                         <h2 className="text-2xl font-extrabold text-[#1F1730]">
-                            Feed 
+                            Feed
                         </h2>
                         <p className="mt-1 text-sm text-[#5F556F]">
                             Postingan dan proyek terbaru dari {profile.name}.
