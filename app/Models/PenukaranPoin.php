@@ -10,6 +10,7 @@ class PenukaranPoin extends Model
     use HasFactory;
 
     protected $table = 'penukaran_poin';
+
     protected $primaryKey = 'penukaran_id';
 
     protected $fillable = [
@@ -35,6 +36,8 @@ class PenukaranPoin extends Model
 
     // Method dari class diagram
     public function prosesPenukaran() {}
+
     public function batalPenukaran() {}
+
     public function tampilRiwayat() {}
 }

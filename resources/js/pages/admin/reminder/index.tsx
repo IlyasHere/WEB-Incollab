@@ -7,7 +7,7 @@ export default function AdminReminderIndex() {
         <>
             <Head title="Reminder" />
             <section className="rounded-2xl border border-[#EFE4F8] bg-white p-6 shadow-[0_18px_45px_rgba(56,42,73,0.06)]">
-                <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#6610F2]">
+                <p className="text-sm font-bold tracking-[0.12em] text-[#6610F2] uppercase">
                     Reminder
                 </p>
                 <h1 className="mt-3 text-2xl font-bold text-[#1F1730]">

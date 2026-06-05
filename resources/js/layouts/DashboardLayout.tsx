@@ -3,14 +3,12 @@ import { usePage } from '@inertiajs/react';
 import {
     Bell,
     Bookmark,
-    MessageCircle,
-    Compass,
     Coins,
     Home,
+    MessageCircle,
     Settings,
     Trophy,
 } from 'lucide-react';
-import { Bell, Bookmark, Coins, Home, Settings, Trophy } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import AppSidebar from '@/components/dashboard/AppSidebar';

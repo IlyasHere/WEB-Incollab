@@ -68,6 +68,6 @@ class Event extends Model
 
     public function bookmarks()
     {
-    return $this->hasMany(Bookmark::class, 'event_id', 'event_id');
+        return $this->hasMany(Bookmark::class, 'event_id', 'event_id');
     }
 }

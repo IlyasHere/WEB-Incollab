@@ -92,7 +92,7 @@ function DetailImage({ event }: { event: EventItem }) {
 export default function EventDetailPage({
     event,
     isBookmarked,
-}: EventDetailPageProps){
+}: EventDetailPageProps) {
     const badgeClass =
         categoryStyles[event.category ?? ''] ?? 'bg-[#EEF2FF] text-[#4338CA]';
     const registrationStatus =
@@ -151,9 +151,13 @@ export default function EventDetailPage({
                                         <button
                                             onClick={() => {
                                                 if (isBookmarked) {
-                                                    router.delete(`/event/${event.id}/bookmark`);
+                                                    router.delete(
+                                                        `/event/${event.id}/bookmark`,
+                                                    );
                                                 } else {
-                                                    router.post(`/event/${event.id}/bookmark`);
+                                                    router.post(
+                                                        `/event/${event.id}/bookmark`,
+                                                    );
                                                 }
                                             }}
                                             className={`rounded-[20px] p-4 transition ${

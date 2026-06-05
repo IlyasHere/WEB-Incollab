@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
 
@@ -20,7 +21,9 @@ test('two factor challenge can be rendered', function () {
         'confirmPassword' => true,
     ]);
 
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'password' => Hash::make('Password123'),
+    ]);
 
     $user->forceFill([
         'two_factor_secret' => encrypt('test-secret'),
@@ -30,7 +33,7 @@ test('two factor challenge can be rendered', function () {
 
     $this->post(route('login'), [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => 'Password123',
     ]);
 
     $this->get(route('two-factor.login'))

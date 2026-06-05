@@ -10,6 +10,7 @@ class Reward extends Model
     use HasFactory;
 
     protected $table = 'reward';
+
     protected $primaryKey = 'reward_id';
 
     protected $fillable = [
@@ -45,5 +46,6 @@ class Reward extends Model
 
     // Method dari class diagram
     public function tampilkanReward() {}
+
     public function updateReward() {}
 }

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Bookmark;
 use App\Models\Event;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class BookmarkController extends Controller
 {

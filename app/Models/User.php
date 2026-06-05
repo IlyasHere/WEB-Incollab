@@ -42,6 +42,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getIdAttribute(): ?int
+    {
+        return $this->user_id;
+    }
+
     // Relasi ke Mahasiswa
     public function mahasiswa()
     {
@@ -66,9 +71,11 @@ class User extends Authenticatable
     public function conversationsAsUserTwo()
     {
         return $this->hasMany(Conversation::class, 'user_two_id', 'user_id');
+    }
+
     public function bookmarks()
     {
-    return $this->hasMany(Bookmark::class, 'user_id', 'user_id');
+        return $this->hasMany(Bookmark::class, 'user_id', 'user_id');
     }
 
     // Helper cek role

@@ -197,9 +197,7 @@ export default function AdminPengaturanIndex({
                                         />
                                     </label>
                                     {errors.avatar && (
-                                        <InputError>
-                                            {errors.avatar}
-                                        </InputError>
+                                        <InputError>{errors.avatar}</InputError>
                                     )}
                                 </div>
 

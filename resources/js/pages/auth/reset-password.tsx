@@ -35,7 +35,10 @@ export default function ResetPassword({ token, email }: Props) {
                     <div className="grid gap-5">
                         {/* Email readonly */}
                         <div className="grid gap-2">
-                            <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                            <Label
+                                htmlFor="email"
+                                className="text-sm font-semibold text-gray-700"
+                            >
                                 Email
                             </Label>
 
@@ -47,21 +50,27 @@ export default function ResetPassword({ token, email }: Props) {
                                 readOnly
                                 className="rounded-xl bg-gray-100 text-gray-700 opacity-100"
                             />
-                            <InputError message={errors.email} className="mt-1" />
+                            <InputError
+                                message={errors.email}
+                                className="mt-1"
+                            />
                         </div>
 
                         {/* Password */}
                         <div className="grid gap-2">
-                            <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                            <Label
+                                htmlFor="password"
+                                className="text-sm font-semibold text-gray-700"
+                            >
                                 New password
                             </Label>
 
                             <div className="relative">
-                                <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <KeyRound className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 <PasswordInput
                                     id="password"
                                     name="password"
-                                    className="pl-10 rounded-xl bg-white text-gray-900 placeholder:text-gray-400 border-violet-200 focus:border-violet-500 focus:ring-violet-500/20"
+                                    className="rounded-xl border-violet-200 bg-white pl-10 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500/20"
                                     autoFocus
                                     placeholder="Enter new password"
                                 />
@@ -71,25 +80,31 @@ export default function ResetPassword({ token, email }: Props) {
 
                         {/* Confirm password */}
                         <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation" className="text-sm font-semibold text-gray-700">
+                            <Label
+                                htmlFor="password_confirmation"
+                                className="text-sm font-semibold text-gray-700"
+                            >
                                 Confirm password
                             </Label>
 
                             <div className="relative">
-                                <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <KeyRound className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 <PasswordInput
                                     id="password_confirmation"
                                     name="password_confirmation"
-                                    className="pl-10 rounded-xl bg-white text-gray-900 placeholder:text-gray-400 border-violet-200 focus:border-violet-500 focus:ring-violet-500/20"
+                                    className="rounded-xl border-violet-200 bg-white pl-10 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500/20"
                                     placeholder="Confirm new password"
                                 />
                             </div>
-                            <InputError message={errors.password_confirmation} className="mt-1" />
+                            <InputError
+                                message={errors.password_confirmation}
+                                className="mt-1"
+                            />
                         </div>
 
                         <Button
                             type="submit"
-                            className="mt-2 w-full rounded-xl bg-violet-600 py-5 text-sm font-semibold hover:bg-violet-700 active:scale-[0.98] transition-all"
+                            className="mt-2 w-full rounded-xl bg-violet-600 py-5 text-sm font-semibold transition-all hover:bg-violet-700 active:scale-[0.98]"
                             disabled={processing}
                             data-test="reset-password-button"
                         >

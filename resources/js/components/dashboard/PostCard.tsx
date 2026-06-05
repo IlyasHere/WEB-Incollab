@@ -132,7 +132,7 @@ export default function PostCard({ post }: PostCardProps) {
                                 <MoreHorizontal className="h-5 w-5" />
                             </button>
 
-                            <div className="invisible absolute top-9 right-0 z-10 w-36 translate-y-1 rounded-2xl border border-[#EEE4F9] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.12)] transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                            <div className="invisible absolute top-9 right-0 z-10 w-36 translate-y-1 rounded-2xl border border-[#EEE4F9] bg-white p-2 opacity-0 shadow-[0_18px_45px_rgba(56,42,73,0.12)] transition-all duration-150 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                                 <button
                                     type="button"
                                     onClick={() => setDeleteDialogOpen(true)}
@@ -166,7 +166,9 @@ export default function PostCard({ post }: PostCardProps) {
                         <div className="group/carousel relative overflow-hidden rounded-[22px] border border-[#EEE4F9]">
                             <button
                                 type="button"
-                                onClick={hasCarousel ? showNextImage : undefined}
+                                onClick={
+                                    hasCarousel ? showNextImage : undefined
+                                }
                                 className="block w-full cursor-pointer"
                                 aria-label={
                                     hasCarousel
@@ -186,7 +188,7 @@ export default function PostCard({ post }: PostCardProps) {
                                     <button
                                         type="button"
                                         onClick={showPreviousImage}
-                                        className="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#382A49] opacity-0 shadow-[0_10px_24px_rgba(56,42,73,0.18)] transition hover:bg-white group-hover/carousel:opacity-100 focus:opacity-100"
+                                        className="absolute top-1/2 left-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#382A49] opacity-0 shadow-[0_10px_24px_rgba(56,42,73,0.18)] transition group-hover/carousel:opacity-100 hover:bg-white focus:opacity-100"
                                         aria-label="Foto sebelumnya"
                                     >
                                         <ChevronLeft className="h-5 w-5" />
@@ -195,7 +197,7 @@ export default function PostCard({ post }: PostCardProps) {
                                     <button
                                         type="button"
                                         onClick={showNextImage}
-                                        className="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#382A49] opacity-0 shadow-[0_10px_24px_rgba(56,42,73,0.18)] transition hover:bg-white group-hover/carousel:opacity-100 focus:opacity-100"
+                                        className="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#382A49] opacity-0 shadow-[0_10px_24px_rgba(56,42,73,0.18)] transition group-hover/carousel:opacity-100 hover:bg-white focus:opacity-100"
                                         aria-label="Foto berikutnya"
                                     >
                                         <ChevronRight className="h-5 w-5" />
@@ -210,7 +212,8 @@ export default function PostCard({ post }: PostCardProps) {
                                                     setActiveImageIndex(index)
                                                 }
                                                 className={`h-2.5 rounded-full transition ${
-                                                    index === displayedImageIndex
+                                                    index ===
+                                                    displayedImageIndex
                                                         ? 'w-6 bg-white'
                                                         : 'w-2.5 bg-white/60 hover:bg-white/80'
                                                 }`}

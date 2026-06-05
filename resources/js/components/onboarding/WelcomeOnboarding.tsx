@@ -315,7 +315,10 @@ export default function WelcomeOnboarding({
                                 disabled={isCompleting}
                                 onClick={() =>
                                     setActiveIndex((current) =>
-                                        Math.min(current + 1, slides.length - 1),
+                                        Math.min(
+                                            current + 1,
+                                            slides.length - 1,
+                                        ),
                                     )
                                 }
                                 className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#6610F2] px-6 text-sm font-extrabold text-white shadow-[0_16px_28px_rgba(102,16,242,0.28)] transition hover:bg-[#570DD1] disabled:cursor-not-allowed disabled:opacity-60"

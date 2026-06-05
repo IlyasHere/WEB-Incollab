@@ -25,11 +25,14 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                                <Label
+                                    htmlFor="email"
+                                    className="text-sm font-semibold text-gray-700"
+                                >
                                     Email address
                                 </Label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                     <Input
                                         id="email"
                                         type="email"
@@ -44,7 +47,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                             </div>
 
                             <Button
-                                className="mt-2 w-full rounded-xl bg-violet-600 py-5 text-sm font-semibold hover:bg-violet-700 active:scale-[0.98] transition-all"
+                                className="mt-2 w-full rounded-xl bg-violet-600 py-5 text-sm font-semibold transition-all hover:bg-violet-700 active:scale-[0.98]"
                                 disabled={processing}
                                 data-test="email-password-reset-link-button"
                             >
@@ -67,7 +70,10 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
                     <ArrowLeft className="h-3.5 w-3.5" />
                     <span>Return to</span>
-                    <TextLink href={login()} className="font-semibold text-violet-600 hover:text-violet-700">
+                    <TextLink
+                        href={login()}
+                        className="font-semibold text-violet-600 hover:text-violet-700"
+                    >
                         log in
                     </TextLink>
                 </div>

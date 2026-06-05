@@ -28,7 +28,7 @@ export default function TrendingUpAnimatedIcon({
 
     return (
         <span
-            className={`trending-up-icon group/icon inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#EFE4F8] text-[#6610F2] shadow-[inset_0_0_0_1px_rgba(102,16,242,0.08),0_10px_24px_rgba(102,16,242,0.12)] transition-colors duration-300 hover:bg-[#E7D7FF] group-hover:bg-[#E7D7FF] ${animationClass} ${className}`}
+            className={`trending-up-icon group/icon inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#EFE4F8] text-[#6610F2] shadow-[inset_0_0_0_1px_rgba(102,16,242,0.08),0_10px_24px_rgba(102,16,242,0.12)] transition-colors duration-300 group-hover:bg-[#E7D7FF] hover:bg-[#E7D7FF] ${animationClass} ${className}`}
             style={
                 {
                     '--trending-icon-size': `${size}px`,

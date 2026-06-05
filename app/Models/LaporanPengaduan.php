@@ -10,6 +10,7 @@ class LaporanPengaduan extends Model
     use HasFactory;
 
     protected $table = 'laporan_pengaduan';
+
     protected $primaryKey = 'laporan_id';
 
     protected $fillable = [
@@ -47,6 +48,8 @@ class LaporanPengaduan extends Model
 
     // Method dari class diagram
     public function buatLaporan() {}
+
     public function tampilLaporan() {}
+
     public function updateStatus() {}
 }

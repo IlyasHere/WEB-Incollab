@@ -96,7 +96,11 @@ export default function EventPointClaimCreate({
 
     return (
         <>
-            <Head title={event ? `Klaim Poin - ${event.title}` : 'Klaim Poin Event'} />
+            <Head
+                title={
+                    event ? `Klaim Poin - ${event.title}` : 'Klaim Poin Event'
+                }
+            />
 
             <main className="px-4 py-5 pb-16 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
                 <div className="mx-auto max-w-[980px]">
@@ -128,18 +132,21 @@ export default function EventPointClaimCreate({
                                 <div className="flex items-center gap-3">
                                     <Gift className="h-5 w-5 text-[#6610F2]" />
                                     <span className="text-lg font-bold">
-                                        {event ? `+${event.points} poin` : 'Verifikasi admin'}
+                                        {event
+                                            ? `+${event.points} poin`
+                                            : 'Verifikasi admin'}
                                     </span>
                                 </div>
                                 <p className="mt-2 text-sm text-[#6A5F7D]">
-                                {event?.category ?? 'Klaim Event'}
+                                    {event?.category ?? 'Klaim Event'}
                                 </p>
                             </div>
                         </div>
 
                         <div className="mt-6 rounded-[24px] border border-[#ECE1F8] bg-white p-5">
                             <h2 className="text-xl font-bold text-[#241B35]">
-                                {event?.title ?? 'Isi nama event yang sudah kamu ikuti'}
+                                {event?.title ??
+                                    'Isi nama event yang sudah kamu ikuti'}
                             </h2>
                             <div className="mt-3 flex items-center gap-2 text-sm text-[#6B617C]">
                                 <CalendarDays className="h-4 w-4 text-[#6610F2]" />
@@ -231,7 +238,10 @@ export default function EventPointClaimCreate({
                                         readOnly={Boolean(event)}
                                         list="event-options"
                                         onChange={(e) =>
-                                            setData('nama_event', e.target.value)
+                                            setData(
+                                                'nama_event',
+                                                e.target.value,
+                                            )
                                         }
                                         className="mt-2 h-12 w-full rounded-2xl border border-[#E2D4F3] bg-[#FBF8FF] px-4 text-sm text-[#6B617C] outline-none focus:border-[#6610F2]"
                                     />
@@ -255,9 +265,7 @@ export default function EventPointClaimCreate({
                                         </span>
                                         <input
                                             type="date"
-                                            value={
-                                                data.tanggal_mengikuti_event
-                                            }
+                                            value={data.tanggal_mengikuti_event}
                                             onChange={(e) =>
                                                 setData(
                                                     'tanggal_mengikuti_event',
@@ -336,14 +344,16 @@ export default function EventPointClaimCreate({
                                         rows={4}
                                         className="mt-2 w-full resize-none rounded-2xl border border-[#E2D4F3] px-4 py-3 text-sm outline-none focus:border-[#6610F2]"
                                     />
-                                    <InputError
-                                        message={errors.catatan_user}
-                                    />
+                                    <InputError message={errors.catatan_user} />
                                 </label>
 
                                 <div className="flex flex-wrap items-center justify-end gap-3">
                                     <Link
-                                        href={event ? `/event/${event.id}` : '/event'}
+                                        href={
+                                            event
+                                                ? `/event/${event.id}`
+                                                : '/event'
+                                        }
                                         className="rounded-2xl border border-[#D8C7F3] px-5 py-3 text-sm font-semibold text-[#5F576D]"
                                     >
                                         Batal

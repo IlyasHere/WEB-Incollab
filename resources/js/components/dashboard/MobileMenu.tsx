@@ -25,7 +25,6 @@ export default function MobileMenu({
         if (open) {
             const renderFrame = window.requestAnimationFrame(() => {
                 setShouldRender(true);
-
                 window.requestAnimationFrame(() => setIsVisible(true));
             });
 
@@ -48,16 +47,7 @@ export default function MobileMenu({
     }
 
     return (
-        <div className="border-b border-[#EFE4F8] bg-white px-4 py-4 md:hidden">
-            <nav className="space-y-2">
-                {[...items, settingsItem].map(({ label, href, icon: Icon }) => {
-                    const active =
-                        href === currentPath ||
-                        currentPath.startsWith(`${href}/`);
-        <div
-            className="fixed inset-0 z-50 md:hidden"
-            aria-hidden={!open}
-        >
+        <div className="fixed inset-0 z-50 md:hidden" aria-hidden={!open}>
             <button
                 type="button"
                 className={`absolute inset-0 bg-[#241B35]/35 backdrop-blur-[2px] transition-opacity duration-300 ease-out ${
@@ -101,7 +91,9 @@ export default function MobileMenu({
                 <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-5">
                     {[...items, settingsItem].map(
                         ({ label, href, icon: Icon, badgeCount }) => {
-                            const active = href === currentPath;
+                            const active =
+                                href === currentPath ||
+                                currentPath.startsWith(`${href}/`);
 
                             return (
                                 <Link
