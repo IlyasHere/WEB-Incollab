@@ -1,20 +1,17 @@
 import {
+    CalendarDays,
     CheckCircle2,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     Gift,
     ShoppingBag,
     Trophy,
-    type LucideIcon,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 export type PointHistoryType = 'klaim' | 'penukaran' | 'bonus';
@@ -41,6 +38,21 @@ const directionFilters: { label: string; value: PointDirectionFilter }[] = [
     { label: 'Semua', value: 'semua' },
     { label: 'Poin Masuk', value: 'masuk' },
     { label: 'Poin Keluar', value: 'keluar' },
+];
+
+const monthNames = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
 ];
 
 const historyTypeMeta: Record<
@@ -82,28 +94,86 @@ function formatDate(date: string) {
     }).format(parsedDate);
 }
 
-function formatMonthLabel(date: Date) {
-    return new Intl.DateTimeFormat('id-ID', {
-        month: 'long',
-        year: 'numeric',
-    }).format(date);
-}
-
 function formatMonthValue(date: Date) {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function getRecentMonths() {
+function getYearOptions() {
     const today = new Date();
+    const currentYear = today.getFullYear();
+    const firstYear = currentYear - 5;
 
-    return Array.from({ length: 6 }, (_, index) => {
-        const date = new Date(today.getFullYear(), today.getMonth() - index, 1);
+    return Array.from(
+        { length: currentYear - firstYear + 1 },
+        (_, index) => firstYear + index,
+    );
+}
 
-        return {
-            label: index === 0 ? 'Bulan ini' : formatMonthLabel(date),
-            value: formatMonthValue(date),
-        };
-    });
+function getCurrentMonthValue() {
+    return formatMonthValue(new Date());
+}
+
+function getYearFromMonthValue(monthValue: string) {
+    return Number(monthValue.split('-')[0]);
+}
+
+function getMonthIndexFromMonthValue(monthValue: string) {
+    return Number(monthValue.split('-')[1]) - 1;
+}
+
+function getMonthYearLabel(monthValue: string) {
+    const year = getYearFromMonthValue(monthValue);
+    const monthIndex = getMonthIndexFromMonthValue(monthValue);
+
+    if (!Number.isFinite(year) || !monthNames[monthIndex]) {
+        return monthValue;
+    }
+
+    const currentMonthValue = getCurrentMonthValue();
+    const label = `${monthNames[monthIndex]} ${year}`;
+
+    return monthValue === currentMonthValue ? `Bulan ini (${label})` : label;
+}
+
+function getMonthValueFromDate(date: string) {
+    if (/^\d{4}-\d{2}/.test(date)) {
+        return date.slice(0, 7);
+    }
+
+    const parsedDate = new Date(date);
+
+    return Number.isNaN(parsedDate.getTime())
+        ? null
+        : formatMonthValue(parsedDate);
+}
+
+function isSelectableMonth(monthValue: string) {
+    const yearOptions = getYearOptions();
+    const year = getYearFromMonthValue(monthValue);
+
+    return (
+        year >= yearOptions[0]! && year <= yearOptions[yearOptions.length - 1]!
+    );
+}
+
+function hasHistoryInMonth(history: PointHistoryItem[], monthValue: string) {
+    return history.some(
+        (item) => getMonthValueFromDate(item.date) === monthValue,
+    );
+}
+
+function getDefaultMonthValue(history: PointHistoryItem[]) {
+    const currentMonthValue = getCurrentMonthValue();
+
+    if (hasHistoryInMonth(history, currentMonthValue)) {
+        return currentMonthValue;
+    }
+
+    const latestHistoryMonth = history
+        .map((item) => getMonthValueFromDate(item.date))
+        .find((monthValue) => monthValue && isSelectableMonth(monthValue));
+
+    return latestHistoryMonth ?? currentMonthValue;
 }
 
 function formatPoints(points: number) {
@@ -114,12 +184,7 @@ function formatPoints(points: number) {
 }
 
 function isSameMonth(date: string, monthValue: string) {
-    const parsedDate = new Date(date);
-
-    return (
-        !Number.isNaN(parsedDate.getTime()) &&
-        formatMonthValue(parsedDate) === monthValue
-    );
+    return getMonthValueFromDate(date) === monthValue;
 }
 
 function HistoryItem({ item }: { item: PointHistoryItem }) {
@@ -149,7 +214,7 @@ function HistoryItem({ item }: { item: PointHistoryItem }) {
                     <Badge
                         variant="secondary"
                         className={cn(
-                            'rounded-full border-0 px-3 py-1 text-xs font-bold uppercase tracking-normal',
+                            'rounded-full border-0 px-3 py-1 text-xs font-bold tracking-normal uppercase',
                             meta.badgeClassName,
                         )}
                     >
@@ -175,14 +240,162 @@ function HistoryItem({ item }: { item: PointHistoryItem }) {
     );
 }
 
+function MonthYearPicker({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (month: string) => void;
+}) {
+    const yearOptions = useMemo(() => getYearOptions(), []);
+    const minYear = yearOptions[0]!;
+    const maxYear = yearOptions[yearOptions.length - 1]!;
+    const [isOpen, setIsOpen] = useState(false);
+    const [viewYear, setViewYear] = useState(() =>
+        Math.min(maxYear, Math.max(minYear, getYearFromMonthValue(value))),
+    );
+    const pickerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function closePicker(event: MouseEvent) {
+            if (
+                pickerRef.current &&
+                !pickerRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false);
+            }
+        }
+
+        document.addEventListener('mousedown', closePicker);
+
+        return () => document.removeEventListener('mousedown', closePicker);
+    }, []);
+
+    function changeYear(direction: -1 | 1) {
+        setViewYear((current) =>
+            Math.min(maxYear, Math.max(minYear, current + direction)),
+        );
+    }
+
+    function selectMonth(monthIndex: number) {
+        onChange(`${viewYear}-${String(monthIndex + 1).padStart(2, '0')}`);
+        setIsOpen(false);
+    }
+
+    function togglePicker() {
+        setViewYear(
+            Math.min(maxYear, Math.max(minYear, getYearFromMonthValue(value))),
+        );
+        setIsOpen((current) => !current);
+    }
+
+    return (
+        <div ref={pickerRef} className="relative min-w-56">
+            <label htmlFor="point-month-picker" className="sr-only">
+                Pilih bulan dan tahun riwayat poin
+            </label>
+            <div className="relative">
+                <CalendarDays className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-[#6610F2]" />
+                <input
+                    id="point-month-picker"
+                    type="text"
+                    readOnly
+                    value={getMonthYearLabel(value)}
+                    aria-haspopup="dialog"
+                    aria-expanded={isOpen}
+                    className="h-10 w-full cursor-pointer rounded-xl border border-[#CFC2E2] bg-white py-2 pr-10 pl-11 text-sm font-bold text-[#1F1730] shadow-none transition outline-none hover:border-[#BBA6D7] focus:border-[#6610F2] focus:ring-2 focus:ring-[#E8D8FF]"
+                    onClick={togglePicker}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            togglePicker();
+                        }
+                    }}
+                />
+                <ChevronDown
+                    className={cn(
+                        'pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-[#1F1730] transition-transform',
+                        isOpen && 'rotate-180',
+                    )}
+                    strokeWidth={3}
+                />
+            </div>
+
+            {isOpen && (
+                <div
+                    role="dialog"
+                    aria-label="Pilih bulan dan tahun"
+                    className="absolute right-0 z-50 mt-3 w-80 rounded-xl border border-[#E2D7F0] bg-white p-4 shadow-[0_18px_40px_rgba(31,23,48,0.16)]"
+                >
+                    <div className="mb-4 flex items-center justify-between">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-9 rounded-full text-[#1F1730] hover:bg-[#F3ECFF] hover:text-[#6610F2] disabled:opacity-35"
+                            disabled={viewYear <= minYear}
+                            onClick={() => changeYear(-1)}
+                            aria-label="Tahun sebelumnya"
+                        >
+                            <ChevronLeft className="size-5" />
+                        </Button>
+
+                        <div className="text-lg font-extrabold text-[#1F1730] tabular-nums">
+                            {viewYear}
+                        </div>
+
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-9 rounded-full text-[#1F1730] hover:bg-[#F3ECFF] hover:text-[#6610F2] disabled:opacity-35"
+                            disabled={viewYear >= maxYear}
+                            onClick={() => changeYear(1)}
+                            aria-label="Tahun berikutnya"
+                        >
+                            <ChevronRight className="size-5" />
+                        </Button>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2">
+                        {monthNames.map((month, index) => {
+                            const monthValue = `${viewYear}-${String(index + 1).padStart(2, '0')}`;
+                            const isSelected = monthValue === value;
+
+                            return (
+                                <button
+                                    key={month}
+                                    type="button"
+                                    className={cn(
+                                        'flex h-14 items-center justify-center rounded-lg border border-transparent text-sm font-bold text-[#1F1730] transition hover:border-[#D8CDE8] hover:bg-[#F3ECFF] hover:text-[#6610F2]',
+                                        isSelected &&
+                                            'border-[#B996FF] bg-[#EFE3FF] text-[#6610F2] shadow-[inset_0_0_0_1px_rgba(102,16,242,0.16)]',
+                                    )}
+                                    onClick={() => selectMonth(index)}
+                                >
+                                    {month.slice(0, 3)}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function PointHistoryPanel({
     history = [],
     className,
 }: PointHistoryPanelProps) {
-    const monthOptions = useMemo(getRecentMonths, []);
     const [activeDirection, setActiveDirection] =
         useState<PointDirectionFilter>('semua');
-    const [activeMonth, setActiveMonth] = useState(monthOptions[0].value);
+    const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+    const defaultMonth = useMemo(
+        () => getDefaultMonthValue(history),
+        [history],
+    );
+    const activeMonth = selectedMonth ?? defaultMonth;
     const [visibleItems, setVisibleItems] = useState(itemsPerPage);
 
     const filteredHistory = useMemo(() => {
@@ -205,7 +418,7 @@ export default function PointHistoryPanel({
     }
 
     function selectMonth(month: string) {
-        setActiveMonth(month);
+        setSelectedMonth(month);
         setVisibleItems(itemsPerPage);
     }
 
@@ -237,21 +450,10 @@ export default function PointHistoryPanel({
 
                     <div className="hidden h-10 w-px bg-[#D8CDE8] sm:block" />
 
-                    <Select value={activeMonth} onValueChange={selectMonth}>
-                        <SelectTrigger className="h-10 min-w-36 rounded-xl border-[#CFC2E2] !bg-white px-4 text-sm font-bold text-[#1F1730] shadow-none hover:!bg-white focus:!bg-white data-[state=open]:!bg-white [&_svg]:size-3.5 [&_svg]:stroke-[3] [&_svg]:text-[#1F1730] [&_svg]:opacity-100">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="border-[#E2D7F0]">
-                            {monthOptions.map((month) => (
-                                <SelectItem
-                                    key={month.value}
-                                    value={month.value}
-                                >
-                                    {month.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <MonthYearPicker
+                        value={activeMonth}
+                        onChange={selectMonth}
+                    />
                 </div>
             </div>
 
