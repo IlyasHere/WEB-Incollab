@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\KlaimPoin;
 use App\Models\Mahasiswa;
+use App\Models\Notification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -224,6 +225,14 @@ class EventPointClaimController extends Controller
                 'alasan_penolakan' => null,
                 'poin_diberikan_at' => now(),
             ]);
+
+            Notification::create([
+                'user_id' => $mahasiswa->user_id,
+                'type' => 'klaim_poin',
+                'title' => 'Klaim poin diterima',
+                'body' => "Klaim poin untuk {$event->judul_event} diterima. {$points} poin sudah ditambahkan ke akun kamu.",
+                'url' => route('pengaturan.riwayat-poin'),
+            ]);
         });
 
         Inertia::flash('toast', [
@@ -256,6 +265,24 @@ class EventPointClaimController extends Controller
                 'catatan_admin' => $validated['alasan_penolakan'],
                 'alasan_penolakan' => $validated['alasan_penolakan'],
             ]);
+
+            $mahasiswa = Mahasiswa::query()
+                ->whereKey($claim->mhs_id)
+                ->first();
+
+            if ($mahasiswa) {
+                $eventName = $claim->nama_event
+                    ?: Event::query()->whereKey($claim->event_id)->value('judul_event')
+                    ?: 'event yang kamu ajukan';
+
+                Notification::create([
+                    'user_id' => $mahasiswa->user_id,
+                    'type' => 'klaim_poin',
+                    'title' => 'Klaim poin ditolak',
+                    'body' => "Klaim poin untuk {$eventName} ditolak. Alasan: {$validated['alasan_penolakan']}",
+                    'url' => route('pengaturan.riwayat-poin'),
+                ]);
+            }
         });
 
         Inertia::flash('toast', [
