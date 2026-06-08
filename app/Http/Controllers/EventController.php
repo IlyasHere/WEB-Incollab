@@ -34,12 +34,18 @@ class EventController extends Controller
             'category' => ['nullable', 'string', 'max:100'],
             'view' => ['nullable', 'string', 'in:list,calendar'],
             'search' => ['nullable', 'string', 'max:100'],
+            'month' => ['nullable', 'string', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/'],
         ]);
 
         $category = $request->string('category')->value() ?: 'Semua';
         $view = $request->string('view')->value() ?: 'list';
         $search = trim($filters['search'] ?? '');
+        $month = $filters['month'] ?? '';
         $categories = $this->categories();
+
+        if ($view === 'calendar' && $month === '') {
+            $month = now()->format('Y-m');
+        }
 
         $eventsQuery = Event::query()
             ->with('admin')
@@ -76,6 +82,14 @@ class EventController extends Controller
             $eventsQuery->where('kategori_event', $category);
         }
 
+        if ($view === 'calendar' && $month !== '') {
+            [$year, $monthNumber] = explode('-', $month);
+
+            $eventsQuery
+                ->whereYear('tanggal_event', (int) $year)
+                ->whereMonth('tanggal_event', (int) $monthNumber);
+        }
+
         $events = $eventsQuery->get();
         $claimableEvents = Event::query()
             ->where('visibility_status', 'Published')
@@ -90,6 +104,7 @@ class EventController extends Controller
                 'category' => in_array($category, $categories, true) ? $category : 'Semua',
                 'view' => in_array($view, ['list', 'calendar'], true) ? $view : 'list',
                 'search' => $search,
+                'month' => $view === 'calendar' ? $month : '',
             ],
             'events' => $events->map(fn (Event $event) => $this->transformEvent($event))->values(),
             'upcomingEvents' => $claimableEvents
