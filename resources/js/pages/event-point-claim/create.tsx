@@ -44,7 +44,6 @@ type ClaimForm = {
     tanggal_mengikuti_event: string;
     nama_sertifikat: string;
     file_bukti: File | null;
-    catatan_user: string;
 };
 
 function formatDate(date: string | null) {
@@ -81,7 +80,6 @@ export default function EventPointClaimCreate({
             tanggal_mengikuti_event: event?.date ?? '',
             nama_sertifikat: mahasiswa.name ?? '',
             file_bukti: null,
-            catatan_user: '',
         });
     const generalEventError = (errors as Record<string, string>).event;
 
@@ -327,24 +325,6 @@ export default function EventPointClaimCreate({
                                         </p>
                                     )}
                                     <InputError message={errors.file_bukti} />
-                                </label>
-
-                                <label className="block">
-                                    <span className="text-sm font-semibold text-[#342847]">
-                                        Catatan tambahan
-                                    </span>
-                                    <textarea
-                                        value={data.catatan_user}
-                                        onChange={(e) =>
-                                            setData(
-                                                'catatan_user',
-                                                e.target.value,
-                                            )
-                                        }
-                                        rows={4}
-                                        className="mt-2 w-full resize-none rounded-2xl border border-[#E2D4F3] px-4 py-3 text-sm outline-none focus:border-[#6610F2]"
-                                    />
-                                    <InputError message={errors.catatan_user} />
                                 </label>
 
                                 <div className="flex flex-wrap items-center justify-end gap-3">

@@ -310,7 +310,7 @@ export default function EventDetailPage({
                                     </div>
 
                                     <Link
-                                        href="/klaim-poin-event"
+                                        href={`/event/${event.id}/klaim-poin`}
                                         className="inline-flex items-center gap-2 rounded-2xl bg-[#6610F2] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(102,16,242,0.20)]"
                                     >
                                         Ajukan Klaim

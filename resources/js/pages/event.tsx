@@ -2,6 +2,9 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowRight,
     CalendarDays,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     Clock3,
     FileUp,
     LayoutGrid,
@@ -20,18 +23,54 @@ import EventCard, {
 import type { EventItem } from '@/components/EventCard';
 import DashboardLayout from '@/layouts/DashboardLayout';
 
+const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+];
+
+const fullMonthNames = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+];
+
 type EventPageProps = {
     categories: string[];
     filters: {
         category: string;
         view: 'list' | 'calendar';
         search: string;
+        month: string;
     };
     events: EventItem[];
     canManage: boolean;
 };
 
-function buildQuery(category: string, view: 'list' | 'calendar', search = '') {
+function buildQuery(
+    category: string,
+    view: 'list' | 'calendar',
+    search = '',
+    month = '',
+) {
     const params = new URLSearchParams();
 
     if (category !== 'Semua') {
@@ -46,9 +85,36 @@ function buildQuery(category: string, view: 'list' | 'calendar', search = '') {
         params.set('search', search.trim());
     }
 
+    if (view === 'calendar' && month !== '') {
+        params.set('month', month);
+    }
+
     const query = params.toString();
 
     return query ? `/event?${query}` : '/event';
+}
+
+function currentMonthValue() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+
+    return `${year}-${month}`;
+}
+
+function formatMonthLabel(value: string) {
+    const [year, month] = value.split('-');
+    const monthIndex = Number(month) - 1;
+
+    if (!year || monthIndex < 0 || monthIndex > 11) {
+        return 'Pilih bulan';
+    }
+
+    return `${fullMonthNames[monthIndex]} ${year}`;
+}
+
+function monthValue(year: number, monthIndex: number) {
+    return `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
 }
 
 function CalendarEventRow({ event }: { event: EventItem }) {
@@ -123,6 +189,109 @@ function CalendarEventRow({ event }: { event: EventItem }) {
                 )}
             </div>
         </article>
+    );
+}
+
+function CalendarMonthFilter({
+    filters,
+}: {
+    filters: EventPageProps['filters'];
+}) {
+    const selectedMonth = filters.month || currentMonthValue();
+    const [selectedYearText, selectedMonthText] = selectedMonth.split('-');
+    const selectedYear = Number(selectedYearText) || new Date().getFullYear();
+    const selectedMonthIndex = (Number(selectedMonthText) || 1) - 1;
+    const [isOpen, setIsOpen] = useState(false);
+    const [visibleYear, setVisibleYear] = useState(selectedYear);
+
+    const goToMonth = (value: string) => {
+        setIsOpen(false);
+        router.get(
+            buildQuery(
+                filters.category,
+                'calendar',
+                filters.search,
+                value,
+            ),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+            },
+        );
+    };
+
+    return (
+        <div className="relative w-full max-w-[240px] sm:w-[240px]">
+            <button
+                type="button"
+                onClick={() => setIsOpen((value) => !value)}
+                className="flex h-11 w-full items-center justify-between rounded-[14px] border border-[#B98CFF] bg-white px-4 text-sm font-bold text-[#342847] shadow-[0_10px_24px_rgba(102,16,242,0.12)] ring-2 ring-[#6610F2]/10"
+            >
+                <span className="inline-flex min-w-0 items-center gap-2">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-[#6610F2]" />
+                    <span className="truncate">
+                        {selectedMonth === currentMonthValue()
+                            ? `Bulan ini (${formatMonthLabel(selectedMonth)})`
+                            : formatMonthLabel(selectedMonth)}
+                    </span>
+                </span>
+                <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-[#342847] transition ${isOpen ? 'rotate-180' : ''}`}
+                />
+            </button>
+
+            {isOpen && (
+                <div className="absolute right-0 z-20 mt-3 w-[320px] max-w-[calc(100vw-2rem)] rounded-[18px] border border-[#E6D8FF] bg-white p-4 shadow-[0_24px_54px_rgba(52,35,82,0.16)]">
+                    <div className="flex items-center justify-between">
+                        <button
+                            type="button"
+                            onClick={() => setVisibleYear((year) => year - 1)}
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-[#655A78] transition hover:bg-[#F3EAFF] hover:text-[#6610F2]"
+                        >
+                            <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <p className="text-lg font-bold text-[#241B35]">
+                            {visibleYear}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setVisibleYear((year) => year + 1)}
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-[#655A78] transition hover:bg-[#F3EAFF] hover:text-[#6610F2]"
+                        >
+                            <ChevronRight className="h-5 w-5" />
+                        </button>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-4 gap-3">
+                        {monthNames.map((month, index) => {
+                            const value = monthValue(visibleYear, index);
+                            const isSelected =
+                                filters.month === value ||
+                                (!filters.month &&
+                                    visibleYear === selectedYear &&
+                                    index === selectedMonthIndex);
+
+                            return (
+                                <button
+                                    key={month}
+                                    type="button"
+                                    onClick={() => goToMonth(value)}
+                                    className={`min-w-0 rounded-[12px] px-2 py-3 text-sm font-bold transition ${
+                                        isSelected
+                                            ? 'border border-[#B98CFF] bg-[#EFE3FF] text-[#6610F2] shadow-[0_10px_22px_rgba(102,16,242,0.14)]'
+                                            : 'text-[#342847] hover:bg-[#F7F0FF] hover:text-[#6610F2]'
+                                    }`}
+                                >
+                                    {month}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -208,6 +377,9 @@ export default function EventPage({
                     ? { category: filters.category }
                     : {}),
                 ...(filters.view !== 'list' ? { view: filters.view } : {}),
+                ...(filters.view === 'calendar' && filters.month !== ''
+                    ? { month: filters.month }
+                    : {}),
                 ...(search.trim() !== '' ? { search: search.trim() } : {}),
             },
             {
@@ -260,6 +432,8 @@ export default function EventPage({
                                                 filters.category,
                                                 'calendar',
                                                 filters.search,
+                                                filters.month ||
+                                                    currentMonthValue(),
                                             )}
                                             className={`inline-flex items-center gap-2 rounded-[18px] px-5 py-3 text-sm font-semibold transition ${filters.view === 'calendar' ? 'bg-[#6610F2] text-white shadow-[0_16px_30px_rgba(102,16,242,0.22)]' : 'text-[#665C79]'}`}
                                         >
@@ -291,6 +465,8 @@ export default function EventPage({
                                             href={buildQuery(
                                                 filters.category,
                                                 filters.view,
+                                                '',
+                                                filters.month,
                                             )}
                                             className="inline-flex h-12 items-center justify-center gap-2 rounded-[16px] border border-[#D8CDE8] px-4 text-sm font-semibold text-[#766B8A] transition hover:border-[#7C3AED] hover:text-[#6610F2]"
                                         >
@@ -307,20 +483,31 @@ export default function EventPage({
                                     </button>
                                 </form>
 
-                                <div className="mt-8 flex flex-wrap gap-3">
-                                    {categories.map((category) => (
-                                        <Link
-                                            key={category}
-                                            href={buildQuery(
-                                                category,
-                                                filters.view,
-                                                filters.search,
-                                            )}
-                                            className={`rounded-full border px-5 py-3 text-sm font-semibold transition ${filters.category === category ? 'border-[#6610F2] bg-[#6610F2] text-white shadow-[0_16px_30px_rgba(102,16,242,0.20)]' : 'border-[#D5C0F7] bg-white text-[#2F6FB5] hover:border-[#7C3AED] hover:text-[#7C3AED]'}`}
-                                        >
-                                            {category}
-                                        </Link>
-                                    ))}
+                                <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                    <div className="flex min-w-0 flex-nowrap gap-3 overflow-x-auto pb-1">
+                                        {categories.map((category) => (
+                                            <Link
+                                                key={category}
+                                                href={buildQuery(
+                                                    category,
+                                                    filters.view,
+                                                    filters.search,
+                                                    filters.month,
+                                                )}
+                                                className={`shrink-0 rounded-full border px-5 py-3 text-sm font-semibold transition ${filters.category === category ? 'border-[#6610F2] bg-[#6610F2] text-white shadow-[0_16px_30px_rgba(102,16,242,0.20)]' : 'border-[#D5C0F7] bg-white text-[#2F6FB5] hover:border-[#7C3AED] hover:text-[#7C3AED]'}`}
+                                            >
+                                                {category}
+                                            </Link>
+                                        ))}
+                                    </div>
+
+                                    {filters.view === 'calendar' && (
+                                        <div className="shrink-0">
+                                            <CalendarMonthFilter
+                                                filters={filters}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div id="daftar-event" className="mt-10">
