@@ -1,17 +1,10 @@
 import { useForm } from '@inertiajs/react';
-import {
-    ChevronDown,
-    Github,
-    HelpCircle,
-    Instagram,
-    Linkedin,
-    Pencil,
-    Search,
-} from 'lucide-react';
+import { ChevronDown, HelpCircle, Pencil, Search } from 'lucide-react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import SettingsPageLayout from '@/layouts/SettingsPageLayout';
 import type { User } from '@/types/auth';
+import universitiesCsv from '../../../database/data/perguruan-tinggi.csv?raw';
 
 type MahasiswaProfile = {
     bio: string | null;
@@ -59,6 +52,39 @@ type ProfileForm = {
 const interestOptions = ['Teknologi', 'Desain', 'Bisnis', 'Sains', 'Seni'];
 const photoMaxSize = 2 * 1024 * 1024;
 const photoAllowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+const localUniversityOptions = parseUniversityCsv(universitiesCsv);
+const settingsScrollbarStyles = `
+    html,
+    body,
+    .settings-page-scrollbar,
+    .scroll-area {
+        scrollbar-width: thin;
+        scrollbar-color: #cfcfcf transparent;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    .settings-page-scrollbar::-webkit-scrollbar,
+    .scroll-area::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+
+    html::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track,
+    .settings-page-scrollbar::-webkit-scrollbar-track,
+    .scroll-area::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    html::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb,
+    .settings-page-scrollbar::-webkit-scrollbar-thumb,
+    .scroll-area::-webkit-scrollbar-thumb {
+        background-color: #cfcfcf;
+        border-radius: 999px;
+    }
+`;
 
 export default function Pengaturan({
     profileUser,
@@ -69,6 +95,10 @@ export default function Pengaturan({
     const [fotoPreview, setFotoPreview] = useState<string | null>(null);
     const [fotoError, setFotoError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
+    const universityOptions = useMemo(
+        () => mergeUniversityOptions(universities, localUniversityOptions),
+        [universities],
+    );
     const initials = profileUser.name
         .split(' ')
         .map((part) => part[0])
@@ -201,9 +231,10 @@ export default function Pengaturan({
 
     return (
         <SettingsPageLayout title="Pengaturan">
+            <style>{settingsScrollbarStyles}</style>
             <form
                 onSubmit={submit}
-                className="grid gap-8 lg:grid-cols-[280px_1fr]"
+                className="settings-page-scrollbar grid gap-8 lg:grid-cols-[280px_1fr]"
             >
                 <div>
                     <div className="rounded-[20px] border border-dashed border-[#B88CFF] p-6 text-center">
@@ -262,16 +293,33 @@ export default function Pengaturan({
                             Pratinjau Sosial
                         </h3>
 
-                        <div className="mt-4 space-y-4 text-sm text-[#6E6380]">
-                            <SocialPreview icon={Instagram}>
-                                {data.instagram || '-'}
-                            </SocialPreview>
-                            <SocialPreview icon={Linkedin}>
-                                {data.linkedin || '-'}
-                            </SocialPreview>
-                            <SocialPreview icon={Github}>
-                                {data.github || '-'}
-                            </SocialPreview>
+                        <div className="mt-4 grid gap-2 text-sm">
+                            <SocialPreview
+                                label="Instagram"
+                                value={data.instagram}
+                                href={buildSocialUrl(
+                                    'instagram',
+                                    data.instagram,
+                                )}
+                            />
+                            <SocialPreview
+                                label="LinkedIn"
+                                value={data.linkedin}
+                                href={buildSocialUrl('linkedin', data.linkedin)}
+                            />
+                            <SocialPreview
+                                label="GitHub"
+                                value={data.github}
+                                href={buildSocialUrl('github', data.github)}
+                            />
+                            <SocialPreview
+                                label="Portfolio"
+                                value={data.portfolio}
+                                href={buildSocialUrl(
+                                    'portfolio',
+                                    data.portfolio,
+                                )}
+                            />
                         </div>
                     </div>
                 </div>
@@ -317,7 +365,7 @@ export default function Pengaturan({
                         <UniversityCombobox
                             label="Universitas"
                             value={data.universitas}
-                            options={universities}
+                            options={universityOptions}
                             error={errors.universitas}
                             disabled={!isEditing || processing}
                             onChange={(value) => setData('universitas', value)}
@@ -530,18 +578,74 @@ export default function Pengaturan({
 }
 
 function SocialPreview({
-    icon: Icon,
-    children,
+    label,
+    value,
+    href,
 }: {
-    icon: typeof Instagram;
-    children: ReactNode;
+    label: string;
+    value: string;
+    href: string | null;
 }) {
+    const hasValue = value.trim().length > 0;
+
+    if (!hasValue || !href) {
+        return (
+            <span className="rounded-xl border border-[#EFE4F8] px-3 py-2 font-medium text-[#9B8FB3]">
+                {label}
+            </span>
+        );
+    }
+
     return (
-        <div className="flex items-center gap-3">
-            <Icon className="h-4 w-4 text-[#6610F2]" />
-            {children}
-        </div>
+        <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-[#EFE4F8] px-3 py-2 font-semibold text-[#6610F2] transition hover:border-[#6610F2] hover:bg-[#F7F1FF]"
+        >
+            {label}
+        </a>
     );
+}
+
+function buildSocialUrl(
+    type: 'instagram' | 'linkedin' | 'github' | 'portfolio',
+    value: string,
+) {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+        return null;
+    }
+
+    if (/^https?:\/\//i.test(trimmedValue)) {
+        return trimmedValue;
+    }
+
+    const normalizedValue = trimmedValue
+        .replace(/^@/, '')
+        .replace(/^\/+/, '')
+        .trim();
+
+    if (!normalizedValue) {
+        return null;
+    }
+
+    if (type === 'instagram') {
+        return `https://instagram.com/${normalizedValue}`;
+    }
+
+    if (type === 'github') {
+        return `https://github.com/${normalizedValue}`;
+    }
+
+    if (type === 'linkedin') {
+        return normalizedValue.includes('linkedin.com')
+            ? `https://${normalizedValue}`
+            : `https://linkedin.com/in/${normalizedValue}`;
+    }
+
+    return `https://${normalizedValue}`;
 }
 
 function FormSection({
@@ -611,12 +715,20 @@ function UniversityCombobox({
     const [open, setOpen] = useState(false);
     const query = value.trim().toLowerCase();
     const filteredOptions = useMemo(() => {
+        const queryTokens = getUniversitySearchTokens(query);
+
         if (!query) {
             return options.slice(0, 12);
         }
 
         return options
-            .filter((option) => option.name.toLowerCase().includes(query))
+            .filter((option) => {
+                const optionTokens = getUniversitySearchTokens(option.name);
+
+                return queryTokens.every((token) =>
+                    optionTokens.includes(token),
+                );
+            })
             .slice(0, 12);
     }, [options, query]);
 
@@ -647,29 +759,34 @@ function UniversityCombobox({
             </div>
 
             {open && !disabled && (
-                <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-[#EFE4F8] bg-white p-2 shadow-[0_18px_45px_rgba(56,42,73,0.14)]">
+                <div className="scroll-area absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-[#EFE4F8] bg-white p-2 shadow-[0_18px_45px_rgba(56,42,73,0.14)]">
                     {filteredOptions.length > 0 ? (
-                        filteredOptions.map((option) => (
-                            <button
-                                key={option.name}
-                                type="button"
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => {
-                                    onChange(option.name);
-                                    setOpen(false);
-                                }}
-                                className="flex w-full flex-col rounded-xl px-3 py-2 text-left transition hover:bg-[#F7F1FF]"
-                            >
-                                <span className="text-sm font-semibold text-[#382A49]">
-                                    {option.name}
-                                </span>
-                                {option.lldikti_region && (
-                                    <span className="mt-0.5 text-xs text-[#8A7FA2]">
-                                        LLDikti Wilayah {option.lldikti_region}
+                        <>
+                            {filteredOptions.map((option) => (
+                                <button
+                                    key={option.name}
+                                    type="button"
+                                    onMouseDown={(event) =>
+                                        event.preventDefault()
+                                    }
+                                    onClick={() => {
+                                        onChange(option.name);
+                                        setOpen(false);
+                                    }}
+                                    className="flex w-full flex-col rounded-xl px-3 py-2 text-left transition hover:bg-[#F7F1FF]"
+                                >
+                                    <span className="text-sm font-semibold text-[#382A49]">
+                                        {option.name}
                                     </span>
-                                )}
-                            </button>
-                        ))
+                                    {option.lldikti_region && (
+                                        <span className="mt-0.5 text-xs text-[#8A7FA2]">
+                                            LLDikti Wilayah{' '}
+                                            {option.lldikti_region}
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </>
                     ) : (
                         <div className="px-3 py-3 text-sm text-[#8A7FA2]">
                             Universitas tidak ditemukan.
@@ -681,6 +798,105 @@ function UniversityCombobox({
             {error && <InputError>{error}</InputError>}
         </div>
     );
+}
+
+function getUniversitySearchTokens(value: string) {
+    return value
+        .toLowerCase()
+        .replace(/&quot;/g, ' ')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .map((token) =>
+            ['univ', 'universiti', 'university'].includes(token)
+                ? 'universitas'
+                : token,
+        )
+        .filter(Boolean);
+}
+
+function cleanUniversityName(value: string) {
+    return value
+        .replace(/<[^>]*>/g, '')
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function mergeUniversityOptions(
+    primaryOptions: UniversityOption[],
+    secondaryOptions: UniversityOption[],
+) {
+    const optionMap = new Map<string, UniversityOption>();
+
+    for (const option of [...primaryOptions, ...secondaryOptions]) {
+        const name = cleanUniversityName(option.name);
+
+        if (!name) {
+            continue;
+        }
+
+        const key = name.toLowerCase();
+
+        if (!optionMap.has(key)) {
+            optionMap.set(key, {
+                name,
+                lldikti_region: option.lldikti_region,
+            });
+        }
+    }
+
+    return [...optionMap.values()].sort((firstOption, secondOption) =>
+        firstOption.name.localeCompare(secondOption.name, 'id'),
+    );
+}
+
+function parseUniversityCsv(csv: string): UniversityOption[] {
+    return csv
+        .split(/\r?\n/)
+        .slice(1)
+        .map((line) => parseCsvLine(line))
+        .filter((columns) => columns.length >= 2 && columns[1]?.trim())
+        .map((columns) => ({
+            name: cleanUniversityName(columns[1] ?? ''),
+            lldikti_region: columns[2]?.trim() || null,
+        }));
+}
+
+function parseCsvLine(line: string) {
+    const columns: string[] = [];
+    let currentValue = '';
+    let insideQuote = false;
+
+    for (let index = 0; index < line.length; index += 1) {
+        const character = line[index];
+        const nextCharacter = line[index + 1];
+
+        if (character === '"' && nextCharacter === '"') {
+            currentValue += '"';
+            index += 1;
+
+            continue;
+        }
+
+        if (character === '"') {
+            insideQuote = !insideQuote;
+
+            continue;
+        }
+
+        if (character === ',' && !insideQuote) {
+            columns.push(currentValue);
+            currentValue = '';
+
+            continue;
+        }
+
+        currentValue += character;
+    }
+
+    columns.push(currentValue);
+
+    return columns;
 }
 
 function InputField({
