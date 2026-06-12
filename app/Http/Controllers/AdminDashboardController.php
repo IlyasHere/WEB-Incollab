@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\KlaimPoin;
 use App\Models\LaporanPengaduan;
 use App\Models\Reward;
 use Inertia\Inertia;
@@ -17,7 +18,7 @@ class AdminDashboardController extends Controller
         return Inertia::render('admin/dashboard', [
             'summary' => [
                 'publishedEvents' => Event::where('visibility_status', 'Published')->count(),
-                'scheduledReminders' => Event::whereDate('tanggal_event', '>=', $today)->count(),
+                'pendingPointClaims' => KlaimPoin::where('status_klaim', 'Menunggu Verifikasi')->count(),
                 'newReports' => LaporanPengaduan::where('status_laporan', 'Baru')->count(),
                 'newReportsToday' => LaporanPengaduan::where('status_laporan', 'Baru')
                     ->whereDate('created_at', $today)
@@ -34,6 +35,7 @@ class AdminDashboardController extends Controller
                     'name' => $event->judul_event ?? 'Event',
                     'date' => $event->tanggal_event?->timezone('Asia/Jakarta')->translatedFormat('d M Y') ?? '-',
                     'status' => $this->eventStatusLabel($event->registration_status),
+                    'url' => route('admin.event.edit', $event),
                 ])
                 ->values(),
             'latestReports' => LaporanPengaduan::query()
@@ -46,6 +48,7 @@ class AdminDashboardController extends Controller
                     'category' => $report->kategori_laporan ?? 'Lainnya',
                     'reporter' => $report->mahasiswa?->user?->name ?? 'Mahasiswa',
                     'status' => $report->status_laporan ?? 'Baru',
+                    'url' => route('admin.pengaduan.detail', $report),
                 ])
                 ->values(),
         ]);

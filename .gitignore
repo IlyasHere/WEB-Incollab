@@ -26,3 +26,26 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Integration testing local reports/docs
+docs/integration-testing/
+docs 2/integration-testing/
+*.postman_environment.json
+*.postman_collection.json
+InCollab_Postman_Run_Report.json
+InCollab_Postman_Run_Report.html
+InCollab_Integration_Testing_Docs.zip
+
+# Local testing artifacts
+newman/
+postman-results/
+storage/testing/
+tests/fixtures/generated/
+
+# Local metric reports
+storage/phpmetrics-summary.md
+storage/phpmetrics-report/
+
+# Local env / database testing
+.env.testing.local
+.env.postman

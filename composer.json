@@ -26,7 +26,8 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9",
         "pestphp/pest": "^4.6",
-        "pestphp/pest-plugin-laravel": "^4.1"
+        "pestphp/pest-plugin-laravel": "^4.1",
+        "phpmetrics/phpmetrics": "^2.9"
     },
     "autoload": {
         "psr-4": {
@@ -58,6 +59,9 @@
         ],
         "lint:check": [
             "pint --parallel --test"
+        ],
+        "metrics": [
+            "@php -d error_reporting=8191 vendor/bin/phpmetrics --report-html=storage/phpmetrics-report app,routes"
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",

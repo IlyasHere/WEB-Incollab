@@ -223,9 +223,9 @@ export default function TukarPoin({
                         </div>
                     </section>
 
-                    <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-                        <div className="space-y-5">
-                            <div className="flex flex-col gap-4 rounded-2xl border border-[#EFE4F8] bg-white p-4 shadow-[0_14px_34px_rgba(102,16,242,0.06)] lg:flex-row lg:items-center lg:justify-between">
+                    <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+                        <div className="flex min-h-0 flex-col xl:h-[calc(100vh-260px)] xl:min-h-[520px]">
+                            <div className="flex shrink-0 flex-col gap-4 rounded-2xl border border-[#EFE4F8] bg-white p-4 shadow-[0_10px_26px_rgba(102,16,242,0.05)] lg:flex-row lg:items-center lg:justify-between">
                                 <div className="relative min-w-0 flex-1">
                                     <Search className="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#8A7FA2]" />
                                     <input
@@ -253,7 +253,7 @@ export default function TukarPoin({
                                                         category.value,
                                                     )
                                                 }
-                                                className={`h-10 rounded-full px-5 text-sm font-bold transition ${
+                                                className={`h-10 cursor-pointer rounded-full px-5 text-sm font-bold transition ${
                                                     isActive
                                                         ? 'bg-[#6610F2] text-white shadow-[0_12px_24px_rgba(102,16,242,0.22)]'
                                                         : 'border border-[#E4D8F2] bg-white text-[#5F5573] hover:border-[#6610F2]/30 hover:bg-[#F7F1FF]'
@@ -266,42 +266,44 @@ export default function TukarPoin({
                                 </div>
                             </div>
 
-                            {isLoading ? (
-                                <RewardCatalogSkeleton />
-                            ) : filteredRewards.length > 0 ? (
-                                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                                    {filteredRewards.map((reward) => (
-                                        <RewardCard
-                                            key={reward.id}
-                                            reward={reward}
-                                            currentPoints={currentPoints}
-                                            onSelect={() => {
-                                                setSelectedReward(reward);
-                                                setShowConfirm(false);
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-[#D8CDE8] bg-white p-8 text-center">
-                                    <div>
-                                        <Package className="mx-auto h-12 w-12 text-[#6610F2]" />
-                                        <h2 className="mt-4 text-lg font-extrabold text-[#1F1730]">
-                                            Reward tidak ditemukan
-                                        </h2>
-                                        <p className="mt-2 text-sm text-[#766B8A]">
-                                            Coba ubah kata kunci atau kategori
-                                            katalog.
-                                        </p>
+                            <div className="mt-5 min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                {isLoading ? (
+                                    <RewardCatalogSkeleton />
+                                ) : filteredRewards.length > 0 ? (
+                                    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                        {filteredRewards.map((reward) => (
+                                            <RewardCard
+                                                key={reward.id}
+                                                reward={reward}
+                                                currentPoints={currentPoints}
+                                                onSelect={() => {
+                                                    setSelectedReward(reward);
+                                                    setShowConfirm(false);
+                                                }}
+                                            />
+                                        ))}
                                     </div>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="flex min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-[#D8CDE8] bg-white p-8 text-center">
+                                        <div>
+                                            <Package className="mx-auto h-12 w-12 text-[#6610F2]" />
+                                            <h2 className="mt-4 text-lg font-extrabold text-[#1F1730]">
+                                                Reward tidak ditemukan
+                                            </h2>
+                                            <p className="mt-2 text-sm text-[#766B8A]">
+                                                Coba ubah kata kunci atau
+                                                kategori katalog.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {isLoading ? (
                             <PointSidebarSkeleton />
                         ) : (
-                            <aside className="space-y-5">
+                            <aside className="space-y-5 xl:sticky xl:top-24">
                                 <PointSummaryCard
                                     currentPoints={currentPoints}
                                     summary={summary}
@@ -409,7 +411,7 @@ function RewardCard({
                         className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-extrabold transition ${
                             isOutOfStock
                                 ? 'cursor-not-allowed bg-[#F2EBFB] text-[#8B8496]'
-                                : 'bg-[#6610F2] text-white shadow-[0_14px_28px_rgba(102,16,242,0.20)] hover:bg-[#550DCC]'
+                                : 'cursor-pointer bg-[#6610F2] text-white shadow-[0_14px_28px_rgba(102,16,242,0.20)] hover:bg-[#550DCC]'
                         }`}
                     >
                         {isOutOfStock ? 'Stok Habis' : 'Lihat & Tukar'}
@@ -561,7 +563,7 @@ function RewardDetailModal({
                         type="button"
                         onClick={onClose}
                         disabled={isProcessing}
-                        className="flex h-9 w-9 items-center justify-center rounded-full text-[#766B8A] transition hover:bg-[#F7F1FF] hover:text-[#6610F2] disabled:opacity-60"
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[#766B8A] transition hover:bg-[#F7F1FF] hover:text-[#6610F2] disabled:cursor-not-allowed disabled:opacity-60"
                         aria-label="Tutup detail reward"
                     >
                         <X className="h-5 w-5" />
@@ -678,7 +680,7 @@ function RewardDetailModal({
                                     type="button"
                                     onClick={onCancelConfirm}
                                     disabled={isProcessing}
-                                    className="h-11 rounded-full border border-[#D8CDE8] px-5 text-sm font-bold text-[#382A49] transition hover:bg-white disabled:opacity-60"
+                                    className="h-11 cursor-pointer rounded-full border border-[#D8CDE8] px-5 text-sm font-bold text-[#382A49] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     Batal
                                 </button>
@@ -686,7 +688,7 @@ function RewardDetailModal({
                                     type="button"
                                     onClick={onRedeem}
                                     disabled={!redeemable || isProcessing}
-                                    className="h-11 rounded-full bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.22)] transition hover:bg-[#550DCC] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="h-11 cursor-pointer rounded-full bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.22)] transition hover:bg-[#550DCC] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isProcessing
                                         ? 'Memproses...'
@@ -699,7 +701,7 @@ function RewardDetailModal({
                                     type="button"
                                     onClick={onClose}
                                     disabled={isProcessing}
-                                    className="h-11 rounded-full border border-[#D8CDE8] px-5 text-sm font-bold text-[#382A49] transition hover:bg-white disabled:opacity-60"
+                                    className="h-11 cursor-pointer rounded-full border border-[#D8CDE8] px-5 text-sm font-bold text-[#382A49] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     Tutup
                                 </button>
@@ -707,7 +709,7 @@ function RewardDetailModal({
                                     type="button"
                                     onClick={onAskConfirm}
                                     disabled={!redeemable || isProcessing}
-                                    className="h-11 rounded-full bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.22)] transition hover:bg-[#550DCC] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="h-11 cursor-pointer rounded-full bg-[#6610F2] px-6 text-sm font-bold text-white shadow-[0_14px_28px_rgba(102,16,242,0.22)] transition hover:bg-[#550DCC] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     Tukar Reward
                                 </button>

@@ -1,8 +1,12 @@
-import { Menu, Search, X, LogOut } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { LogOut, Menu, Search, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 type TopNavbarProps = {
     userName: string;
     userAvatar?: string | null;
+    currentPath: string;
+    initialSearch?: string;
     mobileMenuOpen: boolean;
     onToggleMenu: () => void;
     onLogout?: () => void;
@@ -11,16 +15,67 @@ type TopNavbarProps = {
 export default function TopNavbar({
     userName,
     userAvatar,
+    currentPath,
+    initialSearch = '',
     mobileMenuOpen,
     onToggleMenu,
     onLogout,
 }: TopNavbarProps) {
+    const [search, setSearch] = useState(initialSearch);
+    const isDashboard = currentPath === '/dashboard';
     const initials = userName
         .split(' ')
         .map((part) => part[0])
         .slice(0, 2)
         .join('')
         .toUpperCase();
+
+    const runSearch = useCallback((nextSearch = search) => {
+        const normalizedSearch = nextSearch.trim();
+
+        if (isDashboard) {
+            router.get(
+                '/dashboard',
+                normalizedSearch ? { search: normalizedSearch } : {},
+                {
+                    only: ['posts', 'filters'],
+                    preserveScroll: true,
+                    preserveState: true,
+                    replace: true,
+                },
+            );
+
+            return;
+        }
+
+        if (normalizedSearch) {
+            router.get('/dashboard', { search: normalizedSearch });
+        }
+    }, [isDashboard, search]);
+
+    useEffect(() => {
+        setSearch(initialSearch);
+    }, [initialSearch]);
+
+    useEffect(() => {
+        if (!isDashboard || search.trim() === initialSearch.trim()) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            runSearch(search);
+        }, 400);
+
+        return () => window.clearTimeout(timeout);
+    }, [initialSearch, isDashboard, runSearch, search]);
+
+    const clearSearch = () => {
+        setSearch('');
+
+        if (isDashboard && initialSearch !== '') {
+            runSearch('');
+        }
+    };
 
     return (
         <header className="sticky top-0 z-30 border-b border-[#EFE4F8] bg-white/95 backdrop-blur">
@@ -42,14 +97,34 @@ export default function TopNavbar({
                     )}
                 </button>
 
-                <div className="relative flex-1">
+                <form
+                    className="relative flex-1"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        runSearch();
+                    }}
+                    role="search"
+                >
                     <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#8A7FA2]" />
                     <input
                         type="text"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
                         placeholder="Cari postingan, hashtag, atau topik..."
-                        className="h-12 w-full rounded-full border border-[#EADCF8] bg-[#F7F1FF] pr-4 pl-11 text-sm text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
+                        aria-label="Cari postingan dashboard"
+                        className="h-12 w-full rounded-full border border-[#EADCF8] bg-[#F7F1FF] pr-12 pl-11 text-sm text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2] focus:ring-4 focus:ring-[#6610F2]/10"
                     />
-                </div>
+                    {search !== '' && (
+                        <button
+                            type="button"
+                            onClick={clearSearch}
+                            className="absolute top-1/2 right-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#8A7FA2] transition hover:bg-white hover:text-[#6610F2]"
+                            aria-label="Bersihkan pencarian"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    )}
+                </form>
 
                 {/* Avatar + Logout Dropdown */}
                 <div className="group relative">

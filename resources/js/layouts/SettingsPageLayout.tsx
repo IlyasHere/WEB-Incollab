@@ -9,7 +9,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import DashboardLayout from '@/layouts/DashboardLayout';
 
 type SettingsPageLayoutProps = {
     title: string;
@@ -41,8 +40,29 @@ export default function SettingsPageLayout({
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <DashboardLayout>
+        <div
+            className="min-h-screen bg-[#FDF7FF] font-sans text-[#2C213B]"
+            style={{
+                fontFamily:
+                    '"Plus Jakarta Sans", "Instrument Sans", ui-sans-serif, system-ui, sans-serif',
+            }}
+        >
             <Head title={title} />
+
+            <header className="border-b border-[#EFE4F8] bg-white">
+                <div className="mx-auto flex h-20 max-w-[1320px] items-center justify-between px-4 sm:px-6 lg:px-8">
+                    <Link href="/dashboard" className="flex items-center gap-3">
+                        <img
+                            src="/images/logo.svg"
+                            alt="InCollab"
+                            className="h-10 w-auto"
+                        />
+                        <span className="text-xl font-extrabold tracking-tight text-[#241A35]">
+                            InCollab
+                        </span>
+                    </Link>
+                </div>
+            </header>
 
             <main className="px-4 py-6 pb-12 sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-[1320px]">
@@ -114,6 +134,6 @@ export default function SettingsPageLayout({
                     </div>
                 </div>
             </main>
-        </DashboardLayout>
+        </div>
     );
 }

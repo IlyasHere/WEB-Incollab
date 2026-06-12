@@ -98,7 +98,7 @@ class RewardController extends Controller
             'categories' => self::CATEGORIES,
         ]);
     }
-
+    
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

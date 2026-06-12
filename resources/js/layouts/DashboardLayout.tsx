@@ -39,10 +39,13 @@ const settingsNavItem: DashboardNavItem = {
 };
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const { auth, chatUnreadCount, notificationUnreadCount } = usePage<{
+    const { auth, chatUnreadCount, notificationUnreadCount, filters } = usePage<{
         auth: Auth;
         chatUnreadCount: number;
         notificationUnreadCount: number;
+        filters?: {
+            search?: string;
+        };
     }>().props;
     const { currentUrl } = useCurrentUrl();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -73,6 +76,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <TopNavbar
                         userName={auth.user.name}
                         userAvatar={auth.user.avatar}
+                        currentPath={currentUrl}
+                        initialSearch={
+                            currentUrl === '/dashboard'
+                                ? (filters?.search ?? '')
+                                : ''
+                        }
                         mobileMenuOpen={mobileMenuOpen}
                         onToggleMenu={() => setMobileMenuOpen((open) => !open)}
                         onLogout={() => router.post('/logout')}

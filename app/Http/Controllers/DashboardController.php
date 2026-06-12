@@ -6,6 +6,7 @@ use App\Models\FeedPost;
 use App\Models\User;
 use App\Support\FeedPostFormatter;
 use App\Support\TrendingTopicFinder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
@@ -17,8 +18,13 @@ class DashboardController extends Controller
         FeedPostFormatter $feedPostFormatter,
         TrendingTopicFinder $trendingTopicFinder
     ) {
+        $search = $this->searchTerm($request);
+
         return Inertia::render('dashboard', [
             'posts' => $this->feedPosts($request, $feedPostFormatter),
+            'filters' => [
+                'search' => $search,
+            ],
             'partners' => $this->partners($request),
             'topics' => $trendingTopicFinder->get(5),
         ]);
@@ -30,6 +36,8 @@ class DashboardController extends Controller
             return collect();
         }
 
+        $search = $this->searchTerm($request);
+        $lowerSearch = mb_strtolower($search);
         $query = FeedPost::with('user.mahasiswa');
 
         $hasImagesTable = Schema::hasTable('feed_post_images');
@@ -42,6 +50,23 @@ class DashboardController extends Controller
         if ($hasCommentsTable) {
             $query->withCount('komentar');
         }
+
+        $query->when($search !== '', function (Builder $query) use ($lowerSearch) {
+            $query->where(function (Builder $query) use ($lowerSearch) {
+                $query
+                    ->whereRaw('LOWER(title) LIKE ?', ['%'.$lowerSearch.'%'])
+                    ->orWhereRaw('LOWER(content) LIKE ?', ['%'.$lowerSearch.'%'])
+                    ->orWhere('tags', 'like', '%'.$lowerSearch.'%')
+                    ->orWhereHas('user', function (Builder $query) use ($lowerSearch) {
+                        $query->whereRaw('LOWER(name) LIKE ?', ['%'.$lowerSearch.'%']);
+                    })
+                    ->orWhereHas('user.mahasiswa', function (Builder $query) use ($lowerSearch) {
+                        $query
+                            ->whereRaw('LOWER(universitas) LIKE ?', ['%'.$lowerSearch.'%'])
+                            ->orWhereRaw('LOWER(jurusan) LIKE ?', ['%'.$lowerSearch.'%']);
+                    });
+            });
+        });
 
         $posts = $query
             ->latest()
@@ -66,7 +91,7 @@ class DashboardController extends Controller
         $currentSkills = $this->normalizeTags($currentMahasiswa?->skill ?? []);
         $currentInterests = $this->normalizeTags($currentMahasiswa?->minat ?? []);
 
-        return User::query()
+        $partners = User::query()
             ->with('mahasiswa')
             ->where('role', 'mahasiswa')
             ->where('user_id', '!=', $request->user()->user_id)
@@ -89,7 +114,9 @@ class DashboardController extends Controller
                 $user->user_id,
             ])
             ->take(5)
-            ->values()
+            ->values();
+
+        return $partners
             ->map(function (User $user) {
                 $mahasiswa = $user->mahasiswa;
 
@@ -102,6 +129,11 @@ class DashboardController extends Controller
                     'profileUrl' => route('profile.show', $user),
                 ];
             });
+    }
+
+    private function searchTerm(Request $request): string
+    {
+        return trim((string) $request->query('search', ''));
     }
 
     /**

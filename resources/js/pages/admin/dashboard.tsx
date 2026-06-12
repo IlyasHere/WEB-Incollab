@@ -3,10 +3,10 @@ import {
     AlertTriangle,
     CalendarDays,
     ClipboardList,
+    Coins,
     Gift,
     Handshake,
     Plus,
-    Send,
     Trophy,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -16,7 +16,7 @@ import AdminLayout from '@/layouts/AdminLayout';
 
 type AdminDashboardSummary = {
     publishedEvents: number;
-    scheduledReminders: number;
+    pendingPointClaims: number;
     newReports: number;
     newReportsToday: number;
     activeRewards: number;
@@ -27,6 +27,7 @@ type AdminDashboardEvent = {
     name: string;
     date: string;
     status: string;
+    url: string;
 };
 
 type AdminDashboardReport = {
@@ -34,6 +35,7 @@ type AdminDashboardReport = {
     category: string;
     reporter: string;
     status: string;
+    url: string;
 };
 
 type AdminDashboardProps = {
@@ -49,9 +51,8 @@ const quickActions = [
         icon: Plus,
         variant: 'primary',
     },
-    { label: 'Kirim Reminder', href: '/admin/reminder', icon: Send },
     { label: 'Tambah Reward', href: '/admin/reward', icon: Plus },
-    // { label: 'Kelola Poin', href: '/admin/poin', icon: Coins },
+    { label: 'Kelola Poin', href: '/admin/poin', icon: Coins },
     { label: 'Pengaduan', href: '/admin/pengaduan', icon: ClipboardList },
 ];
 
@@ -87,8 +88,8 @@ export default function AdminDashboard({
             accent: 'bg-[#F0E7FF] text-[#6610F2]',
         },
         {
-            label: 'Reminder Terjadwal',
-            value: summary.scheduledReminders,
+            label: 'Klaim Poin Menunggu',
+            value: summary.pendingPointClaims,
             icon: Trophy,
             accent: 'bg-[#FFF0E0] text-[#F37933]',
         },
@@ -198,7 +199,7 @@ export default function AdminDashboard({
                                 </span>
                             </div>
                             <div className="mt-5 overflow-hidden">
-                                <div className="grid grid-cols-[minmax(0,1.6fr)_110px_84px] border-b border-[#EFE4F8] px-2 pb-3 text-xs font-extrabold tracking-wide text-[#766B8A] uppercase">
+                                <div className="grid grid-cols-[minmax(0,1fr)_120px_160px] items-center gap-4 border-b border-[#EFE4F8] px-2 pb-3 text-xs font-extrabold tracking-wide text-[#766B8A] uppercase">
                                     <span>Nama Event</span>
                                     <span>Tanggal</span>
                                     <span className="text-right">Status</span>
@@ -206,9 +207,10 @@ export default function AdminDashboard({
                                 {upcomingEvents.length > 0 ? (
                                     <div className="divide-y divide-[#EFE4F8]">
                                         {upcomingEvents.map((event) => (
-                                            <div
+                                            <Link
                                                 key={event.id}
-                                                className="grid grid-cols-[minmax(0,1.6fr)_110px_84px] items-center gap-3 px-2 py-4 transition hover:bg-[#FBF7FF]"
+                                                href={event.url}
+                                                className="grid grid-cols-[minmax(0,1fr)_120px_160px] items-center gap-4 rounded-xl px-2 py-4 transition hover:bg-[#FBF7FF] focus-visible:ring-2 focus-visible:ring-[#6610F2] focus-visible:outline-none"
                                             >
                                                 <p className="truncate text-sm font-bold text-[#382A49]">
                                                     {event.name}
@@ -218,14 +220,14 @@ export default function AdminDashboard({
                                                 </p>
                                                 <div className="text-right">
                                                     <span
-                                                        className={`rounded-full px-3 py-1 text-xs font-extrabold uppercase ${statusClass(
+                                                        className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-extrabold uppercase ${statusClass(
                                                             event.status,
                                                         )}`}
                                                     >
                                                         {event.status}
                                                     </span>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         ))}
                                     </div>
                                 ) : (
@@ -252,9 +254,10 @@ export default function AdminDashboard({
                                 {latestReports.length > 0 ? (
                                     <div className="divide-y divide-[#EFE4F8]">
                                         {latestReports.map((report) => (
-                                            <div
+                                            <Link
                                                 key={report.id}
-                                                className="grid grid-cols-[1fr_1fr_92px] items-center gap-3 px-2 py-4 transition hover:bg-[#FBF7FF]"
+                                                href={report.url}
+                                                className="grid grid-cols-[1fr_1fr_92px] items-center gap-3 rounded-xl px-2 py-4 transition hover:bg-[#FBF7FF] focus-visible:ring-2 focus-visible:ring-[#6610F2] focus-visible:outline-none"
                                             >
                                                 <p className="truncate text-sm font-bold text-[#382A49]">
                                                     {report.category}
@@ -271,7 +274,7 @@ export default function AdminDashboard({
                                                         {report.status}
                                                     </span>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         ))}
                                     </div>
                                 ) : (
