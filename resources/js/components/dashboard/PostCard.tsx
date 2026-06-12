@@ -2,7 +2,6 @@ import { Link, router } from '@inertiajs/react';
 import {
     ChevronLeft,
     ChevronRight,
-    Heart,
     MessageSquare,
     MoreHorizontal,
     Trash2,
@@ -29,7 +28,6 @@ export type FeedPost = {
     title: string;
     description: string;
     hashtags: string[];
-    likes: number;
     comments: number;
     image?: string;
     images?: string[];
@@ -235,13 +233,6 @@ export default function PostCard({ post }: PostCardProps) {
 
                 <div className="mt-6 flex flex-col gap-4 border-t border-[#F1E7FA] pt-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-5 text-[#5F556F]">
-                        <button
-                            type="button"
-                            className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#D11149]"
-                        >
-                            <Heart className="h-5 w-5" />
-                            {post.likes}
-                        </button>
                         <button
                             type="button"
                             className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#1A8FE3]"
