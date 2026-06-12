@@ -163,7 +163,6 @@ class FeedPostController extends Controller
             'title' => $post->title,
             'description' => $post->content,
             'hashtags' => $post->tags ?? [],
-            'likes' => 0,
             'comments' => $post->komentar->count(),
             'images' => $post->images
                 ->map(fn ($image) => asset('storage/'.$image->image_path))
@@ -238,7 +237,6 @@ class FeedPostController extends Controller
             'time' => $comment->tanggal_komentar
                 ? $this->formatKomentarTime($comment)
                 : 'Baru saja',
-            'likes' => 0,
             'replies' => $comment->replies
                 ->map(fn (Komentar $reply) => $this->formatComment($reply))
                 ->values(),

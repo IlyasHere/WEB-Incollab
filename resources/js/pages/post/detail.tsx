@@ -3,7 +3,6 @@ import {
     ArrowLeft,
     ChevronLeft,
     ChevronRight,
-    Heart,
     LoaderCircle,
     MessageSquare,
     Reply,
@@ -29,7 +28,6 @@ type DetailPost = {
     title: string;
     description: string;
     hashtags: string[];
-    likes: number;
     comments: number;
     images: string[];
 };
@@ -39,7 +37,6 @@ type Comment = {
     user: DetailUser;
     content: string;
     time: string;
-    likes: number;
     replies: Comment[];
 };
 
@@ -115,7 +112,6 @@ function DetailPostSkeleton() {
                 </div>
                 <Skeleton className="h-72 w-full rounded-none" />
                 <div className="flex gap-6 border-t border-[#E9DDF5] px-5 py-5 sm:px-6">
-                    <Skeleton className="h-5 w-20" />
                     <Skeleton className="h-5 w-28" />
                 </div>
             </article>
@@ -358,10 +354,6 @@ export default function DetailPost({
 
                             <div className="flex items-center gap-6 border-t border-[#E9DDF5] px-5 py-5 text-sm font-semibold text-[#5F556F] sm:px-6">
                                 <span className="inline-flex items-center gap-2">
-                                    <Heart className="h-5 w-5 fill-[#D11149] text-[#D11149]" />
-                                    {post.likes} Likes
-                                </span>
-                                <span className="inline-flex items-center gap-2">
                                     <MessageSquare className="h-5 w-5" />
                                     {totalComments} Comments
                                 </span>
@@ -435,12 +427,6 @@ export default function DetailPost({
                                                     <div className="mt-2 flex flex-wrap items-center gap-5 px-2 text-sm font-semibold text-[#7A6D8F]">
                                                         <span>
                                                             {comment.time}
-                                                        </span>
-                                                        <span>
-                                                            {comment.likes}{' '}
-                                                            {comment.likes === 1
-                                                                ? 'Like'
-                                                                : 'Likes'}
                                                         </span>
                                                         <button
                                                             type="button"

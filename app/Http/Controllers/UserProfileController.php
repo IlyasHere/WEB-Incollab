@@ -56,7 +56,6 @@ class UserProfileController extends Controller
             'title' => $post->title,
             'description' => $post->content,
             'hashtags' => $post->tags ?? [],
-            'likes' => 0,
             'comments' => $post->komentar_count,
             'image' => $firstImage ? asset('storage/'.$firstImage->image_path) : null,
         ];

@@ -1,7 +1,6 @@
 import {
     ChevronLeft,
     ChevronRight,
-    Heart,
     ImageIcon,
     MessageSquare,
 } from 'lucide-react';
@@ -197,9 +196,6 @@ export default function FeedLivePreview({
 
             <div className="flex items-center justify-between border-t border-[#F3EBFA] px-5 py-4 text-sm text-[#4F465F] sm:px-6">
                 <div className="flex items-center gap-5">
-                    <span className="inline-flex items-center gap-2">
-                        <Heart className="h-5 w-5" />0
-                    </span>
                     <span className="inline-flex items-center gap-2">
                         <MessageSquare className="h-5 w-5" />0
                     </span>

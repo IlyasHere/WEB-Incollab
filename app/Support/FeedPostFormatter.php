@@ -31,7 +31,6 @@ class FeedPostFormatter
             'title' => $post->title,
             'description' => $post->content,
             'hashtags' => $post->tags ?? [],
-            'likes' => 0,
             'comments' => $post->komentar_count ?? $post->komentar()->count(),
             'image' => $images->first(),
             'images' => $images,

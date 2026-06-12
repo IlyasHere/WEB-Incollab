@@ -8,7 +8,6 @@ import {
     Github,
     Globe,
     GraduationCap,
-    Heart,
     Instagram,
     Linkedin,
     MessageSquare,
@@ -45,7 +44,6 @@ type ProfilePost = {
     title: string;
     description: string;
     hashtags: string[];
-    likes: number;
     comments: number;
     image?: string | null;
 };
@@ -145,10 +143,6 @@ function ProfilePostCard({ post }: { post: ProfilePost }) {
 
             <div className="flex items-center justify-between border-t border-[#F1E7FA] px-4 py-3 text-sm text-[#5F556F]">
                 <div className="flex items-center gap-4">
-                    <span className="inline-flex items-center gap-1">
-                        <Heart className="h-4 w-4" />
-                        {post.likes}
-                    </span>
                     <span className="inline-flex items-center gap-1">
                         <MessageSquare className="h-4 w-4" />
                         {post.comments}
