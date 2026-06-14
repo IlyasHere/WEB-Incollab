@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import AuthSplitLayout from '@/components/auth-split-layout';
 import { register as registerRoute } from '@/routes';
@@ -26,13 +26,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
     return (
         <>
-            <Head title="Login" />
+            <Head title="Masuk" />
 
             <AuthSplitLayout
-                title="Welcome back"
-                subtitle="Log in to continue discovering competitions and collaborating with students."
-                bottomText="Don't have an account?"
-                bottomLinkText="Create one"
+                title="Selamat datang"
+                subtitle="Masuk untuk lanjut menemukan lomba dan berkolaborasi dengan mahasiswa."
+                bottomText="Belum punya akun?"
+                bottomLinkText="Daftar sekarang"
                 bottomLinkHref={registerRoute.url()}
             >
                 {status && (
@@ -47,7 +47,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             htmlFor="email"
                             className="mb-2 block text-sm font-semibold text-[#2b2b2b]"
                         >
-                            Your email
+                            Email
                         </label>
                         <input
                             id="email"
@@ -57,7 +57,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             autoFocus
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="user@gmail.com"
+                            placeholder="nama@gmail.com"
                             className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
                         />
                         {errors.email && (
@@ -72,7 +72,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             htmlFor="password"
                             className="mb-2 block text-sm font-semibold text-[#2b2b2b]"
                         >
-                            Password
+                            Kata sandi
                         </label>
                         <div className="relative">
                             <input
@@ -84,7 +84,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 onChange={(e) =>
                                     setData('password', e.target.value)
                                 }
-                                placeholder="********"
+                                placeholder="Masukkan kata sandi"
                                 className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 pr-12 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
                             />
                             <button
@@ -92,7 +92,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 onClick={() =>
                                     setShowPassword((current) => !current)
                                 }
-                                className="absolute inset-y-0 right-0 flex items-center px-4 text-[#4b4b4b] transition hover:text-[#1f1f1f] focus:outline-none"
+                                className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-4 text-[#4b4b4b] transition hover:text-[#1f1f1f] focus:outline-none"
                                 aria-label={
                                     showPassword
                                         ? 'Sembunyikan password'
@@ -119,7 +119,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 href={passwordRequest.url()}
                                 className="text-sm text-[#2f2f2f] underline underline-offset-2"
                             >
-                                Forgot password?
+                                Lupa kata sandi?
                             </Link>
                         )}
                     </div>
@@ -127,14 +127,21 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="h-12 w-full rounded-[8px] bg-[#7B19F8] text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#7B19F8] text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                        {processing ? 'Logging in...' : 'Login'}
+                        {processing ? (
+                            <>
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                                Sedang masuk...
+                            </>
+                        ) : (
+                            'Masuk'
+                        )}
                     </button>
 
                     <a
                         href="/auth/google"
-                        className="flex h-12 w-full items-center justify-center gap-2 rounded-[8px] border border-[#7B19F8] bg-transparent text-sm font-semibold text-[#7B19F8] transition hover:bg-[#f6f0ff]"
+                        className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-[#7B19F8] bg-transparent text-sm font-semibold text-[#7B19F8] transition hover:bg-[#f6f0ff]"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -159,7 +166,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.3 5.5-6.1 6.9l6.2 5.2C39 36.8 44 31 44 24c0-1.2-.1-2.3-.4-3.5Z"
                             />
                         </svg>
-                        Continue with Google
+                        Masuk dengan Google
                     </a>
                 </form>
             </AuthSplitLayout>

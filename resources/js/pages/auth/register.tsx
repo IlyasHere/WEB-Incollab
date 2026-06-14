@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import AuthSplitLayout from '@/components/auth-split-layout';
 import { login as loginRoute } from '@/routes';
@@ -23,13 +23,13 @@ export default function Register() {
 
     return (
         <>
-            <Head title="Register" />
+            <Head title="Daftar" />
 
             <AuthSplitLayout
-                title="Get Started"
-                subtitle="Welcome to InCollab - Let's get started"
-                bottomText="Already have account?"
-                bottomLinkText="Login"
+                title="Mulai sekarang"
+                subtitle="Buat akun InCollab untuk menemukan lomba dan membangun kolaborasi."
+                bottomText="Sudah punya akun?"
+                bottomLinkText="Masuk"
                 bottomLinkHref={loginRoute.url()}
             >
                 <form onSubmit={submit} className="space-y-6">
@@ -47,7 +47,7 @@ export default function Register() {
                             autoComplete="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Masukkan nama"
+                            placeholder="Masukkan nama lengkap"
                             className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
                         />
                         {errors.name && (
@@ -61,7 +61,7 @@ export default function Register() {
                             htmlFor="email"
                             className="mb-2 block text-sm font-semibold text-[#2b2b2b]"
                         >
-                            Your email
+                            Email
                         </label>
                         <input
                             id="email"
@@ -71,7 +71,7 @@ export default function Register() {
                             autoFocus
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="user@gmail.com"
+                            placeholder="nama@gmail.com"
                             className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
                         />
                         {errors.email && (
@@ -86,7 +86,7 @@ export default function Register() {
                             htmlFor="password"
                             className="mb-2 block text-sm font-semibold text-[#2b2b2b]"
                         >
-                            Create password
+                            Buat kata sandi
                         </label>
                         <div className="relative">
                             <input
@@ -102,7 +102,7 @@ export default function Register() {
                                         e.target.value,
                                     );
                                 }}
-                                placeholder="********"
+                                placeholder="Masukkan kata sandi"
                                 className="h-12 w-full rounded-[4px] border-0 bg-[#bdbdbd] px-4 pr-12 text-[15px] text-[#1f1f1f] placeholder:text-[#4b4b4b] focus:ring-2 focus:ring-[#7B19F8] focus:outline-none"
                             />
                             <button
@@ -110,7 +110,7 @@ export default function Register() {
                                 onClick={() =>
                                     setShowPassword((current) => !current)
                                 }
-                                className="absolute inset-y-0 right-0 flex items-center px-4 text-[#4b4b4b] transition hover:text-[#1f1f1f] focus:outline-none"
+                                className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-4 text-[#4b4b4b] transition hover:text-[#1f1f1f] focus:outline-none"
                                 aria-label={
                                     showPassword
                                         ? 'Sembunyikan password'
@@ -146,9 +146,16 @@ export default function Register() {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="h-12 w-full rounded-[8px] bg-[#7B19F8] text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-[#7B19F8] text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                        {processing ? 'Creating...' : 'Create new account'}
+                        {processing ? (
+                            <>
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                                Membuat akun...
+                            </>
+                        ) : (
+                            'Daftar akun baru'
+                        )}
                     </button>
                 </form>
             </AuthSplitLayout>

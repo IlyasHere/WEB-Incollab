@@ -34,14 +34,14 @@ export default function AuthSplitLayout({
 
                     <div className="relative z-10 mt-auto max-w-md pb-8">
                         <p className="mb-5 text-[17px] text-white/95">
-                            Stay connected
+                            Tetap terhubung
                         </p>
                         <h2 className="text-[46px] leading-[1.18] font-bold text-white">
-                            Find competitions
+                            Temukan lomba
                             <br />
-                            and collaborate with
+                            dan berkolaborasi
                             <br />
-                            ease.
+                            dengan mudah.
                         </h2>
                     </div>
                 </section>

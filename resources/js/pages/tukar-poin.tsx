@@ -225,7 +225,7 @@ export default function TukarPoin({
 
                     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
                         <div className="flex min-h-0 flex-col xl:h-[calc(100vh-260px)] xl:min-h-[520px]">
-                            <div className="flex shrink-0 flex-col gap-4 rounded-2xl border border-[#EFE4F8] bg-white p-4 shadow-[0_10px_26px_rgba(102,16,242,0.05)] lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex shrink-0 flex-col gap-3 border-b border-[#EFE4F8] pb-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div className="relative min-w-0 flex-1">
                                     <Search className="pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#8A7FA2]" />
                                     <input
@@ -235,11 +235,11 @@ export default function TukarPoin({
                                             setSearch(event.target.value)
                                         }
                                         placeholder="Cari reward, kode, atau kategori..."
-                                        className="h-12 w-full rounded-full border border-[#EFE4F8] bg-[#FBF7FF] pr-4 pl-12 text-sm font-medium text-[#382A49] transition outline-none focus:border-[#6610F2]/40 focus:ring-4 focus:ring-[#6610F2]/10"
+                                        className="h-12 w-full rounded-full border border-[#E5D8F3] bg-white/80 pr-4 pl-12 text-sm font-medium text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2]/50 focus:bg-white focus:ring-4 focus:ring-[#6610F2]/10"
                                     />
                                 </div>
 
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2 lg:justify-end">
                                     {categoryOptions.map((category) => {
                                         const isActive =
                                             activeCategory === category.value;
@@ -255,8 +255,8 @@ export default function TukarPoin({
                                                 }
                                                 className={`h-10 cursor-pointer rounded-full px-5 text-sm font-bold transition ${
                                                     isActive
-                                                        ? 'bg-[#6610F2] text-white shadow-[0_12px_24px_rgba(102,16,242,0.22)]'
-                                                        : 'border border-[#E4D8F2] bg-white text-[#5F5573] hover:border-[#6610F2]/30 hover:bg-[#F7F1FF]'
+                                                        ? 'bg-[#6610F2] text-white'
+                                                        : 'border border-[#DCCEF0] bg-white/65 text-[#5F5573] hover:border-[#6610F2]/35 hover:bg-white hover:text-[#6610F2]'
                                                 }`}
                                             >
                                                 {category.label}

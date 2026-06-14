@@ -1,5 +1,14 @@
 import { useForm } from '@inertiajs/react';
-import { ChevronDown, HelpCircle, Pencil, Search } from 'lucide-react';
+import {
+    ChevronDown,
+    Github,
+    HelpCircle,
+    Instagram,
+    Linkedin,
+    Pencil,
+    Search,
+    type LucideIcon,
+} from 'lucide-react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import SettingsPageLayout from '@/layouts/SettingsPageLayout';
@@ -301,24 +310,22 @@ export default function Pengaturan({
                                     'instagram',
                                     data.instagram,
                                 )}
+                                icon={Instagram}
+                                type="instagram"
                             />
                             <SocialPreview
                                 label="LinkedIn"
                                 value={data.linkedin}
                                 href={buildSocialUrl('linkedin', data.linkedin)}
+                                icon={Linkedin}
+                                type="linkedin"
                             />
                             <SocialPreview
                                 label="GitHub"
                                 value={data.github}
                                 href={buildSocialUrl('github', data.github)}
-                            />
-                            <SocialPreview
-                                label="Portfolio"
-                                value={data.portfolio}
-                                href={buildSocialUrl(
-                                    'portfolio',
-                                    data.portfolio,
-                                )}
+                                icon={Github}
+                                type="github"
                             />
                         </div>
                     </div>
@@ -581,17 +588,29 @@ function SocialPreview({
     label,
     value,
     href,
+    icon: Icon,
+    type,
 }: {
     label: string;
     value: string;
     href: string | null;
+    icon: LucideIcon;
+    type: 'instagram' | 'linkedin' | 'github' | 'portfolio';
 }) {
     const hasValue = value.trim().length > 0;
+    const displayValue = hasValue
+        ? formatSocialDisplay(type, value, href)
+        : '-';
 
     if (!hasValue || !href) {
         return (
-            <span className="rounded-xl border border-[#EFE4F8] px-3 py-2 font-medium text-[#9B8FB3]">
-                {label}
+            <span className="flex min-h-8 items-center gap-4 text-sm font-medium text-[#6F6385]">
+                <Icon
+                    aria-hidden="true"
+                    className="h-5 w-5 shrink-0 text-[#6610F2]"
+                    strokeWidth={2.3}
+                />
+                <span className="truncate">{displayValue}</span>
             </span>
         );
     }
@@ -601,9 +620,16 @@ function SocialPreview({
             href={href}
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl border border-[#EFE4F8] px-3 py-2 font-semibold text-[#6610F2] transition hover:border-[#6610F2] hover:bg-[#F7F1FF]"
+            title={href}
+            aria-label={`Buka ${label}`}
+            className="flex min-h-8 items-center gap-4 text-sm font-medium text-[#6F6385] transition hover:text-[#6610F2]"
         >
-            {label}
+            <Icon
+                aria-hidden="true"
+                className="h-5 w-5 shrink-0 text-[#6610F2]"
+                strokeWidth={2.3}
+            />
+            <span className="truncate">{displayValue}</span>
         </a>
     );
 }
@@ -646,6 +672,62 @@ function buildSocialUrl(
     }
 
     return `https://${normalizedValue}`;
+}
+
+function formatSocialDisplay(
+    type: 'instagram' | 'linkedin' | 'github' | 'portfolio',
+    value: string,
+    href: string | null,
+) {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+        return '-';
+    }
+
+    const fromUrl = getShortUrlLabel(href ?? trimmedValue);
+    const normalizedValue = trimmedValue
+        .replace(/^@/, '')
+        .replace(/^https?:\/\//i, '')
+        .replace(/^www\./i, '')
+        .replace(/\/$/, '');
+
+    if (type === 'instagram') {
+        return `@${fromUrl ?? normalizedValue}`;
+    }
+
+    if (type === 'github') {
+        return fromUrl ?? normalizedValue;
+    }
+
+    if (type === 'linkedin') {
+        return fromUrl ?? normalizedValue;
+    }
+
+    return fromUrl ?? normalizedValue;
+}
+
+function getShortUrlLabel(value: string) {
+    try {
+        const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+        const path = url.pathname.replace(/^\/+|\/+$/g, '');
+
+        if (url.hostname.includes('instagram.com')) {
+            return path.split('/')[0] || url.hostname.replace(/^www\./, '');
+        }
+
+        if (url.hostname.includes('github.com')) {
+            return path.split('/')[0] || url.hostname.replace(/^www\./, '');
+        }
+
+        if (url.hostname.includes('linkedin.com')) {
+            return path.replace(/^in\//, '') || url.hostname.replace(/^www\./, '');
+        }
+
+        return path ? `${url.hostname.replace(/^www\./, '')}/${path}` : url.hostname.replace(/^www\./, '');
+    } catch {
+        return null;
+    }
 }
 
 function FormSection({

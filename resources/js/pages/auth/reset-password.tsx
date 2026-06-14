@@ -16,13 +16,13 @@ type Props = {
 export default function ResetPassword({ token, email }: Props) {
     return (
         <>
-            <Head title="Reset password" />
+            <Head title="Reset kata sandi" />
 
             {/* Info banner */}
             <div className="mb-6 flex items-start gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 dark:border-violet-800 dark:bg-violet-950/40">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-violet-600 dark:text-violet-400" />
                 <p className="text-sm text-violet-700 dark:text-violet-300">
-                    Choose a strong password with at least 8 characters.
+                    Gunakan kata sandi yang kuat dengan minimal 8 karakter.
                 </p>
             </div>
 
@@ -62,7 +62,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 htmlFor="password"
                                 className="text-sm font-semibold text-gray-700"
                             >
-                                New password
+                                Kata sandi baru
                             </Label>
 
                             <div className="relative">
@@ -72,7 +72,7 @@ export default function ResetPassword({ token, email }: Props) {
                                     name="password"
                                     className="rounded-xl border-violet-200 bg-white pl-10 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500/20"
                                     autoFocus
-                                    placeholder="Enter new password"
+                                    placeholder="Masukkan kata sandi baru"
                                 />
                             </div>
                             <InputError message={errors.password} />
@@ -84,7 +84,7 @@ export default function ResetPassword({ token, email }: Props) {
                                 htmlFor="password_confirmation"
                                 className="text-sm font-semibold text-gray-700"
                             >
-                                Confirm password
+                                Konfirmasi kata sandi
                             </Label>
 
                             <div className="relative">
@@ -93,7 +93,7 @@ export default function ResetPassword({ token, email }: Props) {
                                     id="password_confirmation"
                                     name="password_confirmation"
                                     className="rounded-xl border-violet-200 bg-white pl-10 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500/20"
-                                    placeholder="Confirm new password"
+                                    placeholder="Ulangi kata sandi baru"
                                 />
                             </div>
                             <InputError
@@ -111,12 +111,12 @@ export default function ResetPassword({ token, email }: Props) {
                             {processing ? (
                                 <span className="flex items-center gap-2">
                                     <Spinner />
-                                    Resetting...
+                                    Mereset...
                                 </span>
                             ) : (
                                 <span className="flex items-center gap-2">
                                     <ShieldCheck className="h-4 w-4" />
-                                    Reset password
+                                    Reset kata sandi
                                 </span>
                             )}
                         </Button>
@@ -128,6 +128,6 @@ export default function ResetPassword({ token, email }: Props) {
 }
 
 ResetPassword.layout = {
-    title: 'Reset password',
-    description: 'Please enter your new password below',
+    title: 'Reset kata sandi',
+    description: 'Masukkan kata sandi baru kamu di bawah ini',
 };

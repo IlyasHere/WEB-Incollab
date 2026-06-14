@@ -480,11 +480,11 @@ export default function Chat({
                         <div className="border-b border-[#F3EBFA] p-5">
                             <div className="flex items-center justify-between gap-3">
                                 <div>
-                                    <p className="text-xs font-bold tracking-[0.18em] text-[#8A7FA2] uppercase">
+                                    {/* <p className="text-xs font-bold tracking-[0.18em] text-[#8A7FA2] uppercase">
                                         Pesan
-                                    </p>
+                                    </p> */}
                                     <h1 className="mt-1 text-2xl font-extrabold text-[#241A35]">
-                                        Chat
+                                        Pesan
                                     </h1>
                                 </div>
                                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F0E7FF] text-[#6610F2]">

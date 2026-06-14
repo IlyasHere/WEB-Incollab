@@ -63,7 +63,7 @@ export default function Tersimpan({ savedEvents }: Props) {
                         </p>
                     </section>
 
-                    <section className="mt-6 rounded-[28px] border border-[#EFE4F8] bg-white p-4 shadow-[0_14px_34px_rgba(102,16,242,0.06)]">
+                    <section className="mt-6 border-b border-[#EFE4F8] pb-4">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="relative flex-1">
                                 <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#8A7FA2]" />
@@ -75,11 +75,11 @@ export default function Tersimpan({ savedEvents }: Props) {
                                     onChange={(event) =>
                                         setSearch(event.target.value)
                                     }
-                                    className="h-12 w-full rounded-full border border-[#EADCF8] bg-[#F7F1FF] pr-4 pl-11 text-sm text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2]"
+                                    className="h-12 w-full rounded-full border border-[#E5D8F3] bg-white/80 pr-4 pl-11 text-sm text-[#382A49] transition outline-none placeholder:text-[#9B8FB3] focus:border-[#6610F2]/50 focus:bg-white focus:ring-4 focus:ring-[#6610F2]/10"
                                 />
                             </div>
 
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-2 lg:justify-end">
                                 {categories.map((category) => {
                                     const isActive =
                                         activeCategory === category;
@@ -87,13 +87,14 @@ export default function Tersimpan({ savedEvents }: Props) {
                                     return (
                                         <button
                                             key={category}
+                                            type="button"
                                             onClick={() =>
                                                 setActiveCategory(category)
                                             }
-                                            className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                                            className={`h-10 cursor-pointer rounded-full px-5 text-sm font-semibold transition ${
                                                 isActive
                                                     ? 'bg-[#6610F2] text-white'
-                                                    : 'border border-[#D8CCE8] bg-white text-[#5A516C]'
+                                                    : 'border border-[#D8CCE8] bg-white/65 text-[#5A516C] hover:border-[#6610F2]/35 hover:bg-white hover:text-[#6610F2]'
                                             }`}
                                         >
                                             {category}

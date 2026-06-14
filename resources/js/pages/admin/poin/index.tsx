@@ -334,10 +334,10 @@ export default function AdminPoinIndex({
                 />
             </section>
 
-            <section className="mt-6 rounded-[24px] border border-[#EFE4F8] bg-white p-5 shadow-[0_18px_45px_rgba(56,42,73,0.05)]">
+            <section className="mt-6 border-b border-[#EFE4F8] pb-4">
                 <form
                     onSubmit={submitFilters}
-                    className="flex flex-col gap-3 lg:flex-row"
+                    className="flex flex-col gap-3 lg:flex-row lg:items-center"
                 >
                     <div className="relative flex-1">
                         <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#8A7A9E]" />
@@ -345,7 +345,7 @@ export default function AdminPoinIndex({
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Cari nama, NIM, event, atau sertifikat..."
-                            className="h-12 w-full rounded-2xl border border-[#E2D4F3] pr-4 pl-11 text-sm outline-none focus:border-[#6610F2]"
+                            className="h-12 w-full rounded-full border border-[#E5D8F3] bg-white/80 pr-4 pl-11 text-sm text-[#342847] outline-none transition placeholder:text-[#9B8FB3] focus:border-[#6610F2]/50 focus:bg-white focus:ring-4 focus:ring-[#6610F2]/10"
                         />
                     </div>
                     <select
@@ -355,7 +355,7 @@ export default function AdminPoinIndex({
                             setStatus(nextStatus);
                             applyFilters(search, nextStatus);
                         }}
-                        className="h-12 rounded-2xl border border-[#E2D4F3] px-4 text-sm font-semibold text-[#342847] outline-none focus:border-[#6610F2]"
+                        className="h-12 rounded-full border border-[#E5D8F3] bg-white/80 px-5 text-sm font-semibold text-[#342847] outline-none transition focus:border-[#6610F2]/50 focus:bg-white focus:ring-4 focus:ring-[#6610F2]/10 lg:min-w-[220px]"
                     >
                         <option value="">Semua Status</option>
                         {statuses.map((item) => (
@@ -366,7 +366,7 @@ export default function AdminPoinIndex({
                     </select>
                     <button
                         type="submit"
-                        className="h-12 rounded-2xl bg-[#6610F2] px-6 text-sm font-semibold text-white"
+                        className="h-12 cursor-pointer rounded-full bg-[#6610F2] px-7 text-sm font-semibold text-white transition hover:bg-[#5710C9]"
                     >
                         Filter
                     </button>
